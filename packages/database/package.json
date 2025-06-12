@@ -1,0 +1,26 @@
+{
+  "name": "database",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "migration:create": "typeorm migration:create src/migrations/Migration",
+    "migration:up": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run",
+    "migration:down": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:revert"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.1",
+  "dependencies": {
+    "pg": "^8.16.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.24"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "dotenv": "^16.5.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
+  }
+}

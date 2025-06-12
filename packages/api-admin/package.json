@@ -1,0 +1,37 @@
+{
+  "name": "@hedhog/api-admin",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "_dev": "pnpm build --watch",
+    "build": "tsc -b -v",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/axios": "*",
+    "@nestjs/mapped-types": "*",
+    "@nestjs/common": "*",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11",
+    "@nestjs/jwt": "^11",
+    "@hedhog/api": "workspace:*",
+    "@hedhog/api-locale": "workspace:*",
+    "@hedhog/api-mail": "workspace:*",
+    "@hedhog/api-pagination": "workspace:*",
+    "@hedhog/api-prisma": "workspace:*",
+    "axios": "^1.9.0",
+    "bcrypt": "6.0.0",
+    "qrcode": "^1.5.4",
+    "rxjs": "^7.8.2",
+    "speakeasy": "^2.0.0",
+    "uuid": "^11.1.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

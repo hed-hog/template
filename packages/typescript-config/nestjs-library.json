@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "composite": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": false,
+    "incremental": true,
+    "module": "commonjs",
+    "moduleResolution": "Node10",
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strictNullChecks": false,
+    "strictBindCallApply": false,
+    "baseUrl": ".",
+    "paths": {
+      "@prisma/client": ["../api-prisma/node_modules/.prisma/client"],
+      "@prisma/client/*": ["../api-prisma/node_modules/.prisma/client/*"],
+      "@hedhog/api": ["../api/src"],
+      "@hedhog/api/*": ["../api/src/*"],
+      "@hedhog/api-admin": ["../api-admin/src"],
+      "@hedhog/api-admin/*": ["../api-admin/src/*"],
+      "@hedhog/api-locale": ["../api-locale/src"],
+      "@hedhog/api-locale/*": ["../api-locale/src/*"],
+      "@hedhog/api-mail": ["../api-mail/src"],
+      "@hedhog/api-mail/*": ["../api-mail/src/*"],
+      "@hedhog/api-pagination": ["../api-pagination/src"],
+      "@hedhog/api-pagination/*": ["../api-pagination/src/*"],
+      "@hedhog/api-prisma": ["../api-prisma/src"],
+      "@hedhog/api-prisma/*": ["../api-prisma/src/*"],
+      "@hedhog/api-healthy": ["../api-healthy/src"],
+      "@hedhog/api-healthy/*": ["../api-healthy/src/*"],
+      "@hedhog/api-developer": ["../api-developer/src"],
+      "@hedhog/api-developer/*": ["../api-developer/src/*"]
+    }
+  }
+}

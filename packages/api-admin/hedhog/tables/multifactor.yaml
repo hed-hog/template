@@ -1,0 +1,11 @@
+columns:
+  - type: pk
+  - type: slug
+  - name: name
+    type: locale_varchar
+    length: 255
+    locale:
+      en: Name
+      pt: Nome
+  - type: created_at
+  - type: updated_at

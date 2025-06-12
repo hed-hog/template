@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": ["src/**/*.ts", "../../packages/api-prisma/src/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "rootDir": "../../",
+    "baseUrl": "./",
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
+    "sourceMap": true,
+    "allowJs": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "paths": {
+      "@prisma/client": [
+        "../../packages/api-prisma/node_modules/.prisma/client"
+      ],
+      "@prisma/client/*": [
+        "../../packages/api-prisma/node_modules/.prisma/client/*"
+      ],
+      "@hedhog/api-prisma": ["../../packages/api-prisma/src"],
+      "@hedhog/api-prisma/*": ["../../packages/api-prisma/src/*"],
+      "@hedhog/api": ["../../packages/api/src"],
+      "@hedhog/api/*": ["../../packages/api/src/*"],
+      "@hedhog/api-pagination": ["../../packages/api-pagination/src"],
+      "@hedhog/api-pagination/*": ["../../packages/api-pagination/src/*"],
+      "@hedhog/api-mail": ["../../packages/api-mail/src"],
+      "@hedhog/api-mail/*": ["../../packages/api-mail/src/*"],
+      "@hedhog/api-locale": ["../../packages/api-locale/src"],
+      "@hedhog/api-locale/*": ["../../packages/api-locale/src/*"],
+      "@hedhog/api-admin": ["../../packages/api-admin/src"],
+      "@hedhog/api-admin/*": ["../../packages/api-admin/src/*"],
+      "@hedhog/api-healthy": ["../../packages/api-healthy/src"],
+      "@hedhog/api-healthy/*": ["../../packages/api-healthy/src/*"],
+      "@hedhog/api-developer": ["../../packages/api-developer/src"],
+      "@hedhog/api-developer/*": ["../../packages/api-developer/src/*"]
+    }
+  }
+}

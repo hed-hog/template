@@ -1,0 +1,31 @@
+{
+  "name": "@hedhog/api-mail",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "_dev": "pnpm build --watch",
+    "build": "tsc -b -v",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/mapped-types": "*",
+    "@nestjs/common": "*",
+    "@nestjs/axios": "*",
+    "@nestjs/jwt": "*",
+    "axios": "*",
+    "mimemessage": "1.0.5",
+    "bcrypt": "^5.1.1",
+    "nodemailer": "^6.9.0",
+    "aws-sdk": "2.1691.0",
+    "googleapis": "144.0.0",
+    "rxjs": "*"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

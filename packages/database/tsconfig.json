@@ -1,0 +1,23 @@
+{
+  "extends": "@hedhog/typescript-config/typeorm.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "src",
+    "esModuleInterop": true,
+    "incremental": false,
+    "outDir": "dist",
+    "emitDecoratorMetadata": true, // Garantido pelo typeorm.json, mas pode ser explicitado
+    "experimentalDecorators": true // Garantido pelo typeorm.json, mas pode ser explicitado
+  },
+  "include": [
+    "src/**/*.ts", // Inclui todos os arquivos TypeScript na pasta src
+    "src/**/*.js" // Inclui arquivos JavaScript, caso necessário
+  ],
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts",
+    "**/*.test.ts" // Exclui arquivos de teste
+  ]
+}

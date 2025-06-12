@@ -1,0 +1,28 @@
+{
+  "name": "@hedhog/api-pagination",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "_dev": "pnpm build --watch",
+    "build": "tsc -b -v",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/mapped-types": "*",
+    "@nestjs/common": "*",
+    "@hedhog/api": "workspace:*",
+    "@hedhog/api-prisma": "workspace:*",
+    "class-validator": "*",
+    "mysql2": "3.14.1",
+    "pg": "8.16.0",
+    "typeorm": "*"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}
