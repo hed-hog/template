@@ -3,56 +3,65 @@
 import PasswordField from '@/components/field/password-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconSettingsUp } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useSystem } from '../provider/system-provider';
 import { useRouter } from 'next/navigation';
+import { IconFormField } from '../field/icon-field';
+import { ImageFormField } from '../field/image-uploader-field';
+import { cn } from '@/lib/utils';
 
-const LANGUAGES = [
-  { value: 'pt-BR', label: 'Português (Brasil)' },
-  { value: 'en-US', label: 'Inglês (EUA)' },
-  { value: 'es-ES', label: 'Espanhol (Espanha)' },
-  { value: 'fr-FR', label: 'Francês (França)' },
-  { value: 'de-DE', label: 'Alemão (Alemanha)' },
-] as const;
+declare global {
+  interface Window {
+    __colorInput?: HTMLInputElement | null;
+  }
+}
+
+export const COLOR_OPTIONS = [
+  { value: 'blue', label: 'Azul', color: 'bg-blue-500' },
+  { value: 'green', label: 'Verde', color: 'bg-green-500' },
+  { value: 'purple', label: 'Roxo', color: 'bg-purple-500' },
+  { value: 'red', label: 'Vermelho', color: 'bg-red-500' },
+  { value: 'amber', label: 'Amber', color: 'bg-amber-500' },
+];
 
 const FormSchema = z.object({
   appName: z.string().min(1, 'O nome da aplicação é obrigatório.'),
   primaryColor: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i, 'Cor inválida.'),
-  language: z
-    .array(z.enum(LANGUAGES.map((l) => l.value) as [string, ...string[]]))
-    .optional(),
   rootEmail: z.string().email('E-mail inválido.'),
   rootPassword: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
+  logoIcon: z.string().optional(),
+  logoFull: z.string().optional(),
 });
 
 export const InstallPage = () => {
   const router = useRouter();
+  const colorRef = useRef<HTMLInputElement>(null);
   const { request } = useSystem();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      appName: 'Hcode',
+      appName: 'HedHog',
       primaryColor: '#FF760C',
-      language: ['pt-BR', 'en-US'],
-      rootEmail: 'joao@hcode.com.br',
-      rootPassword: '35qg,4)XZ,NX',
+      rootEmail: 'root@hedhog.com',
+      rootPassword: 'changeme',
+      logoIcon: '',
+      logoFull: '',
     },
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    console.log('Form data submitted:', data);
+    /*
     const formData = new FormData();
     formData.append('appName', data.appName);
     formData.append('primaryColor', data.primaryColor);
-
-    data.language?.forEach((lang) => formData.append('language', lang));
 
     formData.append('rootEmail', data.rootEmail);
     formData.append('rootPassword', data.rootPassword);
@@ -74,7 +83,7 @@ export const InstallPage = () => {
           message:
             error?.response?.data?.message || 'Erro ao configurar o sistema',
         });
-      });
+      });*/
   }
 
   useEffect(() => {
@@ -134,70 +143,76 @@ export const InstallPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="primaryColor">Cor Primária</Label>
-                    <Input
-                      id="primaryColor"
-                      type="color"
-                      {...form.register('primaryColor')}
-                      className="h-10 w-24 p-0 border-none bg-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="logoIcon">
-                      Ícone do Logo{' '}
-                      <span className="text-gray-500">
-                        (SVG ou PNG de 512x512 recomendado)
-                      </span>
-                    </Label>
-                    <Input
-                      id="logoIcon"
-                      type="file"
-                      accept="image/png,image/svg+xml"
-                      {...form.register('logoIcon')}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="logoFull">
-                      Logotipo Completo{' '}
-                      <span className="text-gray-500">
-                        (SVG ou PNG de 1280x512 recomendado)
-                      </span>
-                    </Label>
-                    <Input
-                      id="logoFull"
-                      type="file"
-                      accept="image/png,image/svg+xml"
-                      {...form.register('logoFull')}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Idioma do Sistema</Label>
-                    <div className="space-y-1">
-                      {LANGUAGES.map(({ value, label }) => (
-                        <div
-                          className="flex items-center space-x-2"
-                          key={value}
-                        >
-                          <Checkbox
-                            id={`language-${value}`}
-                            value={value}
-                            {...form.register('language')}
-                            defaultChecked={form
-                              .getValues('language')
-                              ?.includes(value)}
-                          />
-                          <Label
-                            htmlFor={`language-${value}`}
-                            className="text-sm"
-                          >
-                            {label}
-                          </Label>
-                        </div>
+                    <div className="flex gap-2">
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            colorRef.current?.click();
+                          }}
+                          style={{
+                            backgroundColor: form.watch('primaryColor'),
+                          }}
+                          className={cn(
+                            `w-8 h-8 rounded-full border-2 transition-all`,
+                            COLOR_OPTIONS.map((v) => v.color).includes(
+                              form.watch('primaryColor'),
+                            )
+                              ? 'border-foreground scale-110'
+                              : 'border-muted-foreground/30 hover:scale-105',
+                          )}
+                          title="Escolher outra cor"
+                        />
+                        <input
+                          type="color"
+                          style={{ visibility: 'hidden', height: 0, width: 0 }}
+                          ref={colorRef}
+                          value={form.watch('primaryColor')}
+                          onChange={(e) => {
+                            console.log('Color changed:', e.target.value);
+                            form.setValue('primaryColor', e.target.value);
+                          }}
+                          tabIndex={-1}
+                        />
+                      </div>
+                      {COLOR_OPTIONS.map((color) => (
+                        <button
+                          key={color.value}
+                          onClick={() => {
+                            form.setValue('primaryColor', color.value);
+                          }}
+                          className={cn(
+                            'w-8 h-8 rounded-full border-2 transition-all',
+                            color.color,
+                            form.watch('primaryColor') === color.value
+                              ? 'border-foreground scale-110'
+                              : 'border-muted-foreground/30 hover:scale-105',
+                          )}
+                          title={color.label}
+                        />
                       ))}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <IconFormField
+                      control={form.control}
+                      name="logoIcon"
+                      label="Ícone do Logo"
+                      description="Imagem quadrada para o ícone do logo (recomendado 128x128px)"
+                      size={64}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <ImageFormField
+                      control={form.control}
+                      name="logoFull"
+                      label="Logo Horizontal"
+                      description="Imagem para o logo horizontal (recomendado 512x128px)"
+                      width={256}
+                      height={64}
+                    />
                   </div>
 
                   <div className="space-y-4">

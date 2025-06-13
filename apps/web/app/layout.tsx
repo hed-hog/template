@@ -12,14 +12,23 @@ const inter = Inter({ subsets: ['latin'] });
 let systemSetting: Record<any, any> = {};
 
 async function getSystemSetting() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/setting-system`);
-  return Object.assign(
-    {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/setting-system`,
+    );
+    return Object.assign(
+      {
+        setting: {},
+        locales: [],
+      },
+      res.json(),
+    );
+  } catch (error) {
+    return {
       setting: {},
       locales: [],
-    },
-    res.json(),
-  );
+    };
+  }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
