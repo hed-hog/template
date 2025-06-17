@@ -8,7 +8,7 @@ import type { Tab } from '../types';
 
 interface EditorTabsProps {
   tabs: Tab[];
-  activeTabId: string | null;
+  activeTabId: string | null | undefined;
   onTabSelect: (tabId: string) => void;
   onTabClose: (tabId: string) => void;
 }

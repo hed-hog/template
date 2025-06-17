@@ -146,7 +146,7 @@ export class ${pascal}Service {
   async createPackage({ name }: CreatePackageDto) {
     const kebabName = toKebabCase(name);
     const rootPath = await realpath(`${process.cwd()}/../../`);
-    const packagesPath = `${rootPath}/packages/${kebabName}`;
+    const packagesPath = `${rootPath}/libraries/${kebabName}`;
 
     if (await this.exists(packagesPath)) {
       throw new BadRequestException('Package already exists');
@@ -194,7 +194,7 @@ export class ${pascal}Service {
     try {
       const kebabName = toKebabCase(name);
       const rootPath = await realpath(
-        `${process.cwd()}/../../packages/typescript-config`,
+        `${process.cwd()}/../../libraries/typescript-config`,
       );
       const tsConfigPath = `${rootPath}/nestjs-library.json`;
 
@@ -277,7 +277,7 @@ export class ${pascal}Service {
       const tsConfigPath = `${rootPath}/tsconfig.json`;
 
       if (!(await this.exists(tsConfigPath))) {
-        const packages = await this.getPackagesFromDirectory();
+        const libraries = await this.getPackagesFromDirectory();
 
         const paths = {
           '@prisma/client': [
@@ -288,11 +288,11 @@ export class ${pascal}Service {
           ],
         };
 
-        for (const dir of packages) {
+        for (const dir of libraries) {
           if (!dir.isDirectory()) continue;
           const kebab = toKebabCase(dir.name);
-          paths[`@hedhog/${kebab}`] = [`../../packages/${kebab}/src`];
-          paths[`@hedhog/${kebab}/*`] = [`../../packages/${kebab}/src/*`];
+          paths[`@hedhog/${kebab}`] = [`../../libraries/${kebab}/src`];
+          paths[`@hedhog/${kebab}/*`] = [`../../libraries/${kebab}/src/*`];
         }
 
         await this.writeFileUtf8(
@@ -361,7 +361,7 @@ export class ${pascal}Service {
 
   async getPackagesFromDirectory() {
     const rootPath = await realpath(`${process.cwd()}/../../`);
-    const packagesPath = `${rootPath}/packages`;
+    const packagesPath = `${rootPath}/libraries`;
     return (await readdir(packagesPath, { withFileTypes: true })).filter(
       (item) => item.isDirectory(),
     );
@@ -371,7 +371,7 @@ export class ${pascal}Service {
     const path = `${process.cwd()}/prisma/schema.prisma`;
     await this.schema.parse(path);
     const rootPath = await realpath(`${process.cwd()}/../../`);
-    const packagesPath = `${rootPath}/packages`;
+    const packagesPath = `${rootPath}/libraries`;
 
     const packages = [];
 

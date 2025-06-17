@@ -74,7 +74,7 @@ export const SystemProvider = ({
       request({
         url: `/menu/system`,
       }),
-    enabled: token !== null,
+    enabled: token !== null && installed,
   });
 
   const decodeToken = (jwtToken: string): UserData | null => {

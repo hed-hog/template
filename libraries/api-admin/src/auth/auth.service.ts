@@ -15,7 +15,7 @@ import { compare, genSalt, hash } from 'bcrypt';
 import * as qrcode from 'qrcode';
 import { lastValueFrom } from 'rxjs';
 import * as speakeasy from 'speakeasy';
-import { MailService as MailManagerService } from './../mail/mail.service';
+import { MailService as MailManagerService } from '../mail/mail.service';
 import { SettingService } from '../setting/setting.service';
 import { ChangeDTO } from './dto/change.dto';
 import { CreateUserDTO } from './dto/create-user.dto';

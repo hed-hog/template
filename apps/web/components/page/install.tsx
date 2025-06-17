@@ -57,25 +57,13 @@ export const InstallPage = () => {
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log('Form data submitted:', data);
-    /*
-    const formData = new FormData();
-    formData.append('appName', data.appName);
-    formData.append('primaryColor', data.primaryColor);
-
-    formData.append('rootEmail', data.rootEmail);
-    formData.append('rootPassword', data.rootPassword);
-
-    form.clearErrors();
-
     request({
       url: '/install',
       method: 'POST',
-      data: formData,
+      data,
     })
       .then(() => {
-        process.env.INSTALLED = 'true';
-        window.location.reload();
+        //window.location.reload();
       })
       .catch((error) => {
         form.setError('root', {
@@ -83,7 +71,7 @@ export const InstallPage = () => {
           message:
             error?.response?.data?.message || 'Erro ao configurar o sistema',
         });
-      });*/
+      });
   }
 
   useEffect(() => {
@@ -201,6 +189,8 @@ export const InstallPage = () => {
                       label="Ícone do Logo"
                       description="Imagem quadrada para o ícone do logo (recomendado 128x128px)"
                       size={64}
+                      accept="image/png"
+                      helperText="Imagem PNG com fundo transparente é recomendada."
                     />
                   </div>
 
@@ -212,6 +202,8 @@ export const InstallPage = () => {
                       description="Imagem para o logo horizontal (recomendado 512x128px)"
                       width={256}
                       height={64}
+                      accept="image/png"
+                      helperText="Imagem PNG com fundo transparente é recomendada."
                     />
                   </div>
 

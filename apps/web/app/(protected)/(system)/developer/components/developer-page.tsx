@@ -2,29 +2,35 @@
 
 import { useState } from 'react';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
-
 import { TreeView } from './tree-view';
 import { EditorTabs } from './editor-tabs';
 import { CodeEditor } from './code-editor';
 import { TableEditor } from './table-editor';
 import { BottomPanel } from './bottom-panel';
 import { StatusBar } from './status-bar';
-
 import {
   MOCK_SCREENS,
   MOCK_TABLES,
   MOCK_LOGS,
   MOCK_SYSTEM_STATUS,
 } from './../data';
-import type { Tab, FileTreeItem, Screen, DatabaseTable } from './../types';
+import type { FileTreeItem, Screen, DatabaseTable } from './../types';
 import { useQuery } from '@tanstack/react-query';
 import { useSystem } from '@/components/provider/system-provider';
 import { IconReload } from '@tabler/icons-react';
+import { useDeveloper } from './developer-provider';
 
 export default function DeveloperPage() {
   const { request, token } = useSystem();
-  const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const {
+    tabs,
+    setTabs,
+    handleCreateTab,
+    handleTabClose,
+    activeTabId,
+    setActiveTabId,
+  } = useDeveloper();
+
   const [bottomPanelOpen, setBottomPanelOpen] = useState(false);
   const [screens, setScreens] = useState(MOCK_SCREENS);
   const [tables, setTables] = useState(MOCK_TABLES);
@@ -40,26 +46,6 @@ export default function DeveloperPage() {
 
   const handleFileSelect = (file: FileTreeItem) => {
     // File selection logic handled in onCreateTab
-  };
-
-  const handleCreateTab = (tab: Tab) => {
-    const existingTab = tabs.find((t) => t.id === tab.id);
-    if (!existingTab) {
-      setTabs((prev) => [...prev, tab]);
-    }
-    setActiveTabId(tab.id);
-  };
-
-  const handleTabClose = (tabId: string) => {
-    setTabs((prev) => prev.filter((tab) => tab.id !== tabId));
-    if (activeTabId === tabId) {
-      const remainingTabs = tabs.filter((tab) => tab.id !== tabId);
-      setActiveTabId(
-        remainingTabs.length > 0
-          ? remainingTabs[remainingTabs.length - 1].id
-          : null,
-      );
-    }
   };
 
   const handleScreenSave = (updatedScreen: Screen) => {
@@ -105,6 +91,8 @@ export default function DeveloperPage() {
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
   const renderEditor = () => {
+    console.log('Rendering editor for active tab:', activeTab);
+
     if (!activeTab) {
       return (
         <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -153,7 +141,7 @@ export default function DeveloperPage() {
     <div className="h-screen flex flex-col bg-background">
       <PanelGroup direction="horizontal">
         {/* TreeView */}
-        <Panel defaultSize={20} minSize={15} maxSize={40}>
+        <Panel defaultSize={25} minSize={20} maxSize={40}>
           {tree && (
             <TreeView
               fileTree={tree}
@@ -169,7 +157,7 @@ export default function DeveloperPage() {
           )}
         </Panel>
 
-        <PanelResizeHandle className="w-1 bg-border hover:bg-accent transition-colors" />
+        <PanelResizeHandle className="w-1 bg-border hover:bg-accent active:bg-primary transition-colors" />
 
         {/* Main Content */}
         <Panel defaultSize={80}>
@@ -181,7 +169,11 @@ export default function DeveloperPage() {
                 <EditorTabs
                   tabs={tabs}
                   activeTabId={activeTabId}
-                  onTabSelect={setActiveTabId}
+                  onTabSelect={(tabId) => {
+                    if (typeof setActiveTabId === 'function') {
+                      setActiveTabId(tabId);
+                    }
+                  }}
                   onTabClose={handleTabClose}
                 />
 

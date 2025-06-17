@@ -41,12 +41,13 @@
       "@hedhog/api-mail/*": ["../../packages/api-mail/src/*"],
       "@hedhog/api-locale": ["../../packages/api-locale/src"],
       "@hedhog/api-locale/*": ["../../packages/api-locale/src/*"],
-      "@hedhog/api-admin": ["../../packages/api-admin/src"],
-      "@hedhog/api-admin/*": ["../../packages/api-admin/src/*"],
       "@hedhog/api-healthy": ["../../packages/api-healthy/src"],
       "@hedhog/api-healthy/*": ["../../packages/api-healthy/src/*"],
       "@hedhog/api-developer": ["../../packages/api-developer/src"],
-      "@hedhog/api-developer/*": ["../../packages/api-developer/src/*"]
+      "@hedhog/api-developer/*": ["../../packages/api-developer/src/*"],
+
+      "@hedhog/api-admin": ["../../libraries/api-admin/src"],
+      "@hedhog/api-admin/*": ["../../libraries/api-admin/src/*"]
     }
   }
 }

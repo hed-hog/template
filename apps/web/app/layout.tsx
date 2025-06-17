@@ -42,19 +42,25 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export async function getHedHogFile() {
-  // Obtém o diretório raiz da aplicação Next.js
+type HedHogFile = {
+  installed: boolean;
+  developerMode: boolean;
+};
+
+export async function getHedHogFile(): Promise<HedHogFile> {
   const appRoot = process.cwd();
+  const defaultOptions = {
+    installed: false,
+    developerMode: false,
+  };
   try {
     const hedhogFilPath = await realpath(`${appRoot}/../../hedhog.json`);
     const content = await readFile(hedhogFilPath, 'utf-8');
-    return JSON.parse(content);
+    return { ...defaultOptions, ...JSON.parse(content) };
   } catch (err) {
-    return { installed: false };
+    return { installed: false, developerMode: false };
   }
 }
-
-const developerMode = String(process.env.DEVELOPER_MODE) === 'true';
 
 export default async function RootLayout({
   children,
@@ -62,6 +68,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const hedhogData = await getHedHogFile();
+
+  console.log({ hedhogData });
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
@@ -81,7 +89,7 @@ export default async function RootLayout({
         <QueryClientProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <SystemProvider
-              developerMode={developerMode}
+              developerMode={hedhogData.developerMode}
               installed={hedhogData.installed}
             >
               {hedhogData.installed ? children : <InstallPage />}

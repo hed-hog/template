@@ -22,9 +22,7 @@
       "@prisma/client": ["../api-prisma/node_modules/.prisma/client"],
       "@prisma/client/*": ["../api-prisma/node_modules/.prisma/client/*"],
       "@hedhog/api": ["../api/src"],
-      "@hedhog/api/*": ["../api/src/*"],
-      "@hedhog/api-admin": ["../api-admin/src"],
-      "@hedhog/api-admin/*": ["../api-admin/src/*"],
+      "@hedhog/api/*": ["../api/src/*"],      
       "@hedhog/api-locale": ["../api-locale/src"],
       "@hedhog/api-locale/*": ["../api-locale/src/*"],
       "@hedhog/api-mail": ["../api-mail/src"],
@@ -36,7 +34,10 @@
       "@hedhog/api-healthy": ["../api-healthy/src"],
       "@hedhog/api-healthy/*": ["../api-healthy/src/*"],
       "@hedhog/api-developer": ["../api-developer/src"],
-      "@hedhog/api-developer/*": ["../api-developer/src/*"]
+      "@hedhog/api-developer/*": ["../api-developer/src/*"],
+
+      "@hedhog/api-admin": ["../../libraries/api-admin/src"],
+      "@hedhog/api-admin/*": ["../../libraries/api-admin/src/*"],
     }
   }
 }

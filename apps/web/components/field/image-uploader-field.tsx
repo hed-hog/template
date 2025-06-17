@@ -3,12 +3,6 @@
 import * as React from 'react';
 import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import {
   FormControl,
@@ -27,6 +21,7 @@ export interface ImageUploaderProps {
   className?: string;
   disabled?: boolean;
   accept?: string;
+  helperText?: string;
 }
 
 export function ImageUploader({
@@ -37,6 +32,7 @@ export function ImageUploader({
   className,
   disabled = false,
   accept = 'image/*',
+  helperText,
 }: ImageUploaderProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -65,79 +61,57 @@ export function ImageUploader({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            'p-0 overflow-hidden border-2 transition-all relative group',
-            'hover:border-primary hover:shadow-md active:scale-95',
-            'dark:bg-slate-950 dark:hover:bg-slate-900',
-            'bg-white hover:bg-slate-50',
-            disabled && 'opacity-50 cursor-not-allowed',
-            className,
-          )}
-          disabled={disabled}
-          style={{ width, height }}
-        >
-          {value ? (
-            <>
-              <img
-                src={value || '/placeholder.svg'}
-                alt="Uploaded image"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={handleClearImage}
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Remover imagem</span>
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center w-full h-full text-muted-foreground p-4">
-              <Upload className="h-6 w-6 mb-2" />
-              <span className="text-xs text-center">
-                Clique para fazer upload
-              </span>
-            </div>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-72 p-4">
-        <div className="space-y-4">
-          <div className="text-sm font-medium">Upload de imagem</div>
-          <div className="flex flex-col space-y-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => fileInputRef.current?.click()}
+    <Button
+      variant="outline"
+      className={cn(
+        'p-0 overflow-hidden border-2 transition-all relative group',
+        'hover:border-primary hover:shadow-md active:scale-95',
+        'dark:bg-slate-950 dark:hover:bg-slate-900',
+        'bg-white hover:bg-slate-50',
+        disabled && 'opacity-50 cursor-not-allowed',
+        className,
+      )}
+      disabled={disabled}
+      style={{ width, height }}
+    >
+      {value ? (
+        <>
+          <img
+            src={value || '/placeholder.svg'}
+            alt="Uploaded image"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div
+              className="h-8 w-8 rounded-full bg-white flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
+              onClick={handleClearImage}
             >
-              <Upload className="mr-2 h-4 w-4" />
-              Escolher arquivo
-            </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept={accept}
-              onChange={handleFileChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Formatos suportados: PNG, JPG, GIF, WebP. Tamanho máximo
-              recomendado: 5MB.
-            </p>
+              <X className="h-4 w-4" />
+              <span className="sr-only">Remover imagem</span>
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </>
+      ) : (
+        <>
+          <div
+            className="flex flex-col items-center justify-center w-full h-full text-muted-foreground p-4"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="h-6 w-6 mb-2" />
+            <span className="text-xs text-center">
+              Clique para fazer upload
+            </span>
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept={accept}
+            onChange={handleFileChange}
+          />
+        </>
+      )}
+    </Button>
   );
 }
 
@@ -152,6 +126,7 @@ export interface ImageFormFieldProps {
   disabled?: boolean;
   className?: string;
   accept?: string;
+  helperText?: string;
 }
 
 export function ImageFormField({
@@ -164,6 +139,7 @@ export function ImageFormField({
   disabled,
   className,
   accept,
+  helperText,
 }: ImageFormFieldProps) {
   return (
     <FormField
@@ -180,6 +156,7 @@ export function ImageFormField({
               height={height}
               disabled={disabled}
               accept={accept}
+              helperText={helperText}
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
@@ -199,39 +176,6 @@ export interface StandaloneImageUploaderProps {
   disabled?: boolean;
   className?: string;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (fila: File | null, value: string) => void;
   accept?: string;
-}
-
-export function StandaloneImageUploader({
-  label,
-  description,
-  width = 200,
-  height = 150,
-  disabled,
-  className,
-  value,
-  onChange,
-  accept,
-}: StandaloneImageUploaderProps) {
-  return (
-    <div className={cn('space-y-2', className)}>
-      {label && (
-        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          {label}
-        </div>
-      )}
-      <ImageUploader
-        value={value}
-        onChange={onChange}
-        width={width}
-        height={height}
-        disabled={disabled}
-        accept={accept}
-      />
-      {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
-      )}
-    </div>
-  );
 }
