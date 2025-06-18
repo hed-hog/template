@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   FileCode,
   Cog,
+  Type,
 } from 'lucide-react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,8 +63,6 @@ export function TreeView({
         return <Table className="h-4 w-4 text-blue-500" />;
       case 'screen':
         return <LayoutGrid className="h-4 w-4 text-emerald-500" />;
-      case 'menu':
-        return <Menu className="h-4 w-4 text-amber-500" />;
       case 'setting':
         return <Cog className="h-4 w-4 text-violet-500" />;
       case 'library':
@@ -91,28 +90,14 @@ export function TreeView({
                 toggleFolder(item.id);
               } else {
                 onFileSelect(item);
-                if (item.screen) {
-                  onCreateTab({
-                    id: item.screen.id,
-                    title: item.screen.title,
-                    type: 'screen',
-                    content: item.screen,
-                    filePath: item.path,
-                  });
-                } else if (item.table) {
-                  onCreateTab({
-                    id: item.table.id,
-                    title: item.table.name,
-                    type: 'table',
-                    content: item.table,
-                    filePath: item.path,
-                  });
-                } else {
+                if (item.type === 'table' || item.type === 'screen') {
                   onCreateTab({
                     id: item.id,
                     title: item.name,
-                    type: item.type as any,
+                    type: item.type,
+                    content: item.screen,
                     filePath: item.path,
+                    icon: getItemIcon(item),
                   });
                 }
               }

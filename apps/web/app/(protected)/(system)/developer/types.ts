@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 export interface Screen {
   id: string;
   title: string;
@@ -71,7 +73,7 @@ export interface TableIndex {
 export interface FileTreeItem {
   id: string;
   name: string;
-  type: 'file' | 'folder' | 'table' | 'screen' | 'menu' | 'setting' | 'library';
+  type: 'file' | 'folder' | 'table' | 'screen' | 'setting' | 'library';
   path: string;
   children?: FileTreeItem[];
   isOpen?: boolean;
@@ -84,7 +86,8 @@ export interface FileTreeItem {
 export interface Tab {
   id: string;
   title: string;
-  type: 'screen' | 'module' | 'settings' | 'logs' | 'table';
+  type: 'screen' | 'setting' | 'table';
+  icon: ReactNode;
   content?: any;
   isDirty?: boolean;
   filePath?: string;

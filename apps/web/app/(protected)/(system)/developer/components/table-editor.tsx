@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Trash2, Link, Save, Code, Key, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,11 +25,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-import type { DatabaseTable, TableColumn } from '../types';
+import type { DatabaseTable, TableColumn, Tab } from '../types';
 
 interface TableEditorProps {
-  table: DatabaseTable;
-  onSave: (table: DatabaseTable) => void;
+  activeTab: Tab;
+  onSave: (table: Tab) => void;
   onContentChange: (hasChanges: boolean) => void;
 }
 
@@ -49,15 +49,16 @@ const DATA_TYPES = [
 ];
 
 export function TableEditor({
-  table,
+  activeTab: initActiveTab,
   onSave,
   onContentChange,
 }: TableEditorProps) {
-  const [editedTable, setEditedTable] = useState<DatabaseTable>(table);
+  const [tab, setTab] = useState<Tab>(initActiveTab);
+  const [table, setTable] = useState<DatabaseTable | null>(null);
   const [activeTab, setActiveTab] = useState('columns');
 
   const handleSave = () => {
-    onSave(editedTable);
+    onSave(tab);
     onContentChange(false);
   };
 
@@ -73,33 +74,43 @@ export function TableEditor({
       autoIncrement: false,
     };
 
-    setEditedTable((prev) => ({
-      ...prev,
-      columns: [...prev.columns, newColumn],
-    }));
+    setTable((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        columns: [...(prev.columns ?? []), newColumn],
+      } as DatabaseTable;
+    });
     onContentChange(true);
   };
 
   const updateColumn = (columnId: string, updates: Partial<TableColumn>) => {
-    setEditedTable((prev) => ({
-      ...prev,
-      columns: prev.columns.map((col) =>
-        col.id === columnId ? { ...col, ...updates } : col,
-      ),
-    }));
+    setTable((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        columns: prev.columns.map((col) =>
+          col.id === columnId ? { ...col, ...updates } : col,
+        ),
+      };
+    });
     onContentChange(true);
   };
 
   const removeColumn = (columnId: string) => {
-    setEditedTable((prev) => ({
-      ...prev,
-      columns: prev.columns.filter((col) => col.id !== columnId),
-    }));
+    setTable((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        columns: prev.columns.filter((col) => col.id !== columnId),
+      };
+    });
     onContentChange(true);
   };
 
   const generateSQL = () => {
-    const columns = editedTable.columns
+    if (!table) return '';
+    const columns = table.columns
       .map((col) => {
         let sql = `  ${col.name} ${col.type}`;
         if (col.length && ['VARCHAR', 'CHAR'].includes(col.type)) {
@@ -113,7 +124,7 @@ export function TableEditor({
       })
       .join(',\n');
 
-    const primaryKeys = editedTable.columns
+    const primaryKeys = table.columns
       .filter((col) => col.primaryKey)
       .map((col) => col.name);
     const primaryKeySQL =
@@ -121,7 +132,7 @@ export function TableEditor({
         ? `,\n  PRIMARY KEY (${primaryKeys.join(', ')})`
         : '';
 
-    const foreignKeys = editedTable.columns
+    const foreignKeys = table.columns
       .filter((col) => col.foreignKey)
       .map((col) => {
         const fk = col.foreignKey!;
@@ -131,8 +142,40 @@ export function TableEditor({
 
     const foreignKeySQL = foreignKeys ? `,\n${foreignKeys}` : '';
 
-    return `CREATE TABLE ${editedTable.name} (\n${columns}${primaryKeySQL}${foreignKeySQL}\n);`;
+    return `CREATE TABLE ${table.name} (\n${columns}${primaryKeySQL}${foreignKeySQL}\n);`;
   };
+  useEffect(() => {
+    setTab(initActiveTab);
+  }, [initActiveTab]);
+
+  if (!table) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <span className="flex items-center gap-2">
+          <svg
+            className="animate-spin h-4 w-4 text-muted-foreground"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            />
+          </svg>
+          Loading table {tab.title}...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -140,12 +183,12 @@ export function TableEditor({
       <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30 text-sm">
         <div className="flex items-center gap-2">
           <Database className="h-4 w-4 text-blue-500" />
-          <span className="font-medium">{editedTable.name}</span>
+          <span className="font-medium">{table.name}</span>
           <Badge variant="outline" className="text-xs px-1.5 py-0">
             Table
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {editedTable.columns.length} cols
+            {table.columns.length} cols
           </span>
         </div>
         <Button onClick={handleSave} size="sm" className="h-7 px-2 text-xs">
@@ -225,7 +268,7 @@ export function TableEditor({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {editedTable.columns.map((column) => (
+                {table.columns.map((column) => (
                   <TableRow key={column.id} className="h-8 hover:bg-muted/50">
                     <TableCell className="h-8 px-2 py-1">
                       <div className="flex items-center gap-1">
@@ -387,7 +430,7 @@ export function TableEditor({
               </Button>
             </div>
             <div className="space-y-1">
-              {editedTable.indexes.map((index) => (
+              {table.indexes.map((index) => (
                 <div
                   key={index.id}
                   className="flex items-center justify-between p-2 border rounded text-xs bg-muted/20"

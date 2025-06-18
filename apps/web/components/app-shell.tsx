@@ -562,7 +562,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Content */}
-        <div>{children}</div>
+        <div className={cn('overflow-auto')}>{children}</div>
       </main>
     </div>
   );

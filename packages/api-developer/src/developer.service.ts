@@ -428,6 +428,7 @@ export class ${pascal}Service {
               id: `${toKebabCase(dir.name)}-${toKebabCase(table.name)}`,
               name: table.name,
               type: 'table',
+              library: toKebabCase(dir.name),
             })),
           },
           {
@@ -441,6 +442,7 @@ export class ${pascal}Service {
               id: `${toKebabCase(dir.name)}-${toKebabCase(screen.name)}`,
               name: screen.name,
               type: 'screen',
+              library: toKebabCase(dir.name),
             })),
           },
           {

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Tab } from '../types';
 
 type DeveloperContextType = {
@@ -62,6 +62,8 @@ export const DeveloperProvider = ({
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
 
   const handleCreateTab = (tab: Tab) => {
+    console.log('Creating tab:', tab);
+
     const existingTab = tabs.find((t) => t.id === tab.id);
     if (!existingTab) {
       setTabs((prev) => [...prev, tab]);
@@ -80,6 +82,10 @@ export const DeveloperProvider = ({
       );
     }
   };
+
+  useEffect(() => {
+    console.log('Active tab changed:', activeTabId);
+  }, [activeTabId]);
 
   return (
     <DeveloperContext.Provider

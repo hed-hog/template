@@ -8,6 +8,7 @@ import { InstallPage } from '@/components/page/install';
 import { readFile, realpath } from 'fs/promises';
 import ProgressProvider from '@/components/provider/progress-provider';
 import './globals.css';
+import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
 let systemSetting: Record<any, any> = {};
@@ -89,9 +90,9 @@ export default async function RootLayout({
           content={systemSetting['system-slogan'] || 'Administration Panel'}
         />
       </head>
-      <body className={inter.className}>
+      <body className={cn(inter.className, 'overflow-hidden')}>
         <ProgressProvider
-          height="1px"
+          height="2px"
           color={systemSetting['theme-primary'] || '#ff6f00'}
         >
           <QueryClientProvider>

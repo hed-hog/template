@@ -1,10 +1,10 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 import type { Tab } from '../types';
+import { useRef } from 'react';
 
 interface EditorTabsProps {
   tabs: Tab[];
@@ -19,14 +19,26 @@ export function EditorTabs({
   onTabSelect,
   onTabClose,
 }: EditorTabsProps) {
+  const scrollArea = useRef<HTMLDivElement>(null);
+
   if (tabs.length === 0) {
     return null;
   }
 
   return (
     <div className="border-b">
-      <ScrollArea className="w-full whitespace-nowrap" type="scroll">
-        <div className="flex">
+      <div
+        ref={scrollArea}
+        className="flex-1 overflow-auto"
+        style={{ scrollbarWidth: 'none' }}
+        onWheel={(e) => {
+          e.preventDefault();
+          scrollArea.current?.scrollBy({
+            left: e.deltaY > 0 ? 100 : -100,
+          });
+        }}
+      >
+        <div className="flex w-fit">
           {tabs.map((tab) => (
             <div
               key={tab.id}
@@ -38,8 +50,13 @@ export function EditorTabs({
               )}
               onClick={() => onTabSelect(tab.id)}
             >
-              <span className={cn('mr-1', tab.isDirty && 'text-amber-500')}>
-                {tab.isDirty ? '● ' : ''}
+              <span
+                className={cn(
+                  'mr-1 gap-2 flex items-center',
+                  tab.isDirty && 'text-amber-500',
+                )}
+              >
+                {tab.icon}
                 {tab.title}
               </span>
               <button
@@ -49,14 +66,19 @@ export function EditorTabs({
                   onTabClose(tab.id);
                 }}
               >
-                <X className="h-3.5 w-3.5" />
-                <span className="sr-only">Close</span>
+                {tab.isDirty ? (
+                  '● '
+                ) : (
+                  <>
+                    <X className="h-3.5 w-3.5" />
+                    <span className="sr-only">Close</span>
+                  </>
+                )}
               </button>
             </div>
           ))}
         </div>
-        <ScrollBar orientation="horizontal" className="h-2.5" />
-      </ScrollArea>
+      </div>
     </div>
   );
 }

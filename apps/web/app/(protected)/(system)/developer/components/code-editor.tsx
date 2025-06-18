@@ -18,33 +18,33 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Save, Settings, Code } from 'lucide-react';
 
-import type { Screen } from '../types';
+import type { Screen, Tab } from '../types';
 
 interface CodeEditorProps {
-  screen: Screen;
-  onSave: (screen: Screen) => void;
+  activeTab: Tab;
+  onSave: (screen: Tab) => void;
   onContentChange: (content: string) => void;
 }
 
 export function CodeEditor({
-  screen,
+  activeTab: initActiveTab,
   onSave,
   onContentChange,
 }: CodeEditorProps) {
-  const [editedScreen, setEditedScreen] = useState<Screen>(screen);
+  const [tab, setTab] = useState<Tab>(initActiveTab);
   const [activeTab, setActiveTab] = useState('code');
 
   const handleSave = () => {
-    onSave(editedScreen);
+    onSave(tab);
   };
 
   const handleCodeChange = (value: string) => {
-    setEditedScreen((prev) => ({ ...prev, content: value }));
+    setTab((prev) => ({ ...prev, content: value }));
     onContentChange(value);
   };
 
   const handleFieldChange = (field: keyof Screen, value: any) => {
-    setEditedScreen((prev) => ({ ...prev, [field]: value }));
+    setTab((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -52,9 +52,9 @@ export function CodeEditor({
       {/* Editor Header */}
       <div className="flex items-center justify-between p-4 border-b bg-accent/50">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold">{editedScreen.title}</h2>
-          <Badge variant={editedScreen.published ? 'default' : 'secondary'}>
-            {editedScreen.published ? 'Published' : 'Draft'}
+          <h2 className="font-semibold">{tab.title}</h2>
+          <Badge variant={1 === 1 ? 'default' : 'secondary'}>
+            {1 === 1 ? 'Published' : 'Draft'}
           </Badge>
         </div>
         <Button onClick={handleSave} size="sm">
@@ -88,7 +88,7 @@ export function CodeEditor({
               </Label>
               <Textarea
                 id="code-editor"
-                value={editedScreen.content}
+                value={tab.content}
                 onChange={(e) => handleCodeChange(e.target.value)}
                 className="mt-2 h-[calc(100%-2rem)] font-mono text-sm resize-none"
                 placeholder="Enter your React component code here..."
@@ -108,7 +108,7 @@ export function CodeEditor({
                       <Label htmlFor="title">Title</Label>
                       <Input
                         id="title"
-                        value={editedScreen.title}
+                        value={tab.title}
                         onChange={(e) =>
                           handleFieldChange('title', e.target.value)
                         }
@@ -118,7 +118,7 @@ export function CodeEditor({
                       <Label htmlFor="slug">Slug</Label>
                       <Input
                         id="slug"
-                        value={editedScreen.slug}
+                        value={''}
                         onChange={(e) =>
                           handleFieldChange('slug', e.target.value)
                         }
@@ -129,7 +129,7 @@ export function CodeEditor({
                     <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
-                      value={editedScreen.description}
+                      value={''}
                       onChange={(e) =>
                         handleFieldChange('description', e.target.value)
                       }
@@ -148,7 +148,7 @@ export function CodeEditor({
                     <div className="space-y-2">
                       <Label htmlFor="layout">Layout</Label>
                       <Select
-                        value={editedScreen.layout}
+                        value={''}
                         onValueChange={(value) =>
                           handleFieldChange('layout', value)
                         }
@@ -167,7 +167,7 @@ export function CodeEditor({
                     <div className="space-y-2">
                       <Label htmlFor="module">Module</Label>
                       <Select
-                        value={editedScreen.module}
+                        value={''}
                         onValueChange={(value) =>
                           handleFieldChange('module', value)
                         }
@@ -188,7 +188,7 @@ export function CodeEditor({
                     <Label htmlFor="route">Route</Label>
                     <Input
                       id="route"
-                      value={editedScreen.route}
+                      value={''}
                       onChange={(e) =>
                         handleFieldChange('route', e.target.value)
                       }
@@ -198,10 +198,8 @@ export function CodeEditor({
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="published"
-                      checked={editedScreen.published}
-                      onCheckedChange={(checked) =>
-                        handleFieldChange('published', checked)
-                      }
+                      checked={false}
+                      onCheckedChange={(checked) => {}}
                     />
                     <Label htmlFor="published">Published</Label>
                   </div>
@@ -216,7 +214,7 @@ export function CodeEditor({
                   <div className="space-y-2">
                     <Label>Allowed Roles</Label>
                     <div className="flex flex-wrap gap-2">
-                      {editedScreen.roles.map((role) => (
+                      {[''].map((role) => (
                         <Badge key={role} variant="outline">
                           {role}
                         </Badge>

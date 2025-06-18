@@ -45,22 +45,8 @@ export default function DeveloperPage() {
   });
 
   const handleFileSelect = (file: FileTreeItem) => {
+    console.log('File selected:', file);
     // File selection logic handled in onCreateTab
-  };
-
-  const handleScreenSave = (updatedScreen: Screen) => {
-    setScreens((prev) =>
-      prev.map((screen) =>
-        screen.id === updatedScreen.id ? updatedScreen : screen,
-      ),
-    );
-    setTabs((prev) =>
-      prev.map((tab) =>
-        tab.id === updatedScreen.id
-          ? { ...tab, content: updatedScreen, isDirty: false }
-          : tab,
-      ),
-    );
   };
 
   const handleTableSave = (updatedTable: DatabaseTable) => {
@@ -110,16 +96,16 @@ export default function DeveloperPage() {
       case 'screen':
         return (
           <CodeEditor
-            screen={activeTab.content}
-            onSave={handleScreenSave}
+            activeTab={activeTab}
+            onSave={() => {}}
             onContentChange={(content) => handleContentChange(true)}
           />
         );
       case 'table':
         return (
           <TableEditor
-            table={activeTab.content}
-            onSave={handleTableSave}
+            activeTab={activeTab}
+            onSave={() => {}}
             onContentChange={handleContentChange}
           />
         );
