@@ -35,8 +35,6 @@ export const LoginPage = () => {
     console.log('onSubmit', values);
     login(values.email, values.password)
       .then(() => {
-        // Redirecionar ou mostrar mensagem de sucesso
-        console.log('Login bem-sucedido');
         router.push('/');
       })
       .catch((error) => {

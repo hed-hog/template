@@ -1,0 +1,13 @@
+slug: /management/menu
+icon: menu
+name:
+  en: Menu
+  pt: Menu
+description:
+  en: Manage the menu in the system.
+  pt: Gerenciar os menu no sistema.
+relations:
+  route:
+    - where:
+        url:
+          like: /menu%

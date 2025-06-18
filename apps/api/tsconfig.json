@@ -46,8 +46,8 @@
       "@hedhog/api-developer": ["../../packages/api-developer/src"],
       "@hedhog/api-developer/*": ["../../packages/api-developer/src/*"],
 
-      "@hedhog/api-admin": ["../../libraries/api-admin/src"],
-      "@hedhog/api-admin/*": ["../../libraries/api-admin/src/*"]
+      "@hedhog/admin": ["../../libraries/admin/src"],
+      "@hedhog/admin/*": ["../../libraries/admin/src/*"]
     }
   }
 }

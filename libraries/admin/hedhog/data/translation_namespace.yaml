@@ -1,0 +1,33 @@
+- name: translation
+  relations:
+    translation:
+      - locale_id:
+          where:
+            code: en
+        name: slogan
+        value: Administration Panel
+      - locale_id:
+          where:
+            code: pt
+        name: slogan
+        value: Painel de Administração
+      - locale_id:
+          where:
+            code: en
+        name: en
+        value: English
+      - locale_id:
+          where:
+            code: en
+        name: pt
+        value: Portuguese
+      - locale_id:
+          where:
+            code: pt
+        name: en
+        value: Inglês
+      - locale_id:
+          where:
+            code: pt
+        name: pt
+        value: Português

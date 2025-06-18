@@ -1,0 +1,40 @@
+- component_id:
+    where:
+      slug: system-info
+  dashboard_id:
+    where:
+      slug: default
+  width: 4
+  height: 14
+  x_axis: 0
+  y_axis: 0
+- component_id:
+    where:
+      slug: module-installed
+  dashboard_id:
+    where:
+      slug: default
+  width: 4
+  height: 14
+  x_axis: 4
+  y_axis: 0
+- component_id:
+    where:
+      slug: user-summary
+  dashboard_id:
+    where:
+      slug: default
+  width: 4
+  height: 14
+  x_axis: 8
+  y_axis: 0
+- component_id:
+    where:
+      slug: database-stats
+  dashboard_id:
+    where:
+      slug: default
+  width: 12
+  height: 4
+  x_axis: 0
+  y_axis: 14

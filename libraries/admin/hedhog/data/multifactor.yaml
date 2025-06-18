@@ -1,0 +1,8 @@
+- name:
+    en: Email
+    pt: E-mail
+  slug: email
+- name:
+    en: Authenticator
+    pt: Autenticador
+  slug: authenticator

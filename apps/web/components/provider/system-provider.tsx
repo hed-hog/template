@@ -46,6 +46,7 @@ interface SystemContextProps {
   error: Error | null;
   developerMode: boolean;
   installed: boolean;
+  name: string;
 }
 
 const SystemContext = createContext<SystemContextProps | undefined>(undefined);
@@ -54,12 +55,14 @@ type SystemProviderProps = {
   children: React.ReactNode;
   developerMode?: boolean;
   installed?: boolean;
+  name?: string;
 };
 
 export const SystemProvider = ({
   children,
   developerMode = false,
   installed = false,
+  name = 'HedHog',
 }: SystemProviderProps) => {
   const [error, setError] = useState<Error | null>(null);
   const [tempToken, setTempToken] = useState<string | null>(null);
@@ -199,7 +202,7 @@ export const SystemProvider = ({
             config.headers['Authorization'] = `Bearer ${token}`;
           }
           config.headers['language'] = language;
-          console.log('Intercepted request:', config);
+
           return config;
         },
         (error) => {
@@ -209,8 +212,6 @@ export const SystemProvider = ({
 
       axiosInstance.interceptors.response.use(
         (response) => {
-          console.log('Intercepted response:', response);
-
           setError(null);
 
           return response;
@@ -281,6 +282,7 @@ export const SystemProvider = ({
         error,
         developerMode,
         installed,
+        name,
       }}
     >
       {children}

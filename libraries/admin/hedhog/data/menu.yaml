@@ -1,0 +1,150 @@
+- url: /management/setting
+  icon: settings
+  name:
+    en: Setting
+    pt: Configurações
+  slug: /management/setting
+- menu_id:
+    where:
+      slug: /management
+  slug: /settings
+  icon: settings
+  name:
+    en: Settings
+    pt: Configurações
+- menu_id:
+    where:
+      slug: /settings
+  name:
+    en: Setting Group
+    pt: Grupo de Configuração
+  icon: settings
+  url: /settings/setting-group
+  slug: /settings/setting-group
+- menu_id:
+    where:
+      slug: /settings
+  name:
+    en: Setting User
+    pt: Configuração de Usuário
+  icon: user-cog
+  url: /settings/setting-user
+  slug: /settings/setting-user
+- menu_id:
+    where:
+      slug: /settings
+  name:
+    en: Locale
+    pt: Locale
+  icon: world
+  url: /settings/locale
+  slug: /settings/locale
+- url: /
+  icon: dashboard
+  name:
+    en: Dashboard
+    pt: Dashboard
+  slug: /
+- url: /management
+  icon: settings-2
+  name:
+    en: Management
+    pt: Gerenciamento
+  slug: /management
+- menu_id:
+    where:
+      slug: /management
+  url: /management/user
+  icon: user
+  name:
+    en: User
+    pt: Usuários
+  slug: /management/user
+- menu_id:
+    where:
+      slug: /management
+  url: /management/role
+  icon: circles
+  name:
+    en: Role
+    pt: Cargos
+  slug: /management/role
+- menu_id:
+    where:
+      slug: /management
+  url: /management/screen
+  icon: device-tv
+  name:
+    en: Screen
+    pt: Telas
+  slug: /management/screen
+- menu_id:
+    where:
+      slug: /management
+  url: /management/menu
+  icon: menu
+  name:
+    en: Menu
+    pt: Menu
+  slug: /management/menu
+- menu_id:
+    where:
+      slug: /management
+  url: /management/route
+  icon: route
+  name:
+    en: Route
+    pt: Rotas
+  slug: /management/route
+- name:
+    en: Dashboard
+    pt: Dashboard
+  icon: dashboard
+  url: /management/dashboard
+  slug: /management/dashboard
+  menu_id:
+    where:
+      slug: /management
+  relations:
+    role:
+      - where:
+          slug: admin
+- name:
+    en: Dashboard Component
+    pt: Componente do Dashboard
+  icon: dashboard
+  url: /management/dashboard-component
+  slug: /management/dashboard-component
+  menu_id:
+    where:
+      slug: /management
+  relations:
+    role:
+      - where:
+          slug: admin
+- name:
+    en: Dashboard Item
+    pt: Item do Dashboard
+  icon: dashboard
+  url: /management/dashboard-item
+  slug: /management/dashboard-item
+  menu_id:
+    where:
+      slug: /management
+  relations:
+    role:
+      - where:
+          slug: admin
+- name:
+    en: Dashboard User
+    pt: Usuário do Dashboard
+  icon: dashboard
+  url: /management/dashboard-user
+  slug: /management/dashboard-user
+  menu_id:
+    where:
+      slug: /management
+  relations:
+    role:
+      - where:
+          slug: admin

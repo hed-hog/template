@@ -368,18 +368,16 @@ export class ${pascal}Service {
   }
 
   async tree(): Promise<any> {
-    const path = `${process.cwd()}/prisma/schema.prisma`;
-    await this.schema.parse(path);
     const rootPath = await realpath(`${process.cwd()}/../../`);
     const packagesPath = `${rootPath}/libraries`;
 
-    const packages = [];
+    const tree = [];
 
     for (const dir of await this.getPackagesFromDirectory()) {
       if (!dir.isDirectory()) continue;
 
       const tables = [];
-      const tablesPath = `${packagesPath}/${dir.name}/hedhog/tables`;
+      const tablesPath = `${packagesPath}/${dir.name}/hedhog/table`;
       if (await this.exists(tablesPath)) {
         for (const table of await readdir(tablesPath, {
           withFileTypes: true,
@@ -401,39 +399,49 @@ export class ${pascal}Service {
         }
       }
 
-      packages.push({
-        name: dir.name,
-        tables,
-      });
-    }
+      const screens = [];
+      const screensPath = `${packagesPath}/${dir.name}/hedhog/screen`;
 
-    const tree = [];
+      if (await this.exists(screensPath)) {
+        for (const screen of await readdir(screensPath, {
+          withFileTypes: true,
+        })) {
+          if (!screen.isFile()) continue;
 
-    for (const packageInfo of packages) {
+          screens.push({
+            name: screen.name.replace(/\.ya?ml$/, ''),
+          });
+        }
+      }
+
       tree.push({
-        id: toKebabCase(packageInfo.name),
-        name: packageInfo.name,
+        id: toKebabCase(dir.name),
+        name: dir.name,
         type: 'library',
         children: [
           {
-            id: `${toKebabCase(packageInfo.name)}-tables`,
+            id: `${toKebabCase(dir.name)}-table`,
             name: `Tables`,
             type: 'folder',
             color: '#3b82f6',
-            children: packageInfo.tables.map((table) => ({
-              id: `${toKebabCase(packageInfo.name)}-${toKebabCase(table.name)}`,
+            children: tables.map((table) => ({
+              id: `${toKebabCase(dir.name)}-${toKebabCase(table.name)}`,
               name: table.name,
               type: 'table',
             })),
           },
           {
-            id: 'screens',
+            id: `${toKebabCase(dir.name)}-screen`,
             name: 'Screens',
             type: 'folder',
             path: 'screens',
             isOpen: false,
             color: '#10b981',
-            children: [],
+            children: screens.map((screen) => ({
+              id: `${toKebabCase(dir.name)}-${toKebabCase(screen.name)}`,
+              name: screen.name,
+              type: 'screen',
+            })),
           },
           {
             id: 'menus',

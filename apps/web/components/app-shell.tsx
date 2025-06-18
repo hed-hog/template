@@ -146,7 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const [language, setLanguage] = useState('pt-br');
   const { theme, setTheme } = useTheme();
-  const { userData, logout, menu, error, developerMode } = useSystem();
+  const { userData, logout, menu, error, developerMode, name } = useSystem();
 
   const toggleExpanded = () => {
     setExpanded((prev) => {
@@ -200,12 +200,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         >
           <div className="flex w-full items-center">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white">
-              X
-            </div>
-            {expanded && (
-              <span className="ml-3 font-semibold flex-1">HedHog</span>
-            )}
+            <Link href="/" className="flex-1 flex">
+              <Button variant="ghost" className="flex-1 flex items-center">
+                <img src="/icon.png" alt={name} className="w-8 h-8" />
+                {expanded && (
+                  <span className="ml-3 font-semibold flex-1 text-left">
+                    {name}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="icon"

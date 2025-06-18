@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@hedhog/api": "workspace:*",
-    "@hedhog/api-admin": "workspace:*",
+    "@hedhog/admin": "workspace:*",
     "@hedhog/api-developer": "workspace:*",
     "@hedhog/api-healthy": "workspace:*",
     "@hedhog/api-locale": "workspace:*",

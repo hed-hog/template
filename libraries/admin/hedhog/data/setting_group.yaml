@@ -1,0 +1,162 @@
+- slug: general
+  icon: settings
+  name:
+    en: General
+    pt: Geral
+  description:
+    en: General settings and configurations.
+    pt: Configurações e definições gerais.
+  relations:
+    setting:
+      - slug: url
+        type: string
+        name:
+          en: Base URL
+          pt: URL Base
+        description:
+          en: The base URL of the system
+          pt: A URL base do sistema
+        value: http://localhost:3200
+        user_override: false
+- slug: multifactor
+  icon: lock-password
+  name:
+    en: Multifactor
+    pt: Multifator
+  description:
+    en: Configure the multifactor authentication settings.
+    pt: Configurar as definições de autenticação multifatorial.
+  relations:
+    setting:
+      - slug: mfa-issuer
+        type: string
+        name:
+          en: Issuer
+          pt: Emissor
+        description:
+          en: The issuer of the multifactor authentication
+          pt: O emissor da autenticação multifatorial
+        value: Hedhog
+        user_override: false
+      - slug: mfa-window
+        type: number
+        name:
+          en: Window
+          pt: Janela
+        description:
+          en: The window value defines the tolerance margin for multifactor authentication, allowing to verify tokens that are within a specific range of counters (HOTP) or time periods (TOTP), both before and after the expected value.
+          pt: O valor window define a margem de tolerância para autenticação multifatorial, permitindo verificar tokens que estão dentro de um intervalo específico de contadores (HOTP) ou períodos de tempo (TOTP), tanto antes quanto depois do valor esperado.
+        value: 1
+        user_override: false
+      - slug: mfa-setp
+        type: number
+        name:
+          en: Step
+          pt: Passo
+        description:
+          en: The step in seconds that determines how long a code will be available in the user's app for multifactor authentication
+          pt: O passo em segundos que determina por quanto tempo um código ficará disponível no aplicativo do usuário para autenticação multifatorial
+        value: 30
+        user_override: false
+- slug: localization
+  icon: world
+  name:
+    en: Localization
+    pt: Localização
+  description:
+    en: Configure the localization setting.
+    pt: Configurar as definições de localização.
+  relations:
+    setting:
+      - slug: language
+        type: string
+        name:
+          en: Default Language
+          pt: Idioma Padrão
+        description:
+          en: The system default language, each user can have their own preferred language
+          pt:
+            O idioma padrão do sistema, cada usuário pode ter o seu próprio idioma
+            preferido
+        value: en
+        user_override: true
+      - slug: timezone
+        type: string
+        name:
+          en: Timezone
+          pt: Fuso Horário
+        description:
+          en: The timezone to use
+          pt: O fuso horário a utilizar
+        value: UTC
+        user_override: true
+- slug: oauth
+  icon: brand-auth0
+  name:
+    en: OAuth
+    pt: OAuth
+  description:
+    en: OAuth settings and configurations.
+    pt: Configurações e definições do OAuth.
+  relations:
+    setting:
+      - slug: google_client_id
+        type: string
+        name:
+          en: Google Client ID
+          pt: ID do Cliente Google
+        description:
+          en: The client ID for Google OAuth
+          pt: O ID do cliente para o OAuth do Google
+        value: ''
+        user_override: false
+      - slug: google_client_secret
+        type: string
+        name:
+          en: Google Client Secret
+          pt: Segredo do Cliente Google
+        description:
+          en: The client secret for Google OAuth
+          pt: O segredo do cliente para o OAuth do Google
+        value: ''
+        user_override: false
+      - slug: google_scopes
+        type: array
+        name:
+          en: Google Scopes
+          pt: Escopos do Google
+        description:
+          en: The scopes for Google OAuth
+          pt: Os escopos para o OAuth do Google
+        value: '["email","profile"]'
+        user_override: false
+      - slug: facebook_client_id
+        type: string
+        name:
+          en: Facebook Client ID
+          pt: ID do Cliente Facebook
+        description:
+          en: The client ID for Facebook OAuth
+          pt: O ID do cliente para o OAuth do Facebook
+        value: ''
+        user_override: false
+      - slug: facebook_client_secret
+        type: string
+        name:
+          en: Facebook Client Secret
+          pt: Segredo do Cliente Facebook
+        description:
+          en: The client secret for Facebook OAuth
+          pt: O segredo do cliente para o OAuth do Facebook
+        value: ''
+        user_override: false
+      - slug: facebook_scopes
+        type: array
+        name:
+          en: Facebook Scopes
+          pt: Escopos do Facebook
+        description:
+          en: The scopes for Facebook OAuth
+          pt: Os escopos para o OAuth do Facebook
+        value: '["id","emails","name","displayName","photos"]'
+        user_override: false

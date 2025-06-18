@@ -1,0 +1,75 @@
+- slug: admin
+  name:
+    en: Administrator
+    pt: Administrador
+  description:
+    en: System administrator with full access.
+    pt: Administrador do sistema com acesso total.
+  relations:
+    user:
+      - where:
+          email: root@hedhog.com
+    menu:
+      - where:
+          id:
+            gte: 0
+    route:
+      - where:
+          id:
+            gte: 0
+    screen:
+      - where:
+          id:
+            gte: 0
+- slug: screen-manager
+  name:
+    en: Screen Manager
+    pt: Gerente de Telas
+  description:
+    en: Manage screen in the system.
+    pt: Gerenciar telas no sistema.
+  relations:
+    user:
+      - where:
+          email: user@hedhog.com
+    route:
+      - where:
+          url:
+            like: /screen%
+    menu:
+      - where:
+          slug: /
+- slug: admin-access
+  name:
+    en: Admin Access
+    pt: Acesso de Administrador
+  description:
+    en: Access to administrative features.
+    pt: Acesso a funcionalidades administrativas.
+  relations:
+    user:
+      - where:
+          email: root@hedhog.com
+      - where:
+          email: user@hedhog.com
+    route:
+      - where:
+          method: GET
+          url:
+            in:
+              - /menu/system
+              - /auth/verify
+              - /setting/group/:slug
+              - /setting/group
+      - where:
+          method: PUT
+          url:
+            in:
+              - /setting/:slug
+- slug: user
+  name:
+    en: User
+    pt: Usuário
+  description:
+    en: Normal user of the system.
+    pt: Usuário comum do sistema.

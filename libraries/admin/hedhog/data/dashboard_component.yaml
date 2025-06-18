@@ -1,0 +1,28 @@
+- slug: system-info
+  path: system-info
+  width: 4
+  height: 14
+  name:
+    en: System Info
+    pt: Informações do Sistema
+- slug: module-installed
+  path: module-installed
+  width: 4
+  height: 14
+  name:
+    en: Modules Installed
+    pt: Módulos Instalados
+- slug: user-summary
+  path: user-summary
+  width: 4
+  height: 14
+  name:
+    en: Users Summary
+    pt: Resumo de Usuários
+- slug: database-stats
+  path: database-stats
+  width: 12
+  height: 4
+  name:
+    en: Database Stats
+    pt: Estatísticas do Banco de Dados

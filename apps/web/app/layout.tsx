@@ -6,23 +6,28 @@ import { Inter } from 'next/font/google';
 import type React from 'react';
 import { InstallPage } from '@/components/page/install';
 import { readFile, realpath } from 'fs/promises';
+import ProgressProvider from '@/components/provider/progress-provider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 let systemSetting: Record<any, any> = {};
 
 async function getSystemSetting() {
+  if (Object.keys(systemSetting).length > 0) {
+    return systemSetting;
+  }
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/setting-system`,
     );
-    return Object.assign(
+
+    return (systemSetting = Object.assign(
       {
         setting: {},
         locales: [],
       },
       res.json(),
-    );
+    ));
   } catch (error) {
     return {
       setting: {},
@@ -67,9 +72,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  systemSetting = await getSystemSetting();
   const hedhogData = await getHedHogFile();
-
-  console.log({ hedhogData });
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
@@ -77,7 +81,7 @@ export default async function RootLayout({
         <title>{systemSetting['system-name'] || 'HedHog'}</title>
         <meta
           name="theme-color"
-          content={systemSetting['theme-primary'] || '26 100% 50%'}
+          content={systemSetting['theme-primary'] || '#ff6f00'}
         />
         <link rel="icon" href={systemSetting['icon-url'] || '/favicon.ico'} />
         <meta
@@ -86,16 +90,21 @@ export default async function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <QueryClientProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SystemProvider
-              developerMode={hedhogData.developerMode}
-              installed={hedhogData.installed}
-            >
-              {hedhogData.installed ? children : <InstallPage />}
-            </SystemProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
+        <ProgressProvider
+          height="1px"
+          color={systemSetting['theme-primary'] || '#ff6f00'}
+        >
+          <QueryClientProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <SystemProvider
+                developerMode={hedhogData.developerMode}
+                installed={hedhogData.installed}
+              >
+                {hedhogData.installed ? children : <InstallPage />}
+              </SystemProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </ProgressProvider>
       </body>
     </html>
   );

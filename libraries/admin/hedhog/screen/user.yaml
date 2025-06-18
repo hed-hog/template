@@ -1,0 +1,13 @@
+slug: /management/user
+icon: user
+name:
+  en: User
+  pt: Usuários
+description:
+  en: Manage user in the system.
+  pt: Gerenciar usuários no sistema.
+relations:
+  route:
+    - where:
+        url:
+          like: /user%

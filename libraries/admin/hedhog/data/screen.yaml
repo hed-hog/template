@@ -1,0 +1,100 @@
+- name:
+    en: Setting Group
+    pt: Grupo de Configuração
+  slug: /settings/setting-group
+  description:
+    en: Screen to manage a group of settings
+    pt: Tela para gerenciar grupo de configurações
+  icon: settings
+- name:
+    en: Setting User
+    pt: Configuração de Usuário
+  slug: /settings/setting-user
+  description:
+    en: Screen to manage user settings
+    pt: Tela para gerenciar configurações de usuário
+  icon: user-cog
+- name:
+    en: Locale
+    pt: Locale
+  slug: /settings/locale
+  description:
+    en: Screen to manage locale
+    pt: Tela para gerenciar localização/tradução
+  icon: world
+  relations:
+    route:
+      - where:
+          url:
+            like: /locale%
+- slug: /management/role
+  icon: circles
+  name:
+    en: Role
+    pt: Funções
+  description:
+    en: Manage role assigned to user.
+    pt: Gerenciar funções atribuídas a usuários.
+  relations:
+    route:
+      - where:
+          url:
+            like: /role%
+- slug: /management/screen
+  icon: device-tv
+  name:
+    en: Screen
+    pt: Telas
+  description:
+    en: Manage the screen available in the system.
+    pt: Gerenciar as telas disponíveis no sistema.
+  relations:
+    route:
+      - where:
+          url:
+            like: /screen%
+- slug: /management/route
+  icon: route
+  name:
+    en: Route
+    pt: Rotas
+  description:
+    en: Manage route for navigation within the system.
+    pt: Gerenciar rotas para navegação dentro do sistema.
+  relations:
+    route:
+      - where:
+          url:
+            like: /route%
+- name:
+    en: Dashboard
+    pt: Dashboard
+  slug: dashboard
+  description:
+    en: Screen to manage dashboard
+    pt: Tela para gerenciar dashboard
+  icon: dashboard
+- name:
+    en: Dashboard Component
+    pt: Componente de Dashboard
+  slug: dashboard-component
+  description:
+    en: Screen to manage dashboard component
+    pt: Tela para gerenciar componentes de dashboard
+  icon: dashboard
+- name:
+    en: Dashboard User
+    pt: Componente de Dashboard
+  slug: dashboard-user
+  description:
+    en: Screen to manage dashboard user
+    pt: Tela para gerenciar usuários de dashboard
+  icon: dashboard
+- name:
+    en: Dashboard Item
+    pt: Item de Dashboard
+  slug: dashboard-item
+  description:
+    en: Screen to manage dashboard item
+    pt: Tela para gerenciar itens de dashboard
+  icon: dashboard

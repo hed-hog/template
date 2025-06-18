@@ -6,7 +6,7 @@ import { PrismaModule } from '@hedhog/api-prisma';
 import { PaginationModule } from '@hedhog/api-pagination';
 import { MailModule } from '@hedhog/api-mail';
 import { LocaleModule } from '@hedhog/api-locale';
-import { AdminModule } from '@hedhog/api-admin';
+import { AdminModule } from '@hedhog/admin';
 import { HealthyModule } from '@hedhog/api-healthy';
 import { DeveloperModule } from '@hedhog/api-developer';
 

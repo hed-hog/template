@@ -1,0 +1,17 @@
+title:
+  en: Dashboard User
+  pt: Usuário de Dashboard
+menu:
+  menu_id:
+    where:
+      slug: /management
+  url: /management/dashboard-user
+  icon: adjustments
+  name:
+    en: Dashboard User
+    pt: Usuário de Dashboard
+  slug: /management/dashboard-user
+  relations:
+    role:
+      - where:
+          slug: admin

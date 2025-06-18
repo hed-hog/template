@@ -1,0 +1,13 @@
+slug: /management/setting
+icon: settings
+name:
+  en: Setting
+  pt: Configurações
+description:
+  en: Manage system setting and configurations.
+  pt: Gerenciar configurações e definições do sistema.
+relations:
+  route:
+    - where:
+        url:
+          like: /setting%

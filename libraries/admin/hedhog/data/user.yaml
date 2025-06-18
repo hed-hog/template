@@ -1,0 +1,8 @@
+- name: Administrator
+  email: root@hedhog.com
+  password:
+    hash: changeme
+- name: User
+  email: user@hedhog.com
+  password:
+    hash: changeme

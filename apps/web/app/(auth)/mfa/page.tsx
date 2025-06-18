@@ -28,7 +28,6 @@ export default function Page() {
   });
 
   function onSubmit(values: z.infer<typeof FormSchema>) {
-    console.log('onSubmit', values);
     loginWithMFA(values.code)
       .then(() => {
         // Redirecionar ou mostrar mensagem de sucesso
