@@ -9,6 +9,7 @@ import { readFile, realpath } from 'fs/promises';
 import ProgressProvider from '@/components/provider/progress-provider';
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 let systemSetting: Record<any, any> = {};
@@ -97,6 +98,7 @@ export default async function RootLayout({
         >
           <QueryClientProvider>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <Toaster />
               <SystemProvider
                 developerMode={hedhogData.developerMode}
                 installed={hedhogData.installed}

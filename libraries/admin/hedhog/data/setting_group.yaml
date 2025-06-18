@@ -40,6 +40,7 @@
         user_override: false
       - slug: mfa-window
         type: number
+        component: input-number
         name:
           en: Window
           pt: Janela
@@ -50,6 +51,7 @@
         user_override: false
       - slug: mfa-setp
         type: number
+        component: input-number
         name:
           en: Step
           pt: Passo
@@ -108,7 +110,7 @@
         description:
           en: The client ID for Google OAuth
           pt: O ID do cliente para o OAuth do Google
-        value: ''
+        value: ""
         user_override: false
       - slug: google_client_secret
         type: string
@@ -118,7 +120,7 @@
         description:
           en: The client secret for Google OAuth
           pt: O segredo do cliente para o OAuth do Google
-        value: ''
+        value: ""
         user_override: false
       - slug: google_scopes
         type: array
@@ -138,7 +140,7 @@
         description:
           en: The client ID for Facebook OAuth
           pt: O ID do cliente para o OAuth do Facebook
-        value: ''
+        value: ""
         user_override: false
       - slug: facebook_client_secret
         type: string
@@ -148,7 +150,7 @@
         description:
           en: The client secret for Facebook OAuth
           pt: O segredo do cliente para o OAuth do Facebook
-        value: ''
+        value: ""
         user_override: false
       - slug: facebook_scopes
         type: array
@@ -160,3 +162,384 @@
           pt: Os escopos para o OAuth do Facebook
         value: '["id","emails","name","displayName","photos"]'
         user_override: false
+- slug: file-storage
+  icon: folder
+  name:
+    en: File Storage
+    pt: Armazenamento
+  description:
+    en: Configure the file storage setting.
+    pt: Configurar as definições de armazenamento de arquivos.
+  relations:
+    setting:
+      - slug: storage
+        type: string
+        name:
+          en: Storage Provider
+          pt: Provedor de Armazenamento
+        description:
+          en: The storage to use
+          pt: O armazenamento a utilizar
+        value: local
+      - slug: storage-accept-mimetype
+        type: string
+        name:
+          en: Accept Mime Types
+          pt: Aceitar Tipos MIME
+        description:
+          en: The accepted mime types
+          pt: Os tipos MIME aceitos
+        value: application/pdf,image/jpeg,image/png,image/gif,image/webp,audio/mp3,video/mp4
+      - slug: storage-max-size
+        type: number
+        name:
+          en: Max File Size
+          pt: Tamanho Máximo do Arquivo
+        description:
+          en: The maximum file size in bytes
+          pt: O tamanho máximo do arquivo em bytes
+        value: 10485760
+      - slug: storage-local-path
+        type: string
+        name:
+          en: Local Path
+          pt: Caminho Local
+        description:
+          en: The local path to store file
+          pt: O caminho local para armazenar arquivos
+        value: storage
+      - slug: storage-s3-key
+        type: string
+        name:
+          en: S3 Key
+          pt: Chave S3
+        description:
+          en: The S3 key
+          pt: A chave S3
+        value: ""
+      - slug: storage-s3-secret
+        type: string
+        name:
+          en: S3 Secret
+          pt: Segredo S3
+        description:
+          en: The S3 secret
+          pt: O segredo S3
+        value: ""
+      - slug: storage-s3-region
+        type: string
+        name:
+          en: S3 Region
+          pt: Região S3
+        description:
+          en: The S3 region
+          pt: A região S3
+        value: ""
+      - slug: storage-s3-bucket
+        type: string
+        name:
+          en: S3 Bucket
+          pt: Bucket S3
+        description:
+          en: The S3 bucket
+          pt: O bucket S3
+        value: ""
+      - slug: storage-abs-account
+        type: string
+        name:
+          en: ABS Account
+          pt: Conta ABS
+        description:
+          en: The Azure Blob Storage account
+          pt: A conta de armazenamento de blob do Azure
+        value: ""
+      - slug: storage-abs-key
+        type: string
+        name:
+          en: ABS Key
+          pt: Chave ABS
+        description:
+          en: The Azure Blob Storage key
+          pt: A chave de armazenamento de blob do Azure
+        value: ""
+      - slug: storage-abs-container
+        type: string
+        name:
+          en: ABS Container
+          pt: Container ABS
+        description:
+          en: The Azure Blob Storage container
+          pt: O contêiner de armazenamento de blob do Azure
+        value: ""
+      - slug: storage-gcs-keyfile
+        type: string
+        name:
+          en: GCS Keyfile
+          pt: Arquivo de Chave GCS
+        description:
+          en: The Google Cloud Storage keyfile
+          pt: O arquivo de chave de armazenamento do Google Cloud
+        value: ""
+- slug: appearance
+  icon: palette
+  name:
+    en: Appearance
+    pt: Aparência
+  description:
+    en: Configure the appearance setting.
+    pt: Configurar as definições de aparência.
+  relations:
+    setting:
+      - slug: theme-primary
+        type: string
+        name:
+          en: Primary Color
+          pt: Cor Primária
+        description:
+          en: The primary color to use
+          pt: A cor primária a utilizar
+        value: "#70e2ff"
+      - slug: theme-primary-foreground
+        type: string
+        name:
+          en: Primary Color Foreground
+          pt: Contraste da Cor Primária
+        description:
+          en: The primary color foreground to use
+          pt: O contraste da cor primária a utilizar
+        value: "#09203f"
+      - slug: theme-secondary
+        type: string
+        name:
+          en: Secondary Color
+          pt: Cor Secundária
+        description:
+          en: The secondary color to use
+          pt: A cor secundária a utilizar
+        value: "#09203f"
+      - slug: theme-secondary-foreground
+        type: string
+        name:
+          en: Secondary Color Foreground
+          pt: Contraste da Cor Secundária
+        description:
+          en: The secondary color foreground to use
+          pt: O contraste da cor secundária a utilizar
+        value: "#70e2ff"
+      - slug: theme-accent
+        type: string
+        name:
+          en: Accent Color
+          pt: Cor de Realce
+        description:
+          en: The accent color to use
+          pt: A cor de realce a utilizar
+        value: "#09203f"
+      - slug: theme-accent-foreground
+        type: string
+        name:
+          en: Accent Color Foreground
+          pt: Contraste da Cor de Realce
+        description:
+          en: The accent color foreground to use
+          pt: O contraste da cor de realce a utilizar
+        value: "#70e2ff"
+      - slug: theme-muted
+        type: string
+        name:
+          en: Muted Color
+          pt: Cor Suave
+        description:
+          en: The muted color to use
+          pt: A cor suave a utilizar
+        value: "#09203f"
+      - slug: theme-muted-foreground
+        type: string
+        name:
+          en: Muted Color Foreground
+          pt: Contraste da Cor Suave
+        description:
+          en: The muted color foreground to use
+          pt: O contraste da cor suave a utilizar
+        value: "#E2E2E2"
+      - slug: theme-radius
+        type: string
+        name:
+          en: Radius
+          pt: Raio
+        description:
+          en: The radius to use
+          pt: O raio a utilizar
+        value: "0.5"
+      - slug: theme-font
+        type: string
+        name:
+          en: Font Family
+          pt: Família de Fontes
+        description:
+          en: The font to use
+          pt: A fonte a utilizar
+        value: ui-sans-serif, system-ui, sans-serif
+      - slug: theme-text-size
+        type: string
+        name:
+          en: Text Size
+          pt: Tamanho do Texto
+        description:
+          en: Text size of the application
+          pt: Tamanho do texto da aplicação
+        value: "1"
+      - slug: menu-width
+        type: string
+        name:
+          en: Menu Width
+          pt: Largura do Menu
+        description:
+          en: Menu width of the application
+          pt: Largura do Menu da aplicação
+        value: "16"
+      - slug: image-url
+        type: string
+        name:
+          en: System Image URL
+          pt: URL da Imagem do Sistema
+        description:
+          en: System Image URL to use
+          pt: URL da Imagem do Sistema a utilizar
+        value: /images/favicon-dark.png
+      - slug: icon-url
+        type: string
+        name:
+          en: System Icon URL
+          pt: URL da Ícone do Sistema
+        description:
+          en: System Icon URL to use
+          pt: URL da Ícone do Sistema a utilizar
+        value: /images/favicon-dark.png
+      - slug: system-name
+        type: string
+        name:
+          en: System Name
+          pt: Nome do Sistema
+        description:
+          en: System Name to use
+          pt: Nome do Sistema a utilizar
+        value: Hedhog
+      - slug: system-slogan
+        type: string
+        name:
+          en: System Slogan
+          pt: Slogan do Sistema
+        description:
+          en: System Slogan to use
+          pt: Slogan do Sistema a utilizar
+        value: Administration Panel
+- slug: payment
+  icon: wallet
+  name:
+    en: Payment
+    pt: Pagamento
+  description:
+    en: Payment settings
+    pt: Configurações de pagamento
+  relations:
+    setting:
+      - slug: payment-provider
+        type: string
+        name:
+          en: Payment Provider
+          pt: Provedor de Pagamento
+        description:
+          en: The payment provider to use
+          pt: O provedor de pagamento a utilizar
+        value: MERCADO_PAGO
+      - slug: payment-currency
+        type: string
+        name:
+          en: Currency
+          pt: Moeda
+        description:
+          en: The currency to use
+          pt: A moeda a utilizar
+        value: BRL
+      - slug: payment-discount-cumulative
+        type: boolean
+        name:
+          en: Cumulative Discount
+          pt: Desconto Cumulativo
+        description:
+          en: If the discount is cumulative
+          pt: Se o desconto é cumulativo do pagamento á vista / PIX com o desconto do cupom
+        value: false
+      - slug: payment-method-credit-enabled
+        type: boolean
+        name:
+          en: Credit Card Enabled
+          pt: Cartão de Crédito Habilitado
+        description:
+          en: If the credit card payment method is enabled
+          pt: Se o método de pagamento com cartão de crédito está habilitado
+        value: true
+      - slug: payment-method-debit-enabled
+        type: boolean
+        name:
+          en: Debit Card Enabled
+          pt: Cartão de Débito Habilitado
+        description:
+          en: If the debit card payment method is enabled
+          pt: Se o método de pagamento com cartão de débito está habilitado
+        value: true
+      - slug: payment-method-pix-enabled
+        type: boolean
+        name:
+          en: PIX Enabled
+          pt: PIX Habilitado
+        description:
+          en: If the PIX payment method is enabled
+          pt: Se o método de pagamento com PIX está habilitado
+        value: true
+      - slug: payment-max-installments
+        type: number
+        name:
+          en: Max Installments
+          pt: Máximo de Parcelas
+        description:
+          en: The maximum number of installments allowed in the system. This setting will override the item installment setting.
+          pt: O número máximo de parcelas permitido no sistema. Esta configuração sobreporá a configuração de parcelamento por item.
+        value: 12
+      - slug: payment-mercado-pago-token
+        type: string
+        name:
+          en: Mercado Pago Token
+          pt: Token do Mercado Pago
+        description:
+          en: The token to use with Mercado Pago
+          pt: O token a utilizar com o Mercado Pago
+        value: ""
+      - slug: payment-mercado-pago-public-key
+        type: string
+        name:
+          en: Mercado Pago Client ID
+          pt: ID do Cliente do Mercado Pago
+        description:
+          en: The client ID to use with Mercado Pago
+          pt: O ID do cliente a utilizar com o Mercado Pago
+        value: ""
+      - slug: payment-stripe-token
+        type: string
+        name:
+          en: Stripe Token
+          pt: Token do Stripe
+        description:
+          en: The token to use with Stripe
+          pt: O token a utilizar com o Stripe
+        value: ""
+      - slug: payment-stripe-public-key
+        type: string
+        name:
+          en: Stripe Client ID
+          pt: ID do Cliente do Stripe
+        description:
+          en: The client ID to use with Stripe
+          pt: O ID do cliente a utilizar com o Stripe
+        value: ""
