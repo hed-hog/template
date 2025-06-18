@@ -47,6 +47,7 @@ interface SystemContextProps {
   developerMode: boolean;
   installed: boolean;
   name: string;
+  language: string;
 }
 
 const SystemContext = createContext<SystemContextProps | undefined>(undefined);
@@ -283,6 +284,7 @@ export const SystemProvider = ({
         developerMode,
         installed,
         name,
+        language,
       }}
     >
       {children}

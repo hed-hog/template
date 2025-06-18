@@ -81,6 +81,7 @@ export interface FileTreeItem {
   table?: DatabaseTable;
   module?: string;
   color?: string;
+  library: string;
 }
 
 export interface Tab {
@@ -91,6 +92,7 @@ export interface Tab {
   content?: any;
   isDirty?: boolean;
   filePath?: string;
+  library: string;
 }
 
 export interface SystemStatus {

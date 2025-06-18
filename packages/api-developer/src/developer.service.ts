@@ -9,6 +9,33 @@ import { toKebabCase, toPascalCase } from '@hedhog/api';
 export class DeveloperService {
   constructor(private readonly schema: SchemaService) {}
 
+  async table(library: string, tableName: string) {
+    const rootPath = await realpath(`${process.cwd()}/../../`);
+
+    let tablePath = `${rootPath}/libraries/${library}/hedhog/table/${tableName}.yaml`;
+    if (!(await this.exists(tablePath))) {
+      tablePath = `${rootPath}/libraries/${library}/hedhog/table/${tableName}.yml`;
+    }
+
+    if (!(await this.exists(tablePath))) {
+      throw new BadRequestException(`Table ${tableName} does not exist`);
+    }
+
+    try {
+      const yamlData = parse(await readFile(tablePath, 'utf8'));
+      return {
+        id: `${library}-${tableName}`,
+        name: tableName,
+        library: library,
+        columns: yamlData.columns || [],
+      };
+    } catch (error: any) {
+      throw new BadRequestException(
+        `Failed to parse table YAML: ${error.message}`,
+      );
+    }
+  }
+
   async exists(path: string): Promise<boolean> {
     try {
       await realpath(path);

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { DeveloperService } from './developer.service';
 import { CreatePackageDto } from './dto/create-package.dto';
 
@@ -7,8 +7,16 @@ export class DeveloperController {
   constructor(private readonly service: DeveloperService) {}
 
   @Get('tree')
-  async test() {
+  async tree() {
     return this.service.tree();
+  }
+
+  @Get('table/:library/:tableName')
+  async table(
+    @Param('tableName') tableName: string,
+    @Param('library') library: string,
+  ) {
+    return this.service.table(library, tableName);
   }
 
   @Post('package')

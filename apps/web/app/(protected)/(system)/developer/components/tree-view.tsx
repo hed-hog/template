@@ -98,6 +98,7 @@ export function TreeView({
                     content: item.screen,
                     filePath: item.path,
                     icon: getItemIcon(item),
+                    library: item.library,
                   });
                 }
               }

@@ -26,6 +26,14 @@ import {
 } from '@/components/ui/table';
 
 import type { DatabaseTable, TableColumn, Tab } from '../types';
+import { useSystem } from '@/components/provider/system-provider';
+import { useQuery } from '@tanstack/react-query';
+import {
+  IconCalendar,
+  IconColumns,
+  IconId,
+  IconLink,
+} from '@tabler/icons-react';
 
 interface TableEditorProps {
   activeTab: Tab;
@@ -54,8 +62,89 @@ export function TableEditor({
   onContentChange,
 }: TableEditorProps) {
   const [tab, setTab] = useState<Tab>(initActiveTab);
-  const [table, setTable] = useState<DatabaseTable | null>(null);
   const [activeTab, setActiveTab] = useState('columns');
+  const { request, language } = useSystem();
+
+  const initialData = {
+    id: tab.id,
+    name: tab.title,
+    schema: tab.library,
+    columns: [],
+    indexes: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    rowCount: 0,
+    size: '0 B',
+  };
+
+  const { data } = useQuery<DatabaseTable>({
+    queryKey: [tab.id, language],
+    queryFn: () =>
+      request({
+        url: `/developer/table/${tab.library}/${tab.title}`,
+      }),
+    initialData,
+  });
+
+  let table: DatabaseTable = {
+    ...initialData,
+    ...data,
+    columns: data.columns.map((col) => {
+      switch (col.type) {
+        case 'pk':
+          return {
+            ...col,
+            type: 'INTEGER',
+            primaryKey: true,
+            autoIncrement: true,
+            nullable: false,
+            unique: true,
+            unsigned: true,
+            name: 'id',
+          } as TableColumn;
+        case 'fk':
+          return {
+            ...col,
+            type: 'INTEGER',
+            foreignKey: {
+              table: (col as any)?.references?.table || '',
+              column: (col as any)?.references?.column || 'id',
+              onDelete: (col as any)?.references?.onDelete || 'CASCADE',
+              onUpdate: (col as any)?.references?.onUpdate || 'CASCADE',
+            },
+          } as TableColumn;
+        case 'slug':
+          return {
+            ...col,
+            name: col.name || 'slug',
+            length: col.length || 255,
+            unique: true,
+          } as TableColumn;
+        case 'created_at':
+        case 'updated_at':
+          return {
+            ...col,
+            name: col.type === 'created_at' ? 'created_at' : 'updated_at',
+            nullable: false,
+            defaultValue: 'CURRENT_TIMESTAMP',
+          } as TableColumn;
+        default:
+          if (!col.type) {
+            col.type = 'VARCHAR';
+          }
+
+          if (col.type.startsWith('locale_')) {
+            col.type = 'LOCALE';
+          }
+
+          return {
+            ...col,
+            type: col.type || 'VARCHAR',
+            length: col.length || 255,
+          } as TableColumn;
+      }
+    }),
+  };
 
   const handleSave = () => {
     onSave(tab);
@@ -74,17 +163,12 @@ export function TableEditor({
       autoIncrement: false,
     };
 
-    setTable((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        columns: [...(prev.columns ?? []), newColumn],
-      } as DatabaseTable;
-    });
+    table.columns.push(newColumn);
     onContentChange(true);
   };
 
   const updateColumn = (columnId: string, updates: Partial<TableColumn>) => {
+    /*
     setTable((prev) => {
       if (!prev) return null;
       return {
@@ -93,23 +177,25 @@ export function TableEditor({
           col.id === columnId ? { ...col, ...updates } : col,
         ),
       };
-    });
+    });*/
     onContentChange(true);
   };
 
   const removeColumn = (columnId: string) => {
+    /*
     setTable((prev) => {
       if (!prev) return null;
       return {
         ...prev,
         columns: prev.columns.filter((col) => col.id !== columnId),
       };
-    });
+    });*/
     onContentChange(true);
   };
 
   const generateSQL = () => {
     if (!table) return '';
+    /*
     const columns = table.columns
       .map((col) => {
         let sql = `  ${col.name} ${col.type}`;
@@ -143,6 +229,7 @@ export function TableEditor({
     const foreignKeySQL = foreignKeys ? `,\n${foreignKeys}` : '';
 
     return `CREATE TABLE ${table.name} (\n${columns}${primaryKeySQL}${foreignKeySQL}\n);`;
+    */
   };
   useEffect(() => {
     setTab(initActiveTab);
@@ -243,8 +330,8 @@ export function TableEditor({
                   <TableHead className="h-8 px-2 text-xs font-medium">
                     Type
                   </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-16">
-                    Len
+                  <TableHead className="h-8 px-2 text-xs font-medium w-17">
+                    Length
                   </TableHead>
                   <TableHead className="h-8 px-2 text-xs font-medium w-12">
                     Null
@@ -272,8 +359,17 @@ export function TableEditor({
                   <TableRow key={column.id} className="h-8 hover:bg-muted/50">
                     <TableCell className="h-8 px-2 py-1">
                       <div className="flex items-center gap-1">
-                        {column.primaryKey && (
-                          <Key className="h-3 w-3 text-yellow-500" />
+                        {column.primaryKey ? (
+                          <Key className="h-4 w-4 text-yellow-500" />
+                        ) : column.foreignKey ? (
+                          <IconLink className="h-4 w-4 text-red-500" />
+                        ) : column.type === 'slug' ? (
+                          <IconId className="h-4 w-4 text-blue-500" />
+                        ) : column.type === 'created_at' ||
+                          column.type === 'updated_at' ? (
+                          <IconCalendar className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <IconColumns className="h-4 w-4 text-muted-foreground" />
                         )}
                         <Input
                           value={column.name}
