@@ -120,7 +120,7 @@ function MenuItemButton({
         'px-4 py-2 flex w-full',
         expanded ? ' justify-start' : 'justify-center',
         item.url === activeMenuItem &&
-        'bg-primary text-white hover:bg-primary/90 hover:text-white',
+          'bg-primary text-white hover:bg-primary/90 hover:text-white',
       )}
     >
       <Icon icon={item.icon} className={cn('h-5 w-5', expanded && 'mr-3')} />
@@ -201,8 +201,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           <div className="flex w-full items-center">
             <Link href="/" className="flex-1 flex">
-              <Button variant="ghost" className="flex-1 flex items-center">
-                <img src="/icon.png" alt={name} className="w-8 h-8" />
+              <Button
+                variant="ghost"
+                className={cn(
+                  'flex-1 flex items-center',
+                  !expanded && 'p-0 w-8 h-8',
+                )}
+              >
+                <img
+                  src="/icon.png"
+                  alt={name}
+                  className={cn(expanded ? 'w-8 h-8' : 'h-6 w-6')}
+                />
                 {expanded && (
                   <span className="ml-3 font-semibold flex-1 text-left">
                     {name}
@@ -265,7 +275,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           {item.menu instanceof Array &&
-                            item.menu.length > 0 ? (
+                          item.menu.length > 0 ? (
                             <SubMenu menu={item}>
                               <MenuItemButton
                                 item={item}
@@ -393,7 +403,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               'px-4 py-2 flex w-full',
                               expanded ? ' justify-start' : 'justify-center',
                             )}
-                            onClick={() => console.log('Settings clicked', menu.find((item) => item.slug === '/management/setting'))}
+                            onClick={() =>
+                              console.log(
+                                'Settings clicked',
+                                menu.find(
+                                  (item) => item.slug === '/management/setting',
+                                ),
+                              )
+                            }
                           >
                             <IconSettings
                               className={cn('h-5 w-5', expanded && 'mr-3')}
