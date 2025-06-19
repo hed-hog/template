@@ -16,6 +16,18 @@ columns:
       - boolean
       - json
     default: string
+  - type: slug
+  - name: component
+    type: enum
+    enum:
+      - input-text
+      - input-number
+      - combobox
+      - radio
+      - color-picker
+      - switch
+      - checkbox
+    default: input-text
   - name: value
     length: 1023
     isNullable: true

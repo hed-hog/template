@@ -120,7 +120,7 @@ function MenuItemButton({
         'px-4 py-2 flex w-full',
         expanded ? ' justify-start' : 'justify-center',
         item.url === activeMenuItem &&
-          'bg-primary text-white hover:bg-primary/90 hover:text-white',
+        'bg-primary text-white hover:bg-primary/90 hover:text-white',
       )}
     >
       <Icon icon={item.icon} className={cn('h-5 w-5', expanded && 'mr-3')} />
@@ -265,7 +265,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           {item.menu instanceof Array &&
-                          item.menu.length > 0 ? (
+                            item.menu.length > 0 ? (
                             <SubMenu menu={item}>
                               <MenuItemButton
                                 item={item}
@@ -385,29 +385,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <li>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className={cn(
-                            'px-4 py-2 flex w-full',
-                            expanded ? ' justify-start' : 'justify-center',
-                          )}
-                          onClick={() => console.log('Settings clicked')}
-                        >
-                          <IconSettings
-                            className={cn('h-5 w-5', expanded && 'mr-3')}
-                          />
-                          <span
-                            className={[
-                              'transition-all flex-1',
-                              expanded
-                                ? 'translate-x-0 opacity-100 flex'
-                                : 'translate-x-20 opacity-0 hidden',
-                            ].join(' ')}
+                        <Link href="/settings">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn(
+                              'px-4 py-2 flex w-full',
+                              expanded ? ' justify-start' : 'justify-center',
+                            )}
+                            onClick={() => console.log('Settings clicked', menu.find((item) => item.slug === '/management/setting'))}
                           >
-                            Configurações
-                          </span>
-                        </Button>
+                            <IconSettings
+                              className={cn('h-5 w-5', expanded && 'mr-3')}
+                            />
+                            <span
+                              className={[
+                                'transition-all flex-1',
+                                expanded
+                                  ? 'translate-x-0 opacity-100 flex'
+                                  : 'translate-x-20 opacity-0 hidden',
+                              ].join(' ')}
+                            >
+                              Configurações
+                            </span>
+                          </Button>
+                        </Link>
                       </TooltipTrigger>
                       {!expanded && (
                         <TooltipContent side="right">
