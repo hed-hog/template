@@ -116,6 +116,7 @@ export function TreeView({
             {getItemIcon(item)}
             <span className="flex-1 ml-1">{item.name}</span>
           </div>
+
           {hasChildren && isExpanded && (
             <div>{renderTreeItems(item.children!, level + 1)}</div>
           )}

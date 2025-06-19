@@ -1,7 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Plus, Trash2, Link, Save, Code, Key, Database } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Save,
+  Table2Icon,
+  Locate,
+  Languages,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,28 +18,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-import type { DatabaseTable, TableColumn, Tab } from '../types';
+import type { Tab } from '../types';
 import { useSystem } from '@/components/provider/system-provider';
 import { useQuery } from '@tanstack/react-query';
+import type React from 'react';
+import { useState, useCallback, useMemo, memo, useEffect } from 'react';
+import { FixedSizeList as List } from 'react-window';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { IconLinkPlus } from '@tabler/icons-react';
 import {
-  IconCalendar,
-  IconColumns,
-  IconId,
-  IconLink,
-} from '@tabler/icons-react';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface TableEditorProps {
   activeTab: Tab;
@@ -42,6 +41,15 @@ interface TableEditorProps {
 }
 
 const DATA_TYPES = [
+  'LOCALE_VARCHAR',
+  'LOCALE_TEXT',
+  'PK',
+  'FK',
+  'SLUG',
+  'ORDER',
+  'CREATED_AT',
+  'UPDATED_AT',
+
   'VARCHAR',
   'TEXT',
   'INTEGER',
@@ -56,513 +64,505 @@ const DATA_TYPES = [
   'BYTEA',
 ];
 
+interface DatabaseTable {
+  id: string;
+  name: string;
+  library: string;
+  columns: DatabaseColumn[];
+}
+
+interface DatabaseColumn {
+  id: string;
+  name: string;
+  type: string;
+  length: number | null;
+  nullable: boolean;
+  primaryKey: boolean;
+  unique: boolean;
+  unsigned: boolean;
+  autoIncrement: boolean;
+  locale: boolean;
+  defaultValue: string;
+  foreignKey: string;
+}
+
+const columnsWith = {
+  name: 'flex-1',
+  type: 'w-32',
+  lengthCol: 'w-20',
+  nullable: 'w-12',
+  primaryKey: 'w-12',
+  unique: 'w-12',
+  unsigned: 'w-12',
+  autoIncrement: 'w-12',
+  locale: 'w-16',
+  defaultValue: 'w-40',
+  foreignKey: 'w-24',
+  actions: 'w-24',
+};
+
+const isColumnDisabled = (type: string): boolean => {
+  return [
+    'PK',
+    'SLUG',
+    'FK',
+    'ORDER',
+    'LOCALE_VARCHAR',
+    'LOCALE_TEXT',
+    'CREATED_AT',
+    'UPDATED_AT',
+  ].includes(type);
+};
+
+const formatColumns = (columns: DatabaseColumn[]): DatabaseColumn[] => {
+  return ((columns || []) as DatabaseColumn[]).map((col, id) => {
+    col.id = col.id || `col-${id}`;
+    col.type = (col.type ?? '').toUpperCase();
+    switch (col.type) {
+      case 'PK':
+        return {
+          ...col,
+          primaryKey: true,
+          autoIncrement: true,
+          length: null,
+          unsigned: true,
+          name: col.name || 'id',
+        };
+      case 'SLUG':
+        return {
+          ...col,
+          length: 255,
+          unique: true,
+          name: col.name || 'slug',
+        };
+      case 'INT':
+        return {
+          ...col,
+          type: 'INTEGER',
+        };
+      case 'CREATED_AT':
+        return {
+          ...col,
+          defaultValue: 'CURRENT_TIMESTAMP',
+          name: col.name || 'created_at',
+        };
+      case 'UPDATED_AT':
+        return {
+          ...col,
+          defaultValue: 'CURRENT_TIMESTAMP',
+          name: col.name || 'updated_at',
+        };
+      case 'ORDER':
+        return {
+          ...col,
+          type: 'INTEGER',
+          defaultValue: '0',
+          unsigned: true,
+          name: col.name || 'order',
+        };
+      case 'LOCALE_VARCHAR':
+      case 'LOCALE_TEXT':
+        return {
+          ...col,
+          locale: true,
+        };
+      case '':
+        return {
+          ...col,
+          type: 'VARCHAR',
+          length: 255,
+        };
+    }
+    return col;
+  });
+};
+
+// Memoized row component for performance
+const ColumnRow = memo(
+  ({
+    index,
+    style,
+    data,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+    data: {
+      columns: DatabaseColumn[];
+      onUpdateColumn: (
+        id: string,
+        field: keyof DatabaseColumn,
+        value: any,
+      ) => void;
+      onDeleteColumn: (id: string) => void;
+    };
+  }) => {
+    const { columns, onUpdateColumn, onDeleteColumn } = data;
+    const column = columns[index];
+
+    const handleFieldChange = useCallback(
+      (field: keyof DatabaseColumn, value: any) => {
+        onUpdateColumn(column.id, field, value);
+      },
+      [column.id, onUpdateColumn],
+    );
+
+    return (
+      <div
+        style={style}
+        className="flex items-center gap-1 px-2 py-1 border-b hover:bg-gray-50"
+      >
+        {/* Name */}
+        <div className={columnsWith.name}>
+          <Input
+            value={column.name}
+            onChange={(e) => handleFieldChange('name', e.target.value)}
+            className="h-6 text-sm border-none bg-transparent rounded-none p-1"
+            placeholder="Column name"
+          />
+        </div>
+
+        {/* Type */}
+        <div className={columnsWith.type}>
+          <Select
+            value={column.type}
+            onValueChange={(value) => handleFieldChange('type', value)}
+          >
+            <SelectTrigger className="h-6 text-sm border-none bg-transparent rounded-none p-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DATA_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Length */}
+        <div className={columnsWith.lengthCol}>
+          <Input
+            type="number"
+            value={column.length || ''}
+            onChange={(e) =>
+              handleFieldChange(
+                'length',
+                e.target.value ? Number.parseInt(e.target.value) : null,
+              )
+            }
+            className="h-6 text-sm border-none bg-transparent rounded-none p-1 disabled:text-gray-500"
+            disabled={isColumnDisabled(column.type)}
+            placeholder="Length"
+          />
+        </div>
+
+        {/* Null */}
+        <div className={cn(columnsWith.nullable, 'flex justify-center')}>
+          <Checkbox
+            checked={!column.nullable}
+            onCheckedChange={(checked) =>
+              handleFieldChange('nullable', checked)
+            }
+            disabled={isColumnDisabled(column.type)}
+          />
+        </div>
+
+        {/* PK */}
+        <div className={cn(columnsWith.primaryKey, 'flex justify-center')}>
+          <Checkbox
+            checked={column.primaryKey}
+            onCheckedChange={(checked) =>
+              handleFieldChange('primaryKey', checked)
+            }
+            disabled={isColumnDisabled(column.type)}
+          />
+        </div>
+
+        {/* UQ */}
+        <div className={cn(columnsWith.unique, 'flex justify-center')}>
+          <Checkbox
+            checked={column.unique}
+            onCheckedChange={(checked) => handleFieldChange('unique', checked)}
+            disabled={isColumnDisabled(column.type)}
+          />
+        </div>
+        {/* UN */}
+        <div className={cn(columnsWith.unsigned, 'flex justify-center')}>
+          <Checkbox
+            checked={column.unsigned}
+            onCheckedChange={(checked) =>
+              handleFieldChange('unsigned', checked)
+            }
+            disabled={isColumnDisabled(column.type)}
+          />
+        </div>
+
+        {/* AI */}
+        <div className={cn(columnsWith.autoIncrement, 'flex justify-center')}>
+          <Checkbox
+            checked={column.autoIncrement}
+            onCheckedChange={(checked) =>
+              handleFieldChange('autoIncrement', checked)
+            }
+            disabled={isColumnDisabled(column.type)}
+          />
+        </div>
+
+        {/* Default */}
+        <div className={columnsWith.defaultValue}>
+          <Input
+            value={column.defaultValue}
+            onChange={(e) => handleFieldChange('defaultValue', e.target.value)}
+            className="h-6 text-sm border-none bg-transparent rounded-none p-1 disabled:text-gray-500"
+            disabled={isColumnDisabled(column.type)}
+            placeholder="Default value"
+          />
+        </div>
+
+        {/* FK */}
+        <div className={columnsWith.foreignKey}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 p-0 disabled:bg-gray-200 disabled:text-gray-500"
+                disabled={!(
+                  column.type === 'PK' ||
+                    (column.type === 'INTEGER' && column.unsigned),
+                )}
+              >
+                <IconLinkPlus className="h-4 w-4" />
+                <span className="sr-only">Add FK</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Connect to table</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Actions */}
+        <div className={cn(columnsWith.actions, 'flex justify-end gap-1')}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 p-0 text-blue-500 hover:text-white hover:bg-blue-500 disabled:bg-gray-200 disabled:text-gray-500"
+                disabled={!column.locale}
+              >
+                <Languages className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Translations</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDeleteColumn(column.id)}
+                className="h-8 w-8 p-0 text-red-500 hover:text-white hover:bg-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Remove column</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+    );
+  },
+);
+
+ColumnRow.displayName = 'ColumnRow';
+
 export function TableEditor({
   activeTab: initActiveTab,
   onSave,
   onContentChange,
 }: TableEditorProps) {
   const [tab, setTab] = useState<Tab>(initActiveTab);
-  const [activeTab, setActiveTab] = useState('columns');
   const { request, language } = useSystem();
 
-  const initialData = {
+  const initialData: DatabaseTable = {
     id: tab.id,
     name: tab.title,
-    schema: tab.library,
+    library: tab.library,
     columns: [],
-    indexes: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    rowCount: 0,
-    size: '0 B',
   };
 
-  const { data } = useQuery<DatabaseTable>({
-    queryKey: [tab.id, language],
-    queryFn: () =>
-      request({
-        url: `/developer/table/${tab.library}/${tab.title}`,
-      }),
-    initialData,
-  });
+  const { data, isLoading, isFetching, isPending, isRefetching } =
+    useQuery<DatabaseTable>({
+      queryKey: [tab.id, language],
+      queryFn: () =>
+        request({
+          url: `/developer/table/${tab.library}/${tab.title}`,
+        }),
+      initialData,
+    });
 
   let table: DatabaseTable = {
     ...initialData,
     ...data,
-    columns: data.columns.map((col) => {
-      switch (col.type) {
-        case 'pk':
-          return {
-            ...col,
-            type: 'INTEGER',
-            primaryKey: true,
-            autoIncrement: true,
-            nullable: false,
-            unique: true,
-            unsigned: true,
-            name: 'id',
-          } as TableColumn;
-        case 'fk':
-          return {
-            ...col,
-            type: 'INTEGER',
-            foreignKey: {
-              table: (col as any)?.references?.table || '',
-              column: (col as any)?.references?.column || 'id',
-              onDelete: (col as any)?.references?.onDelete || 'CASCADE',
-              onUpdate: (col as any)?.references?.onUpdate || 'CASCADE',
-            },
-          } as TableColumn;
-        case 'slug':
-          return {
-            ...col,
-            name: col.name || 'slug',
-            length: col.length || 255,
-            unique: true,
-          } as TableColumn;
-        case 'created_at':
-        case 'updated_at':
-          return {
-            ...col,
-            name: col.type === 'created_at' ? 'created_at' : 'updated_at',
-            nullable: false,
-            defaultValue: 'CURRENT_TIMESTAMP',
-          } as TableColumn;
-        default:
-          if (!col.type) {
-            col.type = 'VARCHAR';
-          }
-
-          if (col.type.startsWith('locale_')) {
-            col.type = 'LOCALE';
-          }
-
-          return {
-            ...col,
-            type: col.type || 'VARCHAR',
-            length: col.length || 255,
-          } as TableColumn;
-      }
-    }),
   };
 
-  const handleSave = () => {
-    onSave(tab);
-    onContentChange(false);
-  };
+  const [columns, setColumns] = useState<DatabaseColumn[]>([]);
 
-  const addColumn = () => {
-    const newColumn: TableColumn = {
-      id: `col_${Date.now()}`,
-      name: 'new_column',
+  // Optimized update function using useCallback
+  const handleUpdateColumn = useCallback(
+    (id: string, field: keyof DatabaseColumn, value: any) => {
+      setColumns((prevColumns) =>
+        prevColumns.map((col) =>
+          col.id === id ? { ...col, [field]: value } : col,
+        ),
+      );
+    },
+    [],
+  );
+
+  // Optimized delete function
+  const handleDeleteColumn = useCallback((id: string) => {
+    setColumns((prevColumns) => prevColumns.filter((col) => col.id !== id));
+  }, []);
+
+  // Add new column
+  const handleAddColumn = useCallback(() => {
+    const newColumn: DatabaseColumn = {
+      id: `col-${Date.now()}`,
+      name: `new_column_${columns.length + 1}`,
       type: 'VARCHAR',
       length: 255,
       nullable: true,
       primaryKey: false,
       unique: false,
+      unsigned: false,
       autoIncrement: false,
+      locale: false,
+      defaultValue: 'NULL',
+      foreignKey: '',
     };
+    setColumns((prevColumns) => [...prevColumns, newColumn]);
+  }, [columns.length]);
 
-    table.columns.push(newColumn);
-    onContentChange(true);
-  };
+  // Save function
+  const handleSave = useCallback(async () => {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const updateColumn = (columnId: string, updates: Partial<TableColumn>) => {
-    /*
-    setTable((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        columns: prev.columns.map((col) =>
-          col.id === columnId ? { ...col, ...updates } : col,
-        ),
-      };
-    });*/
-    onContentChange(true);
-  };
+    console.log('Saved columns:', columns);
+  }, [columns]);
 
-  const removeColumn = (columnId: string) => {
-    /*
-    setTable((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        columns: prev.columns.filter((col) => col.id !== columnId),
-      };
-    });*/
-    onContentChange(true);
-  };
+  // Memoized data for virtual list
+  const listData = useMemo(
+    () => ({
+      columns,
+      onUpdateColumn: handleUpdateColumn,
+      onDeleteColumn: handleDeleteColumn,
+    }),
+    [columns, handleUpdateColumn, handleDeleteColumn],
+  );
 
-  const generateSQL = () => {
-    if (!table) return '';
-    /*
-    const columns = table.columns
-      .map((col) => {
-        let sql = `  ${col.name} ${col.type}`;
-        if (col.length && ['VARCHAR', 'CHAR'].includes(col.type)) {
-          sql += `(${col.length})`;
-        }
-        if (!col.nullable) sql += ' NOT NULL';
-        if (col.unique) sql += ' UNIQUE';
-        if (col.autoIncrement) sql += ' AUTO_INCREMENT';
-        if (col.defaultValue) sql += ` DEFAULT ${col.defaultValue}`;
-        return sql;
-      })
-      .join(',\n');
-
-    const primaryKeys = table.columns
-      .filter((col) => col.primaryKey)
-      .map((col) => col.name);
-    const primaryKeySQL =
-      primaryKeys.length > 0
-        ? `,\n  PRIMARY KEY (${primaryKeys.join(', ')})`
-        : '';
-
-    const foreignKeys = table.columns
-      .filter((col) => col.foreignKey)
-      .map((col) => {
-        const fk = col.foreignKey!;
-        return `  FOREIGN KEY (${col.name}) REFERENCES ${fk.table}(${fk.column}) ON DELETE ${fk.onDelete} ON UPDATE ${fk.onUpdate}`;
-      })
-      .join(',\n');
-
-    const foreignKeySQL = foreignKeys ? `,\n${foreignKeys}` : '';
-
-    return `CREATE TABLE ${table.name} (\n${columns}${primaryKeySQL}${foreignKeySQL}\n);`;
-    */
-  };
   useEffect(() => {
     setTab(initActiveTab);
   }, [initActiveTab]);
 
-  if (!table) {
-    return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <span className="flex items-center gap-2">
-          <svg
-            className="animate-spin h-4 w-4 text-muted-foreground"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            />
-          </svg>
-          Loading table {tab.title}...
-        </span>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const formattedColumns = formatColumns(table.columns);
+    setColumns(formattedColumns);
+  }, [table.columns]);
 
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Compact Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30 text-sm">
-        <div className="flex items-center gap-2">
-          <Database className="h-4 w-4 text-blue-500" />
-          <span className="font-medium">{table.name}</span>
-          <Badge variant="outline" className="text-xs px-1.5 py-0">
-            Table
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            {table.columns.length} cols
-          </span>
-        </div>
-        <Button onClick={handleSave} size="sm" className="h-7 px-2 text-xs">
-          <Save className="h-3 w-3 mr-1" />
-          Save
-        </Button>
-      </div>
-
-      {/* Compact Tabs */}
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="h-full flex flex-col"
-      >
-        <TabsList className="h-8 p-0 bg-muted/50">
-          <TabsTrigger value="columns" className="text-xs h-7 px-3">
-            Columns
-          </TabsTrigger>
-          <TabsTrigger value="indexes" className="text-xs h-7 px-3">
-            Indexes
-          </TabsTrigger>
-          <TabsTrigger value="sql" className="text-xs h-7 px-3">
-            SQL
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="columns" className="flex-1 p-0 m-0">
-          {/* Compact Toolbar */}
-          <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/20">
-            <span className="text-xs font-medium text-muted-foreground">
-              Column Definition
+    <TooltipProvider>
+      <Card className="w-full max-w-7xl mx-auto border-none shadow-none">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
+          <div className="flex items-center gap-2">
+            <Table2Icon className="h-4 w-4" />
+            <CardTitle className="text-md">Table Editor</CardTitle>
+            <span className="text-sm text-muted-foreground">
+              {columns.length} columns
             </span>
+          </div>
+          <div className="flex gap-2">
             <Button
-              onClick={addColumn}
+              onClick={handleAddColumn}
               size="sm"
+              className="h-8 px-2"
               variant="outline"
-              className="h-6 px-2 text-xs"
             >
-              <Plus className="h-3 w-3 mr-1" />
-              Add
+              <Plus className="h-4 w-4 mr-1" />
+              Column
+            </Button>
+            <Button
+              onClick={handleSave}
+              size="sm"
+              disabled={isLoading}
+              className="h-8 px-2"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {isLoading ? 'Saving...' : 'Save'}
             </Button>
           </div>
+        </CardHeader>
 
-          {/* Compact Table */}
-          <ScrollArea className="flex-1">
-            <Table className="text-xs">
-              <TableHeader className="bg-muted/30">
-                <TableRow className="h-8">
-                  <TableHead className="h-8 px-2 text-xs font-medium">
-                    Name
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium">
-                    Type
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-17">
-                    Length
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-12">
-                    Null
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-12">
-                    PK
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-12">
-                    UQ
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-12">
-                    AI
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium">
-                    Default
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium">
-                    FK
-                  </TableHead>
-                  <TableHead className="h-8 px-2 text-xs font-medium w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {table.columns.map((column) => (
-                  <TableRow key={column.id} className="h-8 hover:bg-muted/50">
-                    <TableCell className="h-8 px-2 py-1">
-                      <div className="flex items-center gap-1">
-                        {column.primaryKey ? (
-                          <Key className="h-4 w-4 text-yellow-500" />
-                        ) : column.foreignKey ? (
-                          <IconLink className="h-4 w-4 text-red-500" />
-                        ) : column.type === 'slug' ? (
-                          <IconId className="h-4 w-4 text-blue-500" />
-                        ) : column.type === 'created_at' ||
-                          column.type === 'updated_at' ? (
-                          <IconCalendar className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <IconColumns className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <Input
-                          value={column.name}
-                          onChange={(e) =>
-                            updateColumn(column.id, { name: e.target.value })
-                          }
-                          className="h-6 px-2 text-xs border-0 bg-transparent focus:bg-background focus:border"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1">
-                      <Select
-                        value={column.type}
-                        onValueChange={(value) =>
-                          updateColumn(column.id, { type: value })
-                        }
-                      >
-                        <SelectTrigger className="h-6 px-2 text-xs border-0 bg-transparent focus:bg-background focus:border">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DATA_TYPES.map((type) => (
-                            <SelectItem
-                              key={type}
-                              value={type}
-                              className="text-xs"
-                            >
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1">
-                      <Input
-                        type="number"
-                        value={column.length || ''}
-                        onChange={(e) =>
-                          updateColumn(column.id, {
-                            length:
-                              Number.parseInt(e.target.value) || undefined,
-                          })
-                        }
-                        className="h-6 px-2 text-xs border-0 bg-transparent focus:bg-background focus:border"
-                        disabled={
-                          !['VARCHAR', 'CHAR', 'DECIMAL'].includes(column.type)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1 text-center">
-                      <Checkbox
-                        checked={column.nullable}
-                        onCheckedChange={(checked) =>
-                          updateColumn(column.id, { nullable: !!checked })
-                        }
-                        className="h-3 w-3"
-                      />
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1 text-center">
-                      <Checkbox
-                        checked={column.primaryKey}
-                        onCheckedChange={(checked) =>
-                          updateColumn(column.id, { primaryKey: !!checked })
-                        }
-                        className="h-3 w-3"
-                      />
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1 text-center">
-                      <Checkbox
-                        checked={column.unique}
-                        onCheckedChange={(checked) =>
-                          updateColumn(column.id, { unique: !!checked })
-                        }
-                        className="h-3 w-3"
-                      />
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1 text-center">
-                      <Checkbox
-                        checked={column.autoIncrement}
-                        onCheckedChange={(checked) =>
-                          updateColumn(column.id, { autoIncrement: !!checked })
-                        }
-                        disabled={!['INTEGER', 'BIGINT'].includes(column.type)}
-                        className="h-3 w-3"
-                      />
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1">
-                      <Input
-                        value={column.defaultValue || ''}
-                        onChange={(e) =>
-                          updateColumn(column.id, {
-                            defaultValue: e.target.value || undefined,
-                          })
-                        }
-                        className="h-6 px-2 text-xs border-0 bg-transparent focus:bg-background focus:border"
-                        placeholder="NULL"
-                      />
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1">
-                      {column.foreignKey ? (
-                        <Badge
-                          variant="outline"
-                          className="text-xs px-1 py-0 h-5"
-                        >
-                          <Link className="h-2.5 w-2.5 mr-1" />
-                          {column.foreignKey.table}
-                        </Badge>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0"
-                          onClick={() => {
-                            updateColumn(column.id, {
-                              foreignKey: {
-                                table: 'person_type',
-                                column: 'id',
-                                onDelete: 'CASCADE',
-                                onUpdate: 'CASCADE',
-                              },
-                            });
-                          }}
-                        >
-                          <Link className="h-3 w-3 text-muted-foreground" />
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell className="h-8 px-2 py-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 w-5 p-0"
-                        onClick={() => removeColumn(column.id)}
-                      >
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="indexes" className="flex-1 p-3 m-0">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                Table Indexes
-              </span>
-              <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
-                <Plus className="h-3 w-3 mr-1" />
-                Add Index
-              </Button>
-            </div>
-            <div className="space-y-1">
-              {table.indexes.map((index) => (
-                <div
-                  key={index.id}
-                  className="flex items-center justify-between p-2 border rounded text-xs bg-muted/20"
-                >
-                  <div>
-                    <div className="font-medium">{index.name}</div>
-                    <div className="text-muted-foreground">
-                      {index.columns.join(', ')} • {index.type}
-                      {index.unique && ' • Unique'}
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
-                    <Trash2 className="h-3 w-3 text-destructive" />
-                  </Button>
+        <CardContent className="p-0 border-none">
+          {columns.length > 0 ? (
+            <>
+              {/* Header */}
+              <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border-b border-t font-medium text-sm sticky top-0 z-10 dark:bg-gray-800">
+                <div className={columnsWith.name}>Name</div>
+                <div className={columnsWith.type}>Type</div>
+                <div className={columnsWith.lengthCol}>Length</div>
+                <div className={cn(columnsWith.nullable, 'text-center')}>
+                  NN
                 </div>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
+                <div className={cn(columnsWith.primaryKey, 'text-center')}>
+                  PK
+                </div>
+                <div className={cn(columnsWith.unique, 'text-center')}>UQ</div>
+                <div className={cn(columnsWith.unsigned, 'text-center')}>
+                  UN
+                </div>
+                <div className={cn(columnsWith.autoIncrement, 'text-center')}>
+                  AI
+                </div>
+                <div className={columnsWith.defaultValue}>Default</div>
+                <div className={columnsWith.foreignKey}>FK</div>
+                <div className={columnsWith.actions}> </div>
+              </div>
 
-        <TabsContent value="sql" className="flex-1 p-3 m-0">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              <span className="text-xs font-medium">
-                Generated CREATE TABLE
-              </span>
+              {/* Virtualized List */}
+              <div className="border-b">
+                {' '}
+                {/* This container might need specific height if List height is percentage */}
+                <List
+                  height={Math.min(
+                    document.body.clientHeight - 30 - 36 - 48 - 24,
+                    columns.length * 50,
+                  )} // Max height 600px, or total height if less
+                  itemCount={columns.length}
+                  itemSize={50} // Each row is 50px tall
+                  itemData={listData}
+                  overscanCount={5} // Render 5 items above and below the visible area
+                >
+                  {ColumnRow}
+                </List>
+              </div>
+            </>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              No columns to display. Click "Add Column" to get started.
             </div>
-            <Textarea
-              value={generateSQL()}
-              readOnly
-              className="font-mono text-xs h-[calc(100vh-200px)] resize-none bg-muted/20 border-muted"
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+          )}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }

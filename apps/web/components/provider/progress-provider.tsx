@@ -13,7 +13,6 @@ const ProgressProvider = ({
   color = '#ff6f00',
   height = '1px',
 }: ProgressProviderProps) => {
-  console.log('ProgressProvider', { color, height });
   return (
     <BProgressProvider
       height={height}

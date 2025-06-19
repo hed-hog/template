@@ -29,7 +29,7 @@ export function EditorTabs({
     <div className="border-b">
       <div
         ref={scrollArea}
-        className="flex-1 overflow-auto"
+        className="flex-1 overflow-auto bg-muted"
         style={{ scrollbarWidth: 'none' }}
         onWheel={(e) => {
           e.preventDefault();
@@ -38,7 +38,7 @@ export function EditorTabs({
           });
         }}
       >
-        <div className="flex w-fit">
+        <div className="flex w-fit ">
           {tabs.map((tab) => (
             <div
               key={tab.id}

@@ -9,6 +9,7 @@ import { readFile, realpath } from 'fs/promises';
 import ProgressProvider from '@/components/provider/progress-provider';
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const inter = Inter({ subsets: ['latin'] });
 let systemSetting: Record<any, any> = {};

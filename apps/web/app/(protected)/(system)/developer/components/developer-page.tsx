@@ -45,7 +45,6 @@ export default function DeveloperPage() {
   });
 
   const handleFileSelect = (file: FileTreeItem) => {
-    console.log('File selected:', file);
     // File selection logic handled in onCreateTab
   };
 
@@ -77,8 +76,6 @@ export default function DeveloperPage() {
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
   const renderEditor = () => {
-    console.log('Rendering editor for active tab:', activeTab);
-
     if (!activeTab) {
       return (
         <div className="h-full flex items-center justify-center text-muted-foreground">

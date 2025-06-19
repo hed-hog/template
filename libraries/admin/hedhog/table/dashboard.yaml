@@ -1,9 +1,6 @@
 columns:
   - type: pk
   - type: slug
-    locale:
-      en: Slug
-      pt: Slug
   - name: name
     type: locale_varchar
     length: 255
