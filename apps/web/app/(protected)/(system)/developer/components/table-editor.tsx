@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Tab } from '../types';
+import type { Tab, TableColumn } from '../types';
 import { useSystem } from '@/components/provider/system-provider';
 import { useQuery } from '@tanstack/react-query';
 import type React from 'react';
@@ -71,6 +71,13 @@ interface DatabaseTable {
   columns: DatabaseColumn[];
 }
 
+interface DatabaseColumnForeignKey {
+  table: string;
+  column: string;
+  onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
+  onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
+}
+
 interface DatabaseColumn {
   id: string;
   name: string;
@@ -81,9 +88,10 @@ interface DatabaseColumn {
   unique: boolean;
   unsigned: boolean;
   autoIncrement: boolean;
-  locale: boolean;
+  locale?: Record<string, string>;
   defaultValue: string;
-  foreignKey: string;
+  references?: DatabaseColumnForeignKey;
+  
 }
 
 const columnsWith = {
@@ -122,17 +130,17 @@ const formatColumns = (columns: DatabaseColumn[]): DatabaseColumn[] => {
       case 'PK':
         return {
           ...col,
-          primaryKey: true,
-          autoIncrement: true,
-          length: null,
-          unsigned: true,
+          primaryKey: col.primaryKey ||true,
+          autoIncrement: col.autoIncrement || true,
+          length: col.length || null,
+          unsigned: col.unsigned || true,
           name: col.name || 'id',
         };
       case 'SLUG':
         return {
           ...col,
-          length: 255,
-          unique: true,
+          length: col.length || 255,
+          unique: col.unique || true,
           name: col.name || 'slug',
         };
       case 'INT':
@@ -156,21 +164,31 @@ const formatColumns = (columns: DatabaseColumn[]): DatabaseColumn[] => {
         return {
           ...col,
           type: 'INTEGER',
-          defaultValue: '0',
-          unsigned: true,
+          defaultValue: col.defaultValue || '0',
+          unsigned: col.unsigned || true,
           name: col.name || 'order',
         };
       case 'LOCALE_VARCHAR':
       case 'LOCALE_TEXT':
         return {
           ...col,
-          locale: true,
+          locale: col.locale || {},
+        };
+      case 'FK':
+        return {
+          ...col,
+          foreignKey: {
+            table: col.references?.table || '',
+            column: col.references?.column || '',
+            onDelete: col.references?.onDelete || 'NO ACTION',
+            onUpdate: col.references?.onUpdate || 'NO ACTION',
+          },
         };
       case '':
         return {
           ...col,
           type: 'VARCHAR',
-          length: 255,
+          length: col.length || 255,
         };
     }
     return col;
@@ -389,6 +407,7 @@ export function TableEditor({
   onSave,
   onContentChange,
 }: TableEditorProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const [tab, setTab] = useState<Tab>(initActiveTab);
   const { request, language } = useSystem();
 
@@ -399,7 +418,7 @@ export function TableEditor({
     columns: [],
   };
 
-  const { data, isLoading, isFetching, isPending, isRefetching } =
+  const { data } =
     useQuery<DatabaseTable>({
       queryKey: [tab.id, language],
       queryFn: () =>
@@ -447,17 +466,89 @@ export function TableEditor({
       autoIncrement: false,
       locale: false,
       defaultValue: 'NULL',
-      foreignKey: '',
+      
     };
     setColumns((prevColumns) => [...prevColumns, newColumn]);
   }, [columns.length]);
 
   // Save function
   const handleSave = useCallback(async () => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsLoading(true);
+    request({
+      url: '/developer/table',
+      method: 'POST',
+      data: {
+        tableName: tab.title,
+        library: tab.library,
+        columns: columns.map((col) => {
 
-    console.log('Saved columns:', columns);
+          const data: any = {};
+
+          if (col.type) {
+            data['type'] = col.type.toUpperCase();
+          }
+
+          if (col.name) {
+            data['name'] = col.name;
+          }
+
+          if (col.length) {
+            data['length'] = Number(col.length);
+          }
+
+          if (col.nullable !== undefined) {
+            data['isNullable'] = !col.nullable;
+          }
+
+          if (col.primaryKey) {
+            data['isPrimaryKey'] = col.primaryKey;
+          }
+
+          if (col.unique) {
+            data['isUnique'] = col.unique;
+          }
+
+          if (col.unsigned) {
+            data['unsigned'] = col.unsigned;
+          }
+
+          if (col.defaultValue) {
+            data['default'] = col.defaultValue;
+          }
+
+          if (col.autoIncrement) {
+            data['generationStrategy'] = 'increment';
+          }
+
+          if (col.references) {
+            data['references'] = {
+              table: col.references.table,
+              column: col.references.column || '',
+              onDelete: col.references.onDelete || 'NO ACTION',
+              onUpdate: col.references.onUpdate || 'NO ACTION',
+            };
+          }
+
+          if (col.locale) {
+            data['locale'] = col.locale;
+          }
+
+          return data;
+        }),
+      },
+    })
+      .then((data) => {
+       
+        console.log('Table saved successfully:', data);
+
+        onContentChange(false);
+      })
+      .catch((error) => {
+        console.error('Error saving table:', error);
+      }).finally(() => {
+        setIsLoading(false);
+      })
+
   }, [columns]);
 
   // Memoized data for virtual list
@@ -545,7 +636,7 @@ export function TableEditor({
                 <List
                   height={Math.min(
                     document.body.clientHeight - 30 - 36 - 48 - 24,
-                    columns.length * 50,
+                    columns.length * 50
                   )} // Max height 600px, or total height if less
                   itemCount={columns.length}
                   itemSize={50} // Each row is 50px tall

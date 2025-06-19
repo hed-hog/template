@@ -1,32 +1,150 @@
 import { SchemaService } from '@hedhog/api-prisma';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { mkdir, readdir, readFile, realpath, writeFile } from 'fs/promises';
-import { parse } from 'yaml';
+import {
+  mkdir,
+  readdir,
+  readFile,
+  realpath,
+  unlink,
+  writeFile,
+} from 'fs/promises';
+import { parse, stringify } from 'yaml';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { toKebabCase, toPascalCase } from '@hedhog/api';
+import { SaveTableDTO } from './dto/save-table.dto';
 
 @Injectable()
 export class DeveloperService {
   constructor(private readonly schema: SchemaService) {}
 
+  private formatPkColumn(column: any) {
+    const formattedColumn: any = { type: 'pk' };
+    if (column.name !== 'id') formattedColumn.name = column.name;
+    if (column.generationStrategy !== 'increment') {
+      formattedColumn.generationStrategy = column.generationStrategy;
+    }
+    return formattedColumn;
+  }
+
+  private formatFkColumn(column: any) {
+    const formattedColumn: any = {
+      name: column.name,
+      type: 'fk',
+      references: {
+        table: column.references?.table,
+        column: column.references?.column,
+      },
+    };
+    if (column.references?.onDelete !== 'NO ACTION') {
+      formattedColumn.references.onDelete = column.references.onDelete;
+    }
+    if (column.references?.onUpdate !== 'NO ACTION') {
+      formattedColumn.references.onUpdate = column.references.onUpdate;
+    }
+    return formattedColumn;
+  }
+
+  private formatSlugColumn(column: any) {
+    const formattedColumn: any = { type: 'slug' };
+    if (column.name !== 'slug') formattedColumn.name = column.name;
+    if (column.length !== 255) formattedColumn.length = column.length;
+    if (!column.isUnique) formattedColumn.isUnique = column.isUnique;
+    return formattedColumn;
+  }
+
+  private formatOrderColumn(column: any) {
+    const formattedColumn: any = { type: 'order' };
+    if (column.name !== 'order') formattedColumn.name = column.name;
+    if (column.default !== undefined) column.default = Number(column.default);
+    if (column.default !== 0) formattedColumn.length = column.length;
+    if (!column.unsigned) formattedColumn.unsigned = column.unsigned;
+    return formattedColumn;
+  }
+
+  private formatCreatedAtColumn(column: any) {
+    const formattedColumn: any = { type: 'created_at' };
+    if (column.name !== 'created_at') formattedColumn.name = column.name;
+    if (column.default !== 'CURRENT_TIMESTAMP') {
+      formattedColumn.default = column.default;
+    }
+    return formattedColumn;
+  }
+
+  private formatUpdatedAtColumn(column: any) {
+    const formattedColumn: any = { type: 'updated_at' };
+    if (column.name !== 'updated_at') formattedColumn.name = column.name;
+    if (column.default !== 'CURRENT_TIMESTAMP') {
+      formattedColumn.default = column.default;
+    }
+    return formattedColumn;
+  }
+
+  async formatColumns(columns: any[]) {
+    return columns.map((column) => {
+      column.type = column.type.toLowerCase();
+      switch (column.type) {
+        case 'pk':
+          return this.formatPkColumn(column);
+        case 'fk':
+          return this.formatFkColumn(column);
+        case 'slug':
+          return this.formatSlugColumn(column);
+        case 'order':
+          return this.formatOrderColumn(column);
+        case 'varchar':
+          delete column.type;
+          return column;
+        case 'created_at':
+          return this.formatCreatedAtColumn(column);
+        case 'updated_at':
+          return this.formatUpdatedAtColumn(column);
+        case 'integer':
+          column.type = 'int';
+          if (typeof column.default !== 'number') {
+            column.default = Number(column.default);
+          }
+          return column;
+        case 'locale_varchar':
+        case 'locale_text':
+          if (typeof column.locale !== 'object') delete column.locale;
+          return column;
+        default:
+          return column;
+      }
+    });
+  }
+
+  async saveTable({ columns, library, tableName }: SaveTableDTO) {
+    const rootPath = await realpath(`${process.cwd()}/../../`);
+    const tablePathBase = `${rootPath}/libraries/${library}/hedhog/table/${tableName}`;
+    if (await this.exists(`${tablePathBase}.yaml`)) {
+      await unlink(`${tablePathBase}.yaml`);
+    }
+    if (await this.exists(`${tablePathBase}.yml`)) {
+      await unlink(`${tablePathBase}.yml`);
+    }
+    columns = await this.formatColumns(columns);
+    await writeFile(`${tablePathBase}.yaml`, stringify({ columns }), {
+      encoding: 'utf8',
+    });
+    return { success: true };
+  }
+
   async table(library: string, tableName: string) {
     const rootPath = await realpath(`${process.cwd()}/../../`);
-
     let tablePath = `${rootPath}/libraries/${library}/hedhog/table/${tableName}.yaml`;
     if (!(await this.exists(tablePath))) {
       tablePath = `${rootPath}/libraries/${library}/hedhog/table/${tableName}.yml`;
     }
-
     if (!(await this.exists(tablePath))) {
       throw new BadRequestException(`Table ${tableName} does not exist`);
     }
-
     try {
       const yamlData = parse(await readFile(tablePath, 'utf8'));
       return {
         id: `${library}-${tableName}`,
         name: tableName,
-        library: library,
+        library,
         columns: yamlData.columns || [],
       };
     } catch (error: any) {
@@ -174,13 +292,10 @@ export class ${pascal}Service {
     const kebabName = toKebabCase(name);
     const rootPath = await realpath(`${process.cwd()}/../../`);
     const packagesPath = `${rootPath}/libraries/${kebabName}`;
-
     if (await this.exists(packagesPath)) {
       throw new BadRequestException('Package already exists');
     }
-
     await mkdir(`${packagesPath}/src`, { recursive: true });
-
     await Promise.all([
       this.writeFileUtf8(
         `${packagesPath}/.eslintrc.js`,
@@ -212,7 +327,6 @@ export class ${pascal}Service {
         this.getIndexFile(name),
       ),
     ]);
-
     await this.updateTsConfigApi(name);
     await this.updateTsConfigLibrary(name);
   }
@@ -224,15 +338,12 @@ export class ${pascal}Service {
         `${process.cwd()}/../../libraries/typescript-config`,
       );
       const tsConfigPath = `${rootPath}/nestjs-library.json`;
-
       if (!(await this.exists(tsConfigPath))) {
         const packages = await this.getPackagesFromDirectory();
-
         const paths = {
           '@prisma/client': ['../api-prisma/node_modules/.prisma/client'],
           '@prisma/client/*': ['../api-prisma/node_modules/.prisma/client/*'],
         };
-
         for (const dir of packages) {
           if (!dir.isDirectory()) continue;
           const kebab = toKebabCase(dir.name);
@@ -270,22 +381,18 @@ export class ${pascal}Service {
           ),
         );
       }
-
       const tsConfigData = JSON.parse(
         await readFile(tsConfigPath, { encoding: 'utf8' }),
       );
-
       tsConfigData.compilerOptions = tsConfigData.compilerOptions || {};
       tsConfigData.compilerOptions.paths =
         tsConfigData.compilerOptions.paths || {};
-
       tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}`] = [
         `../${kebabName}/src`,
       ];
       tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}/*`] = [
         `../${kebabName}/src/*`,
       ];
-
       await this.writeFileUtf8(
         tsConfigPath,
         JSON.stringify(tsConfigData, null, 2),
@@ -302,10 +409,8 @@ export class ${pascal}Service {
       const kebabName = toKebabCase(name);
       const rootPath = await realpath(`${process.cwd()}/../../apps/api`);
       const tsConfigPath = `${rootPath}/tsconfig.json`;
-
       if (!(await this.exists(tsConfigPath))) {
         const libraries = await this.getPackagesFromDirectory();
-
         const paths = {
           '@prisma/client': [
             '../../packages/api-prisma/node_modules/.prisma/client',
@@ -314,14 +419,12 @@ export class ${pascal}Service {
             '../../packages/api-prisma/node_modules/.prisma/client/*',
           ],
         };
-
         for (const dir of libraries) {
           if (!dir.isDirectory()) continue;
           const kebab = toKebabCase(dir.name);
           paths[`@hedhog/${kebab}`] = [`../../libraries/${kebab}/src`];
           paths[`@hedhog/${kebab}/*`] = [`../../libraries/${kebab}/src/*`];
         }
-
         await this.writeFileUtf8(
           tsConfigPath,
           JSON.stringify(
@@ -359,22 +462,18 @@ export class ${pascal}Service {
           ),
         );
       }
-
       const tsConfigData = JSON.parse(
         await readFile(tsConfigPath, { encoding: 'utf8' }),
       );
-
       tsConfigData.compilerOptions = tsConfigData.compilerOptions || {};
       tsConfigData.compilerOptions.paths =
         tsConfigData.compilerOptions.paths || {};
-
       tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}`] = [
         `../../packages/${kebabName}/src`,
       ];
       tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}/*`] = [
         `../../packages/${kebabName}/src/*`,
       ];
-
       await this.writeFileUtf8(
         tsConfigPath,
         JSON.stringify(tsConfigData, null, 2),
@@ -397,12 +496,9 @@ export class ${pascal}Service {
   async tree(): Promise<any> {
     const rootPath = await realpath(`${process.cwd()}/../../`);
     const packagesPath = `${rootPath}/libraries`;
-
     const tree = [];
-
     for (const dir of await this.getPackagesFromDirectory()) {
       if (!dir.isDirectory()) continue;
-
       const tables = [];
       const tablesPath = `${packagesPath}/${dir.name}/hedhog/table`;
       if (await this.exists(tablesPath)) {
@@ -410,7 +506,6 @@ export class ${pascal}Service {
           withFileTypes: true,
         })) {
           if (!table.isFile()) continue;
-
           let columns = [];
           try {
             const yamlData = parse(
@@ -418,29 +513,24 @@ export class ${pascal}Service {
             );
             columns = yamlData.columns || [];
           } catch {}
-
           tables.push({
             name: table.name.replace(/\.ya?ml$/, ''),
             columns,
           });
         }
       }
-
       const screens = [];
       const screensPath = `${packagesPath}/${dir.name}/hedhog/screen`;
-
       if (await this.exists(screensPath)) {
         for (const screen of await readdir(screensPath, {
           withFileTypes: true,
         })) {
           if (!screen.isFile()) continue;
-
           screens.push({
             name: screen.name.replace(/\.ya?ml$/, ''),
           });
         }
       }
-
       tree.push({
         id: toKebabCase(dir.name),
         name: dir.name,
@@ -491,7 +581,6 @@ export class ${pascal}Service {
         ],
       });
     }
-
     return tree;
   }
 }

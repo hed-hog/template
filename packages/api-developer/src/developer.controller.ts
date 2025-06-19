@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { DeveloperService } from './developer.service';
 import { CreatePackageDto } from './dto/create-package.dto';
+import { SaveTableDTO } from './dto/save-table.dto';
 
 @Controller('developer')
 export class DeveloperController {
@@ -17,6 +18,11 @@ export class DeveloperController {
     @Param('library') library: string,
   ) {
     return this.service.table(library, tableName);
+  }
+
+  @Post('table')
+  async saveTable(@Body() data: SaveTableDTO) {
+    return this.service.saveTable(data);
   }
 
   @Post('package')
