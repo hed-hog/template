@@ -13,6 +13,7 @@
     "@hedhog/api-prisma": "workspace:*",
     "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
+    "crypto": "^1.0.1",
     "yaml": "^2.8.0"
   },
   "exports": {

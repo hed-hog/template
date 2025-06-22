@@ -26,11 +26,16 @@ async function getBranchName() {
 }
 
 async function getDatabaseType() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/healthy/database`,
-  );
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/healthy/database`,
+    );
 
-  return res.json();
+    return res.json();
+  } catch (err) {
+    console.error('Error fetching database type:', err);
+    return { database: 'unknown', connected: false };
+  }
 }
 
 export default async function Page() {

@@ -12,6 +12,8 @@ import { parse, stringify } from 'yaml';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { toKebabCase, toPascalCase } from '@hedhog/api';
 import { SaveTableDTO } from './dto/save-table.dto';
+import { createHash } from 'crypto';
+import { SaveScreenDTO } from './dto/save-screen.dto';
 
 @Injectable()
 export class DeveloperService {
@@ -112,6 +114,49 @@ export class DeveloperService {
           return column;
       }
     });
+  }
+
+  async saveScreen({
+    library,
+    name,
+    description,
+    icon,
+    menu,
+    roles,
+    routes,
+    slug,
+    title,
+  }: SaveScreenDTO) {
+    const rootPath = await realpath(`${process.cwd()}/../../`);
+    const tablePathBase = `${rootPath}/libraries/${library}/hedhog/screen/${title}`;
+
+    if (await this.exists(`${tablePathBase}.yaml`)) {
+      await unlink(`${tablePathBase}.yaml`);
+    }
+
+    if (await this.exists(`${tablePathBase}.yml`)) {
+      await unlink(`${tablePathBase}.yml`);
+    }
+
+    await writeFile(
+      `${tablePathBase}.yaml`,
+      stringify({
+        slug,
+        icon,
+        name,
+        description,
+        routes,
+        roles,
+        menu: {
+          icon,
+          name,
+        },
+      }),
+      {
+        encoding: 'utf8',
+      },
+    );
+    return { success: true };
   }
 
   async saveTable({ columns, library, tableName }: SaveTableDTO) {
@@ -505,7 +550,20 @@ export class ${pascal}Service {
         for (const table of await readdir(tablesPath, {
           withFileTypes: true,
         })) {
-          if (!table.isFile()) continue;
+          console.log({
+            table,
+            isFile: table.isFile(),
+            name: table.name,
+            endsWithYaml: table.name.endsWith('.yaml'),
+            endsWithYml: table.name.endsWith('.yml'),
+          });
+
+          if (
+            !table.isFile() ||
+            !(table.name.endsWith('.yaml') || table.name.endsWith('.yml'))
+          ) {
+            continue;
+          }
           let columns = [];
           try {
             const yamlData = parse(
@@ -531,10 +589,13 @@ export class ${pascal}Service {
           });
         }
       }
+
+      const hash = await this.hashLibrary(dir.name);
       tree.push({
         id: toKebabCase(dir.name),
         name: dir.name,
         type: 'library',
+        hash,
         children: [
           {
             id: `${toKebabCase(dir.name)}-table`,
@@ -563,14 +624,6 @@ export class ${pascal}Service {
             })),
           },
           {
-            id: 'menus',
-            name: 'Menus',
-            type: 'folder',
-            path: 'menus',
-            isOpen: false,
-            color: '#f59e0b',
-          },
-          {
             id: 'settings',
             name: 'Settings',
             type: 'folder',
@@ -582,5 +635,41 @@ export class ${pascal}Service {
       });
     }
     return tree;
+  }
+
+  async hashLibrary(library: string) {
+    const rootPath = await realpath(`${process.cwd()}/../../`);
+    const libraryPath = `${rootPath}/libraries/${library}`;
+    const hedhogPath = `${rootPath}/hedhog.json`;
+    const sum = createHash('sha256');
+    let currentHash = '';
+
+    if (await this.exists(hedhogPath)) {
+      const hedhog = require(hedhogPath);
+
+      if (hedhog && hedhog.libraries && hedhog.libraries[library]) {
+        currentHash = hedhog.libraries[library] || '';
+      }
+    }
+
+    let paths = [];
+
+    async function scanDirectory(dir: string): Promise<void> {
+      const entries = await readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.name === 'node_modules') continue;
+        const path = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) {
+          await scanDirectory(path);
+        } else {
+          const fileContent = await readFile(path, 'utf8');
+          paths.push({ path, content: fileContent });
+        }
+      }
+    }
+
+    await scanDirectory(libraryPath);
+    const hash = sum.update(JSON.stringify(paths)).digest('hex');
+    return { hash, currentHash, isUpToDate: hash === currentHash };
   }
 }

@@ -1,4 +1,7 @@
 {
   "installed": true,
-  "developerMode": true
+  "developerMode": true,
+  "libraries": {
+    "admin": "cd6dd978d333bd8edefa9c8fd0c5c81545258de4c2b34b1697008de5f6b5332a"
+  }
 }

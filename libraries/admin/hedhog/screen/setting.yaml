@@ -6,8 +6,14 @@ name:
 description:
   en: Manage system setting and configurations.
   pt: Gerenciar configurações e definições do sistema.
-relations:
-  route:
-    - where:
-        url:
-          like: /setting%
+menu:
+  url: /management/setting
+  icon: settings
+  name:
+    en: Setting
+    pt: Configurações
+  slug: /management/setting
+  roles:
+    - admin
+routes:
+  - /setting%

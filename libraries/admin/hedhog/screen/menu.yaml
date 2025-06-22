@@ -1,13 +1,15 @@
-slug: /management/menu
-icon: menu
-name:
-  en: Menu
-  pt: Menu
+slug: /management/setting
+icon: database
+name: &a1
+  en: Setting
+  pt: Configurações
 description:
-  en: Manage the menu in the system.
-  pt: Gerenciar os menu no sistema.
-relations:
-  route:
-    - where:
-        url:
-          like: /menu%
+  en: Manage system setting and configurations.
+  pt: Gerenciar configurações e definições do sistema.
+routes:
+  - /setting%
+roles:
+  - admin
+menu:
+  icon: database
+  name: *a1

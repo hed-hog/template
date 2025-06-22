@@ -5,7 +5,6 @@ import {
   Trash2,
   Save,
   Table2Icon,
-  Locate,
   Languages,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,14 +17,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Tab, TableColumn } from '../types';
+import type { Tab,  } from '../types';
 import { useSystem } from '@/components/provider/system-provider';
 import { useQuery } from '@tanstack/react-query';
 import type React from 'react';
 import { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import { FixedSizeList as List } from 'react-window';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { IconLinkPlus } from '@tabler/icons-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { IconColumns,  IconLinkPlus, IconListDetails } from '@tabler/icons-react';
 import {
   Tooltip,
   TooltipContent,
@@ -33,6 +32,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import DataGridEditor from './data-grid-editor';
 
 interface TableEditorProps {
   activeTab: Tab;
@@ -407,6 +407,7 @@ export function TableEditor({
   onSave,
   onContentChange,
 }: TableEditorProps) {
+  const [activeTabId, onTabSelect] = useState<string>('columns');
   const [isLoading, setIsLoading] = useState(false);
   const [tab, setTab] = useState<Tab>(initActiveTab);
   const { request, language } = useSystem();
@@ -464,7 +465,6 @@ export function TableEditor({
       unique: false,
       unsigned: false,
       autoIncrement: false,
-      locale: false,
       defaultValue: 'NULL',
       
     };
@@ -561,6 +561,9 @@ export function TableEditor({
     [columns, handleUpdateColumn, handleDeleteColumn],
   );
 
+  const listheight = document.body.clientHeight - 30 - 36 - 48 - 24 - 4;
+    
+
   useEffect(() => {
     setTab(initActiveTab);
   }, [initActiveTab]);
@@ -570,10 +573,12 @@ export function TableEditor({
     setColumns(formattedColumns);
   }, [table.columns]);
 
-  return (
-    <TooltipProvider>
-      <Card className="w-full max-w-7xl mx-auto border-none shadow-none">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
+  const renderContentTab = () => {
+    switch (activeTabId) {
+      case 'columns':
+        return (
+          <>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
           <div className="flex items-center gap-2">
             <Table2Icon className="h-4 w-4" />
             <CardTitle className="text-md">Table Editor</CardTitle>
@@ -603,7 +608,7 @@ export function TableEditor({
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 border-none">
+        <CardContent className={`p-0 border-none`} style={{height: `${listheight}px`}}>
           {columns.length > 0 ? (
             <>
               {/* Header */}
@@ -635,7 +640,7 @@ export function TableEditor({
                 {/* This container might need specific height if List height is percentage */}
                 <List
                   height={Math.min(
-                    document.body.clientHeight - 30 - 36 - 48 - 24,
+                    listheight,
                     columns.length * 50
                   )} // Max height 600px, or total height if less
                   itemCount={columns.length}
@@ -652,7 +657,78 @@ export function TableEditor({
               No columns to display. Click "Add Column" to get started.
             </div>
           )}
+        </CardContent></>
+        );
+      case 'data':
+        return (
+          <>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
+          <div className="flex items-center gap-2">
+            <Table2Icon className="h-4 w-4" />
+            <CardTitle className="text-md">Table Data</CardTitle>
+            <span className="text-sm text-muted-foreground">
+              {columns.length} registers
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleAddColumn}
+              size="sm"
+              className="h-8 px-2"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Column
+            </Button>
+            <Button
+              onClick={handleSave}
+              size="sm"
+              disabled={isLoading}
+              className="h-8 px-2"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {isLoading ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className={`p-0 border-none`} style={{height: `${listheight}px`}}>
+          <DataGridEditor/>
         </CardContent>
+          </>
+        );
+      default:
+        return <></>;
+    }
+  }
+
+  return (
+    <TooltipProvider>
+      <Card className="w-full mx-auto border-none shadow-none">
+        {renderContentTab()}
+        <CardFooter className="flex justify-start p-0 overflow-auto bg-muted">
+          <div className="flex w-fit">
+            {[{id:'columns', icon:<Table2Icon className="h-4 w-4"/>, title:'Columns'},{id:'data', icon:<IconListDetails className="h-4 w-4"/>, title:'Data'}].map((tab) => <div
+              key={tab.id}
+              className={cn(
+                'flex items-center h-9 px-4 border-r border-t-2 text-sm cursor-pointer select-none',
+                activeTabId === tab.id
+                  ? 'border-t-primary bg-background'
+                  : 'border-t-transparent hover:bg-accent/50',
+              )}
+              onClick={() => onTabSelect(tab.id)}
+            >
+              <span
+                className={cn(
+                  'mr-1 gap-2 flex items-center',
+                )}
+              >
+                {tab.icon}
+                {tab.title}
+              </span>
+            </div>)}
+          </div>
+        </CardFooter>
       </Card>
     </TooltipProvider>
   );

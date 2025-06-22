@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ChevronRight,
   ChevronDown,
@@ -14,13 +14,16 @@ import {
   FileCode,
   Cog,
   Type,
+  UploadCloud,
 } from 'lucide-react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 import type { FileTreeItem, Tab } from '../types';
-import { IconPackage } from '@tabler/icons-react';
+import { IconLogs, IconPackage, IconReload } from '@tabler/icons-react';
+import { Button } from '@/components/ui/button';
+import { useSystem } from '@/components/provider/system-provider';
 
 interface TreeViewProps {
   fileTree: FileTreeItem[];
@@ -33,6 +36,8 @@ export function TreeView({
   onFileSelect,
   onCreateTab,
 }: TreeViewProps) {
+  const [data, setData] = useState<FileTreeItem[]>(fileTree);
+  const { request } = useSystem();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set(),
   );
@@ -54,7 +59,7 @@ export function TreeView({
           return <Database className="h-4 w-4" style={{ color: item.color }} />;
         if (item.name === 'Screens')
           return <Monitor className="h-4 w-4" style={{ color: item.color }} />;
-        if (item.name === 'Menus')
+        if (item.name === 'Data')
           return <Menu className="h-4 w-4" style={{ color: item.color }} />;
         if (item.name === 'Settings')
           return <Settings className="h-4 w-4" style={{ color: item.color }} />;
@@ -67,6 +72,8 @@ export function TreeView({
         return <Cog className="h-4 w-4 text-violet-500" />;
       case 'library':
         return <IconPackage className="h-4 w-4 text-orange-500" />;
+      case 'data':
+        return <IconLogs className="h-4 w-4 text-yellow-500" />;
       case 'file':
       default:
         return <FileCode className="h-4 w-4 text-gray-500" />;
@@ -115,6 +122,19 @@ export function TreeView({
             )}
             {getItemIcon(item)}
             <span className="flex-1 ml-1">{item.name}</span>
+            {item.type === 'library' && !item.hash.isUpToDate && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Lógica de publicação
+                }}
+                className="ml-auto flex items-center px-2 py-1 text-muted-foreground hover:bg-primary hover:text-primary-foreground rounded-sm transition-colors active:bg-primary/80 h-6"
+                title="Publicar"
+              >
+                <UploadCloud className="h-4 w-4" />
+                <span className="ml-1">Publicar</span>
+              </button>
+            )}
           </div>
 
           {hasChildren && isExpanded && (
@@ -125,12 +145,26 @@ export function TreeView({
     });
   };
 
+  const reload = useCallback(() => {
+    request({
+      url: `/developer/tree`,
+    }).then((tree) => setData(tree as FileTreeItem[]));
+  }, []);
+
   return (
     <div className="h-full flex flex-col">
-      <div className="p-3 text-sm font-medium">RESOURCES</div>
-      <ScrollArea className="flex-1 px-1">
-        {renderTreeItems(fileTree)}
-      </ScrollArea>
+      <div className="flex justify-between items-center">
+        <div className="p-3 text-sm font-medium">Libraries</div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => reload()}
+          className="h-8 w-8 flex items-center justify-center mr-1"
+        >
+          <IconReload className="w-4 h-4 " />
+        </Button>
+      </div>
+      <ScrollArea className="flex-1 px-1">{renderTreeItems(data)}</ScrollArea>
     </div>
   );
 }

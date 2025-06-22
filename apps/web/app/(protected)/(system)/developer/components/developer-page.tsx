@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSystem } from '@/components/provider/system-provider';
 import { IconReload } from '@tabler/icons-react';
 import { useDeveloper } from './developer-provider';
+import ScreenEditor from './screen-editor';
 
 export default function DeveloperPage() {
   const { request, token } = useSystem();
@@ -91,13 +92,7 @@ export default function DeveloperPage() {
 
     switch (activeTab.type) {
       case 'screen':
-        return (
-          <CodeEditor
-            activeTab={activeTab}
-            onSave={() => {}}
-            onContentChange={(content) => handleContentChange(true)}
-          />
-        );
+        return <ScreenEditor activeTab={activeTab} />;
       case 'table':
         return (
           <TableEditor

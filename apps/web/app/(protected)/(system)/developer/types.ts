@@ -73,7 +73,7 @@ export interface TableIndex {
 export interface FileTreeItem {
   id: string;
   name: string;
-  type: 'file' | 'folder' | 'table' | 'screen' | 'setting' | 'library';
+  type: 'file' | 'folder' | 'table' | 'screen' | 'setting' | 'library' | 'data';
   path: string;
   children?: FileTreeItem[];
   isOpen?: boolean;
@@ -82,6 +82,11 @@ export interface FileTreeItem {
   module?: string;
   color?: string;
   library: string;
+  hash?: {
+    hash: string;
+    currentHash: string;
+    isUpToDate: boolean;
+  };
 }
 
 export interface Tab {
