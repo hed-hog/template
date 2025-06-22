@@ -70,7 +70,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({
   if (!isEditing) {
     return (
       <div
-        className="w-full h-full px-2 py-1.5 truncate cursor-pointer flex items-center"
+        className="w-full h-full px-2 py-1 truncate cursor-pointer flex items-center text-xs"
         onClick={() => setIsEditing(true)}
         title={String(value !== null && value !== undefined ? value : '')}
       >
@@ -98,12 +98,12 @@ export const EditableCell: React.FC<EditableCellProps> = ({
           onChange={handleChange}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="w-full h-full text-sm p-1.5 border-primary"
+          className="w-full h-full text-sm p-1 border-primary"
         />
       );
     case 'boolean':
       return (
-        <div className="w-full h-full flex items-center justify-center p-1.5">
+        <div className="w-full h-full flex items-center justify-center p-1 text-xs">
           <Checkbox
             checked={!!currentValue}
             onCheckedChange={(checked) => {
@@ -125,7 +125,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({
           onChange={handleChange}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="w-full h-full text-sm p-1.5 border-primary"
+          className="w-full h-full text-sm p-1 border-primary"
         />
       );
     case 'string':
@@ -138,7 +138,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({
             onChange={handleChange}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className="w-full h-full text-sm p-1.5 border-primary rounded-md resize-none bg-background"
+            className="w-full h-full text-sm p-1 border-primary rounded-md resize-none bg-background"
             rows={2}
           />
         );
@@ -151,10 +151,10 @@ export const EditableCell: React.FC<EditableCellProps> = ({
           onChange={handleChange}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="w-full h-full text-sm p-1.5 border-primary"
+          className="w-full h-full text-sm p-1 border-primary"
         />
       );
     default:
-      return <div className="p-1.5">{String(value)}</div>;
+      return <div className="p-1">{String(value)}</div>;
   }
 };

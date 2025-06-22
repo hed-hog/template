@@ -26,6 +26,14 @@ export class DeveloperController {
     return this.service.table(library, tableName);
   }
 
+  @Get('data/:library/:tableName')
+  async data(
+    @Param('tableName') tableName: string,
+    @Param('library') library: string,
+  ) {
+    return this.service.data(library, tableName);
+  }
+
   @Post('table')
   async saveTable(@Body() data: SaveTableDTO) {
     return this.service.saveTable(data);

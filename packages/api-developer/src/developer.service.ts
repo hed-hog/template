@@ -19,6 +19,15 @@ import { SaveScreenDTO } from './dto/save-screen.dto';
 export class DeveloperService {
   constructor(private readonly schema: SchemaService) {}
 
+  private async removeYamlFiles(fileBasePath: string): Promise<void> {
+    for (const ext of ['.yaml', '.yml']) {
+      const filePath = `${fileBasePath}${ext}`;
+      if (await this.exists(filePath)) {
+        await unlink(filePath);
+      }
+    }
+  }
+
   private formatPkColumn(column: any) {
     const formattedColumn: any = { type: 'pk' };
     if (column.name !== 'id') formattedColumn.name = column.name;
@@ -128,18 +137,10 @@ export class DeveloperService {
     title,
   }: SaveScreenDTO) {
     const rootPath = await realpath(`${process.cwd()}/../../`);
-    const tablePathBase = `${rootPath}/libraries/${library}/hedhog/screen/${title}`;
-
-    if (await this.exists(`${tablePathBase}.yaml`)) {
-      await unlink(`${tablePathBase}.yaml`);
-    }
-
-    if (await this.exists(`${tablePathBase}.yml`)) {
-      await unlink(`${tablePathBase}.yml`);
-    }
-
+    const screenBasePath = `${rootPath}/libraries/${library}/hedhog/screen/${title}`;
+    await this.removeYamlFiles(screenBasePath);
     await writeFile(
-      `${tablePathBase}.yaml`,
+      `${screenBasePath}.yaml`,
       stringify({
         slug,
         icon,
@@ -147,14 +148,9 @@ export class DeveloperService {
         description,
         routes,
         roles,
-        menu: {
-          icon,
-          name,
-        },
+        menu: { icon, name },
       }),
-      {
-        encoding: 'utf8',
-      },
+      { encoding: 'utf8' },
     );
     return { success: true };
   }
@@ -162,12 +158,7 @@ export class DeveloperService {
   async saveTable({ columns, library, tableName }: SaveTableDTO) {
     const rootPath = await realpath(`${process.cwd()}/../../`);
     const tablePathBase = `${rootPath}/libraries/${library}/hedhog/table/${tableName}`;
-    if (await this.exists(`${tablePathBase}.yaml`)) {
-      await unlink(`${tablePathBase}.yaml`);
-    }
-    if (await this.exists(`${tablePathBase}.yml`)) {
-      await unlink(`${tablePathBase}.yml`);
-    }
+    await this.removeYamlFiles(tablePathBase);
     columns = await this.formatColumns(columns);
     await writeFile(`${tablePathBase}.yaml`, stringify({ columns }), {
       encoding: 'utf8',
@@ -272,10 +263,7 @@ module.exports = {
           prisma: '^6.9.0',
         },
         exports: {
-          '.': {
-            import: './dist/index.js',
-            require: './dist/index.js',
-          },
+          '.': { import: './dist/index.js', require: './dist/index.js' },
           './package.json': './package.json',
         },
       },
@@ -538,6 +526,38 @@ export class ${pascal}Service {
     );
   }
 
+  async getDataFromYaml(path: string) {
+    const rootPath = await realpath(`${process.cwd()}/../../`);
+    const basePath = `${rootPath}/${path}`;
+    const resolvedPath = await this.resolveYamlPath(basePath);
+    if (!resolvedPath) {
+      throw new BadRequestException(`Data file for ${path} does not exist`);
+    }
+    return parse(await readFile(resolvedPath, 'utf8'));
+  }
+
+  private async resolveYamlPath(basePath: string): Promise<string | null> {
+    for (const ext of ['.yaml', '.yml']) {
+      const candidate = `${basePath}${ext}`;
+      if (await this.exists(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  async data(library: string, tableName: string) {
+    try {
+      const [data, table] = await Promise.all([
+        this.getDataFromYaml(`libraries/${library}/hedhog/data/${tableName}`),
+        this.getDataFromYaml(`libraries/${library}/hedhog/table/${tableName}`),
+      ]);
+      return { data, table };
+    } catch {
+      return [];
+    }
+  }
+
   async tree(): Promise<any> {
     const rootPath = await realpath(`${process.cwd()}/../../`);
     const packagesPath = `${rootPath}/libraries`;
@@ -550,20 +570,7 @@ export class ${pascal}Service {
         for (const table of await readdir(tablesPath, {
           withFileTypes: true,
         })) {
-          console.log({
-            table,
-            isFile: table.isFile(),
-            name: table.name,
-            endsWithYaml: table.name.endsWith('.yaml'),
-            endsWithYml: table.name.endsWith('.yml'),
-          });
-
-          if (
-            !table.isFile() ||
-            !(table.name.endsWith('.yaml') || table.name.endsWith('.yml'))
-          ) {
-            continue;
-          }
+          if (!table.isFile() || !table.name.match(/\.ya?ml$/)) continue;
           let columns = [];
           try {
             const yamlData = parse(
@@ -589,7 +596,6 @@ export class ${pascal}Service {
           });
         }
       }
-
       const hash = await this.hashLibrary(dir.name);
       tree.push({
         id: toKebabCase(dir.name),
@@ -643,17 +649,13 @@ export class ${pascal}Service {
     const hedhogPath = `${rootPath}/hedhog.json`;
     const sum = createHash('sha256');
     let currentHash = '';
-
     if (await this.exists(hedhogPath)) {
       const hedhog = require(hedhogPath);
-
       if (hedhog && hedhog.libraries && hedhog.libraries[library]) {
         currentHash = hedhog.libraries[library] || '';
       }
     }
-
-    let paths = [];
-
+    let paths: Array<{ path: string; content: string }> = [];
     async function scanDirectory(dir: string): Promise<void> {
       const entries = await readdir(dir, { withFileTypes: true });
       for (const entry of entries) {
@@ -667,7 +669,6 @@ export class ${pascal}Service {
         }
       }
     }
-
     await scanDirectory(libraryPath);
     const hash = sum.update(JSON.stringify(paths)).digest('hex');
     return { hash, currentHash, isUpToDate: hash === currentHash };

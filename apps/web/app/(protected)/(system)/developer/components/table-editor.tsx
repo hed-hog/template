@@ -693,7 +693,7 @@ export function TableEditor({
         </CardHeader>
 
         <CardContent className={`p-0 border-none`} style={{height: `${listheight}px`}}>
-          <DataGridEditor/>
+          <DataGridEditor library={tab.library} table={tab.title}/>
         </CardContent>
           </>
         );

@@ -15,6 +15,8 @@ import {
   createNewRowData,
 } from './grid-types';
 import { EditableCell } from './editable-cell';
+import { useQuery } from '@tanstack/react-query';
+import { useSystem } from '@/components/provider/system-provider';
 
 const ROW_HEIGHT = 48; // Adjust based on cell content and padding
 
@@ -79,13 +81,76 @@ const GridRow = memo(({ index, style, data }: GridRowProps) => {
 });
 GridRow.displayName = 'GridRow';
 
-export default function DataGridEditor() {
-  const [columnMetas] = useState<ColumnMeta[]>(sampleColumnMetas);
-  const [rowsData, setRowsData] = useState<RowData[]>(sampleInitialRows);
+const getDataTypeFromType = (type: string) => {
+  switch (type) {
+    case 'pk':
+    case 'fk':
+    case 'int':
+    case 'decimal':
+    case 'order':
+      return 'number';
+    case 'slug':
+      return 'string';
+    case 'bit':
+    case 'boolean':
+      return 'boolean';
+    case 'date':
+    case 'datetime':
+    case 'timestamp':
+    case 'created_at':
+    case 'updated_at':
+      return 'date';
+    default:
+      return 'string';
+  }
+};
+
+type DataGridEditorProps = {
+  library: string;
+  table: string;
+};
+
+export default function DataGridEditor({
+  library,
+  table,
+}: DataGridEditorProps) {
+  const { request, language } = useSystem();
+
+  const { data } = useQuery<any>({
+    queryKey: [library, table, language],
+    queryFn: () =>
+      request({
+        url: `/developer/data/${library}/${table}`,
+      }),
+    initialData: {
+      data: [],
+      table: {
+        columns: [],
+      },
+    },
+  });
+
+  const [columnMetas] = useState<ColumnMeta[]>(
+    data.table.columns
+      .filter((col: any) => !['pk'].includes(col.type))
+      .map((col: any) => ({
+        key: col.name,
+        label: col.name,
+        dataType: getDataTypeFromType(col.type),
+        width: col.width || 150,
+        defaultValue: col.default || '',
+      })),
+  );
+  const [rowsData, setRowsData] = useState<RowData[]>(
+    data.data.map((row: any) => ({
+      ...row,
+      id: row.id || crypto.randomUUID(),
+    })),
+  );
   const { toast } = useToast();
 
   const totalColumnsWidth = columnMetas.reduce(
-    (acc, col) => acc + (col.width || 150),
+    (acc, col) => acc + (col.width || 100),
     0,
   );
 
@@ -175,7 +240,7 @@ export default function DataGridEditor() {
             {columnMetas.map((col) => (
               <div
                 key={col.key}
-                className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-r dark:border-neutral-700 flex-shrink-0 flex items-center"
+                className="px-2 py-1 text-xs font-xs text-muted-foreground border-r dark:border-neutral-700 flex-shrink-0 flex items-center"
                 style={{ width: `${col.width || 150}px` }}
               >
                 {col.label}
