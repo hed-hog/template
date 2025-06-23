@@ -82,6 +82,13 @@
             preferido
         value: en
         user_override: true
+        component: combobox
+        relations:
+          setting_list:
+            - value: en
+              order: 0
+            - value: pt
+              order: 1
       - slug: timezone
         type: string
         name:
@@ -92,6 +99,25 @@
           pt: O fuso horário a utilizar
         value: UTC
         user_override: true
+      - slug: date_format
+        type: string
+        component: radio
+        name:
+          en: Date Format
+          pt: Formato de Data
+        description:
+          en: How dates will be displayed
+          pt: Como as datas serão exibidas
+        value: DD/MM/YYYY
+        user_override: false
+        relations:
+          setting_list:
+            - value: DD/MM/YYYY
+              order: 0
+            - value: MM/DD/YYYY
+              order: 1
+            - value: YYYY-MM-DD
+              order: 2
 - slug: oauth
   icon: brand-auth0
   name:
@@ -299,6 +325,19 @@
           en: The primary color to use
           pt: A cor primária a utilizar
         value: "#70e2ff"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-primary-foreground
         type: string
         name:
@@ -308,6 +347,19 @@
           en: The primary color foreground to use
           pt: O contraste da cor primária a utilizar
         value: "#09203f"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-secondary
         type: string
         name:
@@ -317,6 +369,19 @@
           en: The secondary color to use
           pt: A cor secundária a utilizar
         value: "#09203f"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-secondary-foreground
         type: string
         name:
@@ -326,6 +391,19 @@
           en: The secondary color foreground to use
           pt: O contraste da cor secundária a utilizar
         value: "#70e2ff"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-accent
         type: string
         name:
@@ -335,6 +413,19 @@
           en: The accent color to use
           pt: A cor de realce a utilizar
         value: "#09203f"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-accent-foreground
         type: string
         name:
@@ -344,6 +435,19 @@
           en: The accent color foreground to use
           pt: O contraste da cor de realce a utilizar
         value: "#70e2ff"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-muted
         type: string
         name:
@@ -353,6 +457,19 @@
           en: The muted color to use
           pt: A cor suave a utilizar
         value: "#09203f"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-muted-foreground
         type: string
         name:
@@ -362,6 +479,19 @@
           en: The muted color foreground to use
           pt: O contraste da cor suave a utilizar
         value: "#E2E2E2"
+        component: color-picker
+        relations:
+          setting_list:
+            - value: "#3B82F6"
+              order: 0
+            - value: "#22C55E"
+              order: 1
+            - value: "#8B5CF6"
+              order: 2
+            - value: "#EF4444"
+              order: 3
+            - value: "#F97316"
+              order: 4
       - slug: theme-radius
         type: string
         name:

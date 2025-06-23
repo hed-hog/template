@@ -669,6 +669,7 @@ model setting {
   updated_at     DateTime                @default(now()) @db.Timestamp(6)
   component      setting_component_enum? @default(input_text)
   setting_group  setting_group           @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_07f390cb981a5f4bb7a4a354d06")
+  setting_list   setting_list[]
   setting_locale setting_locale[]
   setting_user   setting_user[]
 }
@@ -943,6 +944,16 @@ model vault_vault {
   vault_vault_vault_vault_idTovault         vault    @relation("vault_vault_vault_idTovault", fields: [vault_id], references: [id], onDelete: Cascade, map: "FK_51029450e633057e2b323011070")
 
   @@id([vault_id, vault_id_related], map: "PK_97bc1dc0c78494e57a7f00f557c")
+}
+
+model setting_list {
+  id         Int      @id @default(autoincrement())
+  setting_id Int
+  order      Int      @default(0)
+  value      String   @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  setting    setting  @relation(fields: [setting_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_setting_list_setting")
 }
 
 enum route_method_enum {

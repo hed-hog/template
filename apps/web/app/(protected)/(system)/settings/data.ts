@@ -123,9 +123,9 @@ export const CURRENCY_OPTIONS = [
 ];
 
 export const COLOR_OPTIONS = [
-  { value: 'blue', label: 'Azul', color: 'bg-blue-500' },
-  { value: 'green', label: 'Verde', color: 'bg-green-500' },
-  { value: 'purple', label: 'Roxo', color: 'bg-purple-500' },
-  { value: 'red', label: 'Vermelho', color: 'bg-red-500' },
-  { value: 'orange', label: 'Laranja', color: 'bg-orange-500' },
+  { value: 'blue', label: 'Azul', color: '#3B82F6' },
+  { value: 'green', label: 'Verde', color: '#22C55E' },
+  { value: 'purple', label: 'Roxo', color: '#8B5CF6' },
+  { value: 'red', label: 'Vermelho', color: '#EF4444' },
+  { value: 'orange', label: 'Laranja', color: '#F97316' },
 ];

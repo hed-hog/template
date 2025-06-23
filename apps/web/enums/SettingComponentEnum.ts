@@ -1,7 +1,7 @@
 export enum SettingComponentEnum {
     inputText = 'input_text',
     inputNumber = 'input_number',
-    comboBox = 'combo_box',
+    comboBox = 'combobox',
     radio = 'radio',
     colorPicker = 'color_picker',
     switch = 'switch',
