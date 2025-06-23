@@ -1,12 +1,13 @@
 {
   "name": "@hedhog/admin",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "_dev": "pnpm build --watch",
     "build": "tsc -b -v",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prod": "pnpm build && pnpm publish"
   },
   "dependencies": {
     "@hedhog/api": "workspace:*",
