@@ -22,7 +22,7 @@ export class SettingService {
     private readonly paginationService: PaginationService,
     @Inject(forwardRef(() => LocaleService))
     private readonly localeService: LocaleService,
-  ) {}
+  ) { }
 
   async getSystemSettings(locale: string): Promise<any> {
     const locales = await this.localeService.getEnables(locale);
@@ -99,7 +99,7 @@ export class SettingService {
     return { success: true };
   }
 
-  async getSettingFromGroup(locale: any, paginationParams: any, slug: string) {
+  async getSettingFromGroup(locale: any, paginationParams: any, slug: string, userId: number) {
     const fields = ['slug', 'value'];
 
     paginationParams.pageSize = 100;
@@ -146,6 +146,25 @@ export class SettingService {
             select: {
               name: true,
               description: true,
+            },
+          },
+          setting_list: {
+            select: {
+              id: true,
+              order: true,
+              value: true,
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
+          setting_user: {
+            where: {
+              user_id: userId,
+            },
+            select: {
+              setting_id: true,
+              value: true,
             },
           },
         },

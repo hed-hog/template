@@ -3,6 +3,7 @@ import { SettingGroup } from './SettingGroup';
 import { SettingUser } from './SettingUser';
 import { SettingLocale } from './SettingLocale';
 import { SettingComponentEnum } from '@/enums/SettingComponentEnum';
+import { SettingList } from './SettingList';
 
 export type Setting = {
   id?: number;
@@ -17,6 +18,7 @@ export type Setting = {
   setting_group?: SettingGroup;
   setting_user?: SettingUser[];
   setting_locale?: SettingLocale[];
+  setting_list?: SettingList[];
   description?: string;
   name?: string;
 }

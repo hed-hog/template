@@ -27,18 +27,20 @@ export class SettingsController {
   constructor(
     @Inject(forwardRef(() => SettingService))
     private readonly settingService: SettingService,
-  ) {}
+  ) { }
 
   @Get('group/:slug')
   async getSettingFromGroup(
     @Pagination() paginationParams,
     @Locale() locale,
     @Param('slug') slug: string,
+    @User() { id: userId },
   ) {
     return this.settingService.getSettingFromGroup(
       locale,
       paginationParams,
       slug,
+      userId,
     );
   }
 
