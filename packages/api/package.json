@@ -1,6 +1,6 @@
 {
-  "name": "@hedhog/api",
-  "version": "0.0.3",
+  "name": "@hed-hog/api",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "main": "dist/index.js",
