@@ -7,7 +7,7 @@
     "_dev": "pnpm build --watch",
     "build": "tsc -b -v",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "prod": "pnpm build && pnpm publish"
+    "prod": "pnpm build && pnpm version patch && pnpm publish --access public --no-git-checks --no-verify-registry"
   },
   "dependencies": {
     "@hedhog/api": "workspace:*",

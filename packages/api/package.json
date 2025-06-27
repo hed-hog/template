@@ -1,18 +1,20 @@
 {
   "name": "@hedhog/api",
-  "version": "0.0.0",
+  "version": "0.0.3",
   "private": true,
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "_dev": "pnpm build --watch",
-    "build": "tsc -b -v",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+    "build": "tsc --project tsconfig.production.json",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "deploy": "pnpm version patch && pnpm run build && pnpm publish --access public"
   },
   "dependencies": {
+    "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
-    "@nestjs/common": "*"
+    "typeorm": "^0.3.25"
   },
   "exports": {
     ".": {
