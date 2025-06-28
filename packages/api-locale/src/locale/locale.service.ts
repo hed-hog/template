@@ -26,7 +26,7 @@ export class LocaleService {
     private readonly paginationService: PaginationService,
   ) {}
 
-  async setEnabled(codes: string[]) {
+  async setEnabled(codes: string[]): Promise<void> {
     if (!codes || codes.length < 1) {
       throw new BadRequestException('You must select at least one item code.');
     }
@@ -40,7 +40,7 @@ export class LocaleService {
       },
     });
 
-    return this.prismaService.locale.updateMany({
+    await this.prismaService.locale.updateMany({
       where: {
         code: {
           in: codes,
@@ -285,14 +285,14 @@ export class LocaleService {
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO):Promise<void> {
     if (ids == undefined || ids == null) {
       throw new BadRequestException(
         'You must select at least one item to delete.',
       );
     }
 
-    return this.prismaService.locale.deleteMany({
+    await this.prismaService.locale.deleteMany({
       where: {
         id: {
           in: ids,
