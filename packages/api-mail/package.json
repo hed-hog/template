@@ -6,6 +6,7 @@
   "scripts": {
     "_dev": "pnpm build --watch",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prebuild": "npx ts-node ../../scripts/build-dependencies.ts api-mail",
     "build": "tsc --project tsconfig.production.json",
     "patch": "npx ts-node ../../scripts/patch.ts api-mail",
     "prod": "pnpm run patch && pnpm run build && pnpm publish --access public"
