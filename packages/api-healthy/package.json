@@ -1,6 +1,6 @@
 {
   "name": "@hed-hog/api-healthy",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "prebuild": "npx ts-node ../../scripts/build-dependencies.ts api-healthy",
     "build": "tsc --project tsconfig.production.json",
     "patch": "npx ts-node ../../scripts/patch.ts api-healthy",
-    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public"
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
     "@nestjs/common": "*",
