@@ -13,6 +13,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "init:env": "npx ts-node ./scripts/init-env.ts",
+    "patch": "npx ts-node ./scripts/patch.ts",
     "clean": "node ./scripts/clean",
     "postinstall": "npm run init:env",
     "db:update": "pnpm --filter @hed-hog/api-prisma prisma:generate && pnpm --filter api prisma:update"
