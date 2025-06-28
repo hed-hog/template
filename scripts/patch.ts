@@ -4,15 +4,13 @@ import * as path from 'path';
 // Recebe o nome do diretório do pacote como argumento
 const [, , packageDirName] = process.argv;
 
-    console.log({packageDirName})
-
 if (!packageDirName) {
     console.error('Por favor, forneça o nome do diretório do pacote como argumento.');
     process.exit(1);
 }
 
 // Caminho base dos pacotes
-const packagesBaseDir = path.resolve(__dirname, '../packages');
+const packagesBaseDir = path.resolve(__dirname, '../');
 const targetDir = path.join(packagesBaseDir, packageDirName);
 const packageJsonPath = path.join(targetDir, 'package.json');
 

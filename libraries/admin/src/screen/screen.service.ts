@@ -20,7 +20,7 @@ export class ScreenService {
     private readonly paginationService: PaginationService,
   ) {}
 
-  async updateRoles(screenId: number, data: UpdateIdsDTO) {
+  async updateRoles(screenId: number, data: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_screen.deleteMany({
       where: {
         screen_id: screenId,
@@ -35,7 +35,7 @@ export class ScreenService {
       skipDuplicates: true,
     });
   }
-  async updateRoutes(screenId: number, { ids }: UpdateIdsDTO) {
+  async updateRoutes(screenId: number, { ids }: UpdateIdsDTO):Promise<{count:number}> {
     ids = (
       await this.prismaService.route.findMany({
         where: {
@@ -161,7 +161,7 @@ export class ScreenService {
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO):Promise<{count:number}> {
     if (ids == undefined || ids == null) {
       throw new BadRequestException(
         `You must select at least one screen to delete.`,

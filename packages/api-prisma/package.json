@@ -6,9 +6,9 @@
   "scripts": {
     "predev": "npm run prisma:update",
     "_dev": "pnpm build --watch",
-    "prebuild": "npm run prisma:update && npx ts-node ../../scripts/build-dependencies.ts api-prisma",
+    "prebuild": "npm run prisma:update && npx ts-node ../../scripts/build-dependencies.ts packages/api-prisma",
     "build": "tsc --project tsconfig.production.json",
-    "patch": "npx ts-node ../../scripts/patch.ts api-prisma",
+    "patch": "npx ts-node ../../scripts/patch.ts packages/api-prisma",
     "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "prisma:update": "prisma generate --schema=./../../apps/api/prisma/schema.prisma"

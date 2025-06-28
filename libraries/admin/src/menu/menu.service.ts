@@ -22,7 +22,7 @@ export class MenuService {
     private readonly paginationService: PaginationService,
   ) {}
 
-  async updateScreens(menuId: number, data: UpdateIdsDTO) {
+  async updateScreens(menuId: number, data: UpdateIdsDTO): Promise<{count:number}> {
     await this.prismaService.menu_screen.deleteMany({
       where: {
         menu_id: menuId,
@@ -37,7 +37,7 @@ export class MenuService {
       skipDuplicates: true,
     });
   }
-  async updateRoles(menuId: number, data: UpdateIdsDTO) {
+  async updateRoles(menuId: number, data: UpdateIdsDTO): Promise<{count:number}> {
     await this.prismaService.role_menu.deleteMany({
       where: {
         menu_id: menuId,
@@ -222,7 +222,7 @@ export class MenuService {
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO): Promise<{count:number}> {
     if (ids == undefined || ids == null) {
       throw new BadRequestException(
         `You must select at least one menu to delete.`,

@@ -42,7 +42,7 @@ export class UserService {
     );
   }
 
-  async updateRoles(userId: number, { ids }: UpdateIdsDTO) {
+  async updateRoles(userId: number, { ids }: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_user.deleteMany({
       where: {
         user_id: userId,
@@ -114,7 +114,7 @@ export class UserService {
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO):Promise<{count:number}> {
     if (ids == undefined || ids == null) {
       throw new BadRequestException(
         `You must select at least one user to delete.`,

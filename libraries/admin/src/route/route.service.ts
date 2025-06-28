@@ -34,22 +34,22 @@ export class RouteService {
     );
   }
 
-  async get(routeId: number) {
+  async get(routeId: number): Promise<any> {
     return this.prismaService.route.findUnique({ where: { id: routeId } });
   }
 
-  async create({ url, method }: CreateDTO) {
+  async create({ url, method }: CreateDTO): Promise<any> {
     return this.prismaService.route.create({ data: { url, method } });
   }
 
-  async update({ id, data }: { id: number; data: UpdateDTO }) {
+  async update({ id, data }: { id: number; data: UpdateDTO }): Promise<any> {
     return this.prismaService.route.update({
       where: { id },
       data,
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO):Promise<{count:number}> {
     return this.prismaService.route.deleteMany({
       where: {
         id: {
@@ -95,7 +95,7 @@ export class RouteService {
     );
   }
 
-  async updateRoles(routeId: number, data: UpdateIdsDTO) {
+  async updateRoles(routeId: number, data: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_route.deleteMany({
       where: {
         route_id: routeId,
@@ -146,7 +146,7 @@ export class RouteService {
     );
   }
 
-  async updateScreens(routeId: number, data: UpdateIdsDTO) {
+  async updateScreens(routeId: number, data: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.route_screen.deleteMany({
       where: {
         route_id: routeId,

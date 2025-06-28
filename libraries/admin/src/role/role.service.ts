@@ -24,7 +24,7 @@ export class RoleService {
     private readonly localeService: LocaleService,
   ) {}
 
-  async updateUsers(roleId: number, { ids }: UpdateIdsDTO) {
+  async updateUsers(roleId: number, { ids }: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_user.deleteMany({
       where: {
         role_id: roleId,
@@ -40,7 +40,7 @@ export class RoleService {
     });
   }
 
-  async updateScreens(roleId: number, data: UpdateIdsDTO) {
+  async updateScreens(roleId: number, data: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_screen.deleteMany({
       where: {
         role_id: roleId,
@@ -56,7 +56,7 @@ export class RoleService {
     });
   }
 
-  async updateRoutes(roleId: number, data: UpdateIdsDTO) {
+  async updateRoutes(roleId: number, data: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_route.deleteMany({
       where: {
         role_id: roleId,
@@ -72,7 +72,7 @@ export class RoleService {
     });
   }
 
-  async updateMenus(roleId: number, data: UpdateIdsDTO) {
+  async updateMenus(roleId: number, data: UpdateIdsDTO):Promise<{count:number}> {
     await this.prismaService.role_menu.deleteMany({
       where: {
         role_id: roleId,
@@ -271,7 +271,7 @@ export class RoleService {
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO):Promise<{count:number}> {
     if (ids == undefined || ids == null) {
       throw new BadRequestException(
         `You must select at least one permission to delete.`,

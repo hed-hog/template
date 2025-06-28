@@ -4,8 +4,8 @@ import { PrismaService } from '@hed-hog/api-prisma';
 import { genSalt, hash } from 'bcrypt';
 import { promises as fs } from 'fs';
 import { realpath, writeFile } from 'fs/promises';
-import * as sharp from 'sharp';
-import * as pngToIco from 'png-to-ico';
+import sharp from 'sharp';
+import pngToIco from 'png-to-ico';
 import { join } from 'path';
 
 @Injectable()

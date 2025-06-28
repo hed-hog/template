@@ -60,7 +60,7 @@ export class MailVarService {
     });
   }
 
-  async delete({ ids }: DeleteDTO) {
+  async delete({ ids }: DeleteDTO): Promise<{count:number}> {
     if (ids == undefined || ids == null) {
       throw new BadRequestException(
         'You must select at least one item to delete.',

@@ -11,7 +11,7 @@ if (!packageName) {
 }
 
 // Caminho para o package.json do pacote informado
-const packageJsonPath = path.resolve(__dirname, `../packages/${packageName}/package.json`);
+const packageJsonPath = path.resolve(__dirname, `../${packageName}/package.json`);
 
 if (!fs.existsSync(packageJsonPath)) {
     console.error(`Arquivo package.json não encontrado em: ${packageJsonPath}`);
@@ -28,15 +28,20 @@ const workspaceDeps = Object.entries(dependencies)
     .map(([depName]) => depName.replaceAll('@hed-hog/', ''));
 
 if (workspaceDeps.length === 0) {
-    console.log('Nenhuma dependência com versão "workspace:*" encontrada.');
+    console.info('Nenhuma dependência com versão "workspace:*" encontrada.');
     process.exit(0);
 }
 
 // Executa o script "pnpm run build" para cada dependência encontrada
 for (const dep of workspaceDeps) {
-    const depPath = path.resolve(__dirname, `../packages/${dep}`);
+    let depPath = path.resolve(__dirname, `../libraries/${dep}`);
+   
+     if (!fs.existsSync(depPath)) {
+         depPath = path.resolve(__dirname, `../packages/${dep}`);
+    }
+
     if (!fs.existsSync(depPath)) {
-        console.warn(`Diretório do pacote não encontrado: ${depPath}`);
+        console.warn(`Diretório do pacote não encontrado para a dependência: ${dep}`);
         continue;
     }
     try {

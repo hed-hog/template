@@ -1,13 +1,15 @@
 {
   "name": "@hed-hog/admin",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "_dev": "pnpm build --watch",
-    "build": "tsc -b -v",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "prod": "pnpm build && pnpm version patch && pnpm publish --access public --no-git-checks --no-verify-registry"
+    "prebuild": "npx ts-node ../../scripts/build-dependencies.ts libraries/admin",
+    "build": "tsc --project tsconfig.production.json",
+    "patch": "npx ts-node ../../scripts/patch.ts libraries/admin",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
     "@hed-hog/api": "workspace:*",
