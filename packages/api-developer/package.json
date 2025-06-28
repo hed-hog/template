@@ -9,7 +9,7 @@
     "prebuild": "npx ts-node ../../scripts/build-dependencies.ts api-developer",
     "build": "tsc --project tsconfig.production.json",
     "patch": "npx ts-node ../../scripts/patch.ts api-developer",
-    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public"
+    "prod": "pnpm run patch --no-git-checks && pnpm run build && pnpm publish --access public"
   },
   "dependencies": {
     "@hed-hog/api": "workspace:*",
