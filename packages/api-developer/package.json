@@ -1,11 +1,11 @@
 {
   "name": "@hed-hog/api-developer",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "_dev": "pnpm build --watch",
-    "build": "tsc -b -v",
+    "build": "tsc --project tsconfig.production.json",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "patch": "npx ts-node ../../scripts/patch.ts api-developer",
     "prod": "pnpm run patch && pnpm run build && pnpm publish --access public"
