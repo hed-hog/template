@@ -7,6 +7,8 @@
     "predev": "npm run prisma:update",
     "_dev": "pnpm build --watch",
     "build": "tsc --project tsconfig.production.json",
+    "patch": "npx ts-node ../../scripts/patch.ts api-prisma",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "prebuild": "npm run prisma:update",
     "prisma:update": "prisma generate --schema=./../../apps/api/prisma/schema.prisma"
