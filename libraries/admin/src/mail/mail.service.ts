@@ -1,8 +1,8 @@
-import { DeleteDTO } from '@hedhog/api';
-import { LocaleService } from '@hedhog/api-locale';
-import { MailService as MailMainService } from '@hedhog/api-mail';
-import { PaginationDTO } from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
+import { DeleteDTO } from '@hed-hog/api';
+import { LocaleService } from '@hed-hog/api-locale';
+import { MailService as MailMainService } from '@hed-hog/api-mail';
+import { PaginationDTO } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   Inject,

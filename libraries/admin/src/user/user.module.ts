@@ -1,5 +1,5 @@
-import { PaginationModule } from '@hedhog/api-pagination';
-import { PrismaModule } from '@hedhog/api-prisma';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { Module, forwardRef } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';

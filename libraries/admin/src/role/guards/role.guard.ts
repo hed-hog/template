@@ -1,5 +1,5 @@
-import { IS_PUBLIC_KEY, WITH_ROLE } from '@hedhog/api';
-import { PrismaService } from '@hedhog/api-prisma';
+import { IS_PUBLIC_KEY, WITH_ROLE } from '@hed-hog/api';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   CanActivate,
   ExecutionContext,

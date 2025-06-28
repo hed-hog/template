@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { InstallController } from './install.controller';
-import { PrismaModule } from '@hedhog/api-prisma';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { SettingModule } from '../setting/setting.module';
 import { InstallService } from './install.service';
 

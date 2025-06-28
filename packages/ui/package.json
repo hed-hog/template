@@ -1,5 +1,5 @@
 {
-  "name": "@hedhog/ui",
+  "name": "@hed-hog/ui",
   "version": "0.0.0",
   "private": true,
   "exports": {
@@ -12,8 +12,8 @@
     "generate:component": "turbo gen react-component"
   },
   "devDependencies": {
-    "@hedhog/eslint-config": "workspace:*",
-    "@hedhog/typescript-config": "workspace:*",
+    "@hed-hog/eslint-config": "workspace:*",
+    "@hed-hog/typescript-config": "workspace:*",
     "@turbo/gen": "^1.12.4",
     "@types/node": "^20.11.24",
     "@types/eslint": "^8.56.5",

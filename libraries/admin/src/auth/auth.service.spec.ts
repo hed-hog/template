@@ -1,5 +1,5 @@
-// import { MailService } from '@hedhog/api-mail';
-// import { PrismaService } from '@hedhog/api-prisma';
+// import { MailService } from '@hed-hog/api-mail';
+// import { PrismaService } from '@hed-hog/api-prisma';
 // import { NotFoundException } from '@nestjs/common';
 // import { JwtService } from '@nestjs/jwt';
 // import { Test, TestingModule } from '@nestjs/testing';

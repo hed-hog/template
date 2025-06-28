@@ -1,4 +1,4 @@
-import { PrismaService } from '@hedhog/api-prisma';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

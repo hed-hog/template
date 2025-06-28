@@ -1,5 +1,5 @@
-import { PaginationDTO, PaginationService } from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
+import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { DeleteDTO } from '../dto/delete.dto';
 import { UpdateIdsDTO } from '../dto/update-ids.dto';

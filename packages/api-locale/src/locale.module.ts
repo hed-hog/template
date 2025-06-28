@@ -1,5 +1,5 @@
-import { PaginationModule } from '@hedhog/api-pagination';
-import { PrismaModule } from '@hedhog/api-prisma';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { forwardRef, MiddlewareConsumer, Module } from '@nestjs/common';
 import { LocaleController } from './locale/locale.controller';
 import { LocaleMiddleware } from './locale/locale.middleware';

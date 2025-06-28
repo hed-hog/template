@@ -1,5 +1,5 @@
 {
-  "name": "@hedhog/api-healthy",
+  "name": "@hed-hog/api-healthy",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,7 @@
   "dependencies": {
     "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
-    "@hedhog/api": "workspace:*",
+    "@hed-hog/api": "workspace:*",
     "mysql2": "3.14.1",
     "pg": "^8.16.0"
   },

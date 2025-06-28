@@ -1,4 +1,4 @@
-import { PrismaService } from '@hedhog/api-prisma';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 

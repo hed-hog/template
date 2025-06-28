@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DeveloperController } from './developer.controller';
 import { DeveloperService } from './developer.service';
-import { PrismaModule } from '@hedhog/api-prisma';
+import { PrismaModule } from '@hed-hog/api-prisma';
 
 @Module({
   imports: [PrismaModule],

@@ -1,6 +1,6 @@
-import { Public, Role, User } from '@hedhog/api';
-import { Locale } from '@hedhog/api-locale';
-import { Pagination } from '@hedhog/api-pagination';
+import { Public, Role, User } from '@hed-hog/api';
+import { Locale } from '@hed-hog/api-locale';
+import { Pagination } from '@hed-hog/api-pagination';
 import {
   Body,
   Controller,
@@ -27,7 +27,7 @@ export class SettingsController {
   constructor(
     @Inject(forwardRef(() => SettingService))
     private readonly settingService: SettingService,
-  ) { }
+  ) {}
 
   @Get('group/:slug')
   async getSettingFromGroup(

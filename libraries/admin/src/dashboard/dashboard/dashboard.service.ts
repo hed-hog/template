@@ -1,7 +1,7 @@
-import { DeleteDTO } from '@hedhog/api';
-import { LocaleService } from '@hedhog/api-locale';
-import { PaginationDTO } from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
+import { DeleteDTO } from '@hed-hog/api';
+import { LocaleService } from '@hed-hog/api-locale';
+import { PaginationDTO } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { Injectable } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { CreateDTO } from './dto/create.dto';

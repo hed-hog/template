@@ -1,7 +1,7 @@
-import { Public } from '@hedhog/api';
+import { Public } from '@hed-hog/api';
 import { Controller, Get } from '@nestjs/common';
 import { SettingService } from './setting.service';
-import { Locale } from '@hedhog/api-locale';
+import { Locale } from '@hed-hog/api-locale';
 
 @Public()
 @Controller(`setting-system`)

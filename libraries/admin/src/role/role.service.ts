@@ -1,6 +1,6 @@
-import { PaginationDTO, PaginationService } from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
-import { getWithLocale } from '@hedhog/api';
+import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
+import { getWithLocale } from '@hed-hog/api';
 import {
   BadRequestException,
   Inject,
@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { DeleteDTO } from '../dto/delete.dto';
 import { UpdateIdsDTO } from '../dto/update-ids.dto';
-import { LocaleService } from '@hedhog/api-locale';
+import { LocaleService } from '@hed-hog/api-locale';
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
 

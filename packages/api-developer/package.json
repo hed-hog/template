@@ -1,5 +1,5 @@
 {
-  "name": "@hedhog/api-developer",
+  "name": "@hed-hog/api-developer",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,8 +9,8 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "dependencies": {
-    "@hedhog/api": "workspace:*",
-    "@hedhog/api-prisma": "workspace:*",
+    "@hed-hog/api": "workspace:*",
+    "@hed-hog/api-prisma": "workspace:*",
     "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
     "crypto": "^1.0.1",

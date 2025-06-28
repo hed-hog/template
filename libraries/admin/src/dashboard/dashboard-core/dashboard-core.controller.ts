@@ -1,4 +1,4 @@
-import { Locale } from '@hedhog/api-locale';
+import { Locale } from '@hed-hog/api-locale';
 import { Controller, Get, Param } from '@nestjs/common';
 import { DashboardCoreService } from './dashboard-core.service';
 

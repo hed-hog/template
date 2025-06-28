@@ -31,23 +31,23 @@
       "@prisma/client/*": [
         "../../packages/api-prisma/node_modules/.prisma/client/*"
       ],
-      "@hedhog/api-prisma": ["../../packages/api-prisma/src"],
-      "@hedhog/api-prisma/*": ["../../packages/api-prisma/src/*"],
-      "@hedhog/api": ["../../packages/api/src"],
-      "@hedhog/api/*": ["../../packages/api/src/*"],
-      "@hedhog/api-pagination": ["../../packages/api-pagination/src"],
-      "@hedhog/api-pagination/*": ["../../packages/api-pagination/src/*"],
-      "@hedhog/api-mail": ["../../packages/api-mail/src"],
-      "@hedhog/api-mail/*": ["../../packages/api-mail/src/*"],
-      "@hedhog/api-locale": ["../../packages/api-locale/src"],
-      "@hedhog/api-locale/*": ["../../packages/api-locale/src/*"],
-      "@hedhog/api-healthy": ["../../packages/api-healthy/src"],
-      "@hedhog/api-healthy/*": ["../../packages/api-healthy/src/*"],
-      "@hedhog/api-developer": ["../../packages/api-developer/src"],
-      "@hedhog/api-developer/*": ["../../packages/api-developer/src/*"],
+      "@hed-hog/api-prisma": ["../../packages/api-prisma/src"],
+      "@hed-hog/api-prisma/*": ["../../packages/api-prisma/src/*"],
+      "@hed-hog/api": ["../../packages/api/src"],
+      "@hed-hog/api/*": ["../../packages/api/src/*"],
+      "@hed-hog/api-pagination": ["../../packages/api-pagination/src"],
+      "@hed-hog/api-pagination/*": ["../../packages/api-pagination/src/*"],
+      "@hed-hog/api-mail": ["../../packages/api-mail/src"],
+      "@hed-hog/api-mail/*": ["../../packages/api-mail/src/*"],
+      "@hed-hog/api-locale": ["../../packages/api-locale/src"],
+      "@hed-hog/api-locale/*": ["../../packages/api-locale/src/*"],
+      "@hed-hog/api-healthy": ["../../packages/api-healthy/src"],
+      "@hed-hog/api-healthy/*": ["../../packages/api-healthy/src/*"],
+      "@hed-hog/api-developer": ["../../packages/api-developer/src"],
+      "@hed-hog/api-developer/*": ["../../packages/api-developer/src/*"],
 
-      "@hedhog/admin": ["../../libraries/admin/src"],
-      "@hedhog/admin/*": ["../../libraries/admin/src/*"]
+      "@hed-hog/admin": ["../../libraries/admin/src"],
+      "@hed-hog/admin/*": ["../../libraries/admin/src/*"]
     }
   }
 }

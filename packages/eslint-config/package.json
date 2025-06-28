@@ -1,5 +1,5 @@
 {
-  "name": "@hedhog/eslint-config",
+  "name": "@hed-hog/eslint-config",
   "version": "0.0.0",
   "private": true,
   "files": [

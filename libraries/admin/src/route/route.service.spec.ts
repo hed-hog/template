@@ -2,8 +2,8 @@
 //   PageOrderDirection,
 //   PaginationDTO,
 //   PaginationService,
-// } from '@hedhog/api-pagination';
-// import { PrismaService } from '@hedhog/api-prisma';
+// } from '@hed-hog/api-pagination';
+// import { PrismaService } from '@hed-hog/api-prisma';
 // import { Test, TestingModule } from '@nestjs/testing';
 // import { DeleteDTO } from '../dto/delete.dto';
 // import { UpdateIdsDTO } from '../dto/update-ids.dto';

@@ -1,5 +1,5 @@
 {
-  "name": "@hedhog/api-locale",
+  "name": "@hed-hog/api-locale",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,9 +11,9 @@
   "dependencies": {
     "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
-    "@hedhog/api-pagination": "workspace:*",
-    "@hedhog/api-prisma": "workspace:*",
-    "@hedhog/api": "workspace:*",
+    "@hed-hog/api-pagination": "workspace:*",
+    "@hed-hog/api-prisma": "workspace:*",
+    "@hed-hog/api": "workspace:*",
     "class-validator": "*",
     "express": "*"
   },

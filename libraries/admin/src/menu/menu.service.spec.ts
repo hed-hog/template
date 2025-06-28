@@ -2,8 +2,8 @@
 //   PageOrderDirection,
 //   PaginationDTO,
 //   PaginationService,
-// } from '@hedhog/api-pagination';
-// import { PrismaService } from '@hedhog/api-prisma';
+// } from '@hed-hog/api-pagination';
+// import { PrismaService } from '@hed-hog/api-prisma';
 // import { BadRequestException } from '@nestjs/common';
 // import { Test, TestingModule } from '@nestjs/testing';
 // import { MenuService } from './menu.service';

@@ -1,5 +1,5 @@
-import { MailModule as MailSendModule } from '@hedhog/api-mail';
-import { PrismaModule } from '@hedhog/api-prisma';
+import { MailModule as MailSendModule } from '@hed-hog/api-mail';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';

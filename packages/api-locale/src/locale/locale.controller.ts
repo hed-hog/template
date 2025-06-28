@@ -1,5 +1,5 @@
-import { Pagination } from '@hedhog/api-pagination';
-import { Public, Role } from '@hedhog/api';
+import { Pagination } from '@hed-hog/api-pagination';
+import { Public, Role } from '@hed-hog/api';
 import {
   Body,
   Controller,

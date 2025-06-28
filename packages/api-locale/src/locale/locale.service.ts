@@ -1,10 +1,10 @@
-import { itemTranslations } from '@hedhog/api';
+import { itemTranslations } from '@hed-hog/api';
 import {
   PageOrderDirection,
   PaginationDTO,
   PaginationService,
-} from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
+} from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   Inject,

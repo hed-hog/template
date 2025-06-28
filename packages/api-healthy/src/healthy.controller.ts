@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthyService } from './healthy.service';
-import { Public } from '@hedhog/api';
+import { Public } from '@hed-hog/api';
 
 @Public()
 @Controller('healthy')

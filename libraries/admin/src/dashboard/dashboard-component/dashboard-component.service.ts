@@ -1,5 +1,5 @@
-import { PaginationDTO } from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
+import { PaginationDTO } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   Inject,
@@ -7,9 +7,9 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { CreateDTO } from './dto/create.dto';
-import { DeleteDTO } from '@hedhog/api';
+import { DeleteDTO } from '@hed-hog/api';
 import { UpdateDTO } from './dto/update.dto';
-import { LocaleService } from '@hedhog/api-locale';
+import { LocaleService } from '@hed-hog/api-locale';
 
 @Injectable()
 export class DashboardComponentService {

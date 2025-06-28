@@ -1,7 +1,7 @@
-import { PrismaService } from '@hedhog/api-prisma';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { Injectable } from '@nestjs/common';
-import { timestampColumn } from '@hedhog/api';
-import { PaginationService } from '@hedhog/api-pagination';
+import { timestampColumn } from '@hed-hog/api';
+import { PaginationService } from '@hed-hog/api-pagination';
 
 @Injectable()
 export class AppService {

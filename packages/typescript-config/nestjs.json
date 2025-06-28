@@ -21,19 +21,19 @@
     "paths": {
       "@prisma/client": ["../api-prisma/node_modules/.prisma/client"],
       "@prisma/client/*": ["../api-prisma/node_modules/.prisma/client/*"],
-      "@hedhog/api": ["../api/src"],
-      "@hedhog/api/*": ["../api/src/*"],
-      "@hedhog/api-locale": ["../api-locale/src"],
-      "@hedhog/api-locale/*": ["../api-locale/src/*"],
-      "@hedhog/api-mail": ["../api-mail/src"],
-      "@hedhog/api-mail/*": ["../api-mail/src/*"],
-      "@hedhog/api-pagination": ["../api-pagination/src"],
-      "@hedhog/api-pagination/*": ["../api-pagination/src/*"],
-      "@hedhog/api-prisma": ["../api-prisma/src"],
-      "@hedhog/api-prisma/*": ["../api-prisma/src/*"],
+      "@hed-hog/api": ["../api/src"],
+      "@hed-hog/api/*": ["../api/src/*"],
+      "@hed-hog/api-locale": ["../api-locale/src"],
+      "@hed-hog/api-locale/*": ["../api-locale/src/*"],
+      "@hed-hog/api-mail": ["../api-mail/src"],
+      "@hed-hog/api-mail/*": ["../api-mail/src/*"],
+      "@hed-hog/api-pagination": ["../api-pagination/src"],
+      "@hed-hog/api-pagination/*": ["../api-pagination/src/*"],
+      "@hed-hog/api-prisma": ["../api-prisma/src"],
+      "@hed-hog/api-prisma/*": ["../api-prisma/src/*"],
 
-      "@hedhog/admin": ["../admin/src"],
-      "@hedhog/admin/*": ["../admin/src/*"]
+      "@hed-hog/admin": ["../admin/src"],
+      "@hed-hog/admin/*": ["../admin/src/*"]
     }
   }
 }

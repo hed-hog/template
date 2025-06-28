@@ -1,6 +1,6 @@
-import { itemTranslations } from '@hedhog/api';
-import { PaginationDTO, PaginationService } from '@hedhog/api-pagination';
-import { PrismaService } from '@hedhog/api-prisma';
+import { itemTranslations } from '@hed-hog/api';
+import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   Inject,
@@ -11,7 +11,7 @@ import { CreateDTO } from './dto/create.dto';
 import { DeleteDTO } from './dto/delete.dto';
 import { SettingDTO } from './dto/setting.dto';
 import { UpdateDTO } from './dto/update.dto';
-import { LocaleService } from '@hedhog/api-locale';
+import { LocaleService } from '@hed-hog/api-locale';
 
 @Injectable()
 export class SettingService {
@@ -22,7 +22,7 @@ export class SettingService {
     private readonly paginationService: PaginationService,
     @Inject(forwardRef(() => LocaleService))
     private readonly localeService: LocaleService,
-  ) { }
+  ) {}
 
   async getSystemSettings(locale: string): Promise<any> {
     const locales = await this.localeService.getEnables(locale);
@@ -99,7 +99,12 @@ export class SettingService {
     return { success: true };
   }
 
-  async getSettingFromGroup(locale: any, paginationParams: any, slug: string, userId: number) {
+  async getSettingFromGroup(
+    locale: any,
+    paginationParams: any,
+    slug: string,
+    userId: number,
+  ) {
     const fields = ['slug', 'value'];
 
     paginationParams.pageSize = 100;

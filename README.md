@@ -21,11 +21,11 @@ This Turborepo includes the following packages/apps:
     │   ├── api                       # NestJS app (https://nestjs.com).
     │   └── web                       # Next.js app (https://nextjs.org).
     └── packages
-        ├── @hedhog/api                 # Shared `NestJS` resources.
-        ├── @hedhog/eslint-config       # `eslint` configurations (includes `prettier`)
-        ├── @hedhog/jest-config         # `jest` configurations
-        ├── @hedhog/typescript-config   # `tsconfig.json`s used throughout the monorepo
-        └── @hedhog/ui                  # Shareable stub React component library.
+        ├── @hed-hog/api                 # Shared `NestJS` resources.
+        ├── @hed-hog/eslint-config       # `eslint` configurations (includes `prettier`)
+        ├── @hed-hog/jest-config         # `jest` configurations
+        ├── @hed-hog/typescript-config   # `tsconfig.json`s used throughout the monorepo
+        └── @hed-hog/ui                  # Shareable stub React component library.
 
 Each package and application are 100% [TypeScript](https://www.typescriptlang.org/) safe.
 
@@ -68,14 +68,14 @@ pnpm run test
 # You can launch e2e testes with `test:e2e`
 pnpm run test:e2e
 
-# See `@hedhog/jest-config` to customize the behavior.
+# See `@hed-hog/jest-config` to customize the behavior.
 ```
 
 #### Lint
 
 ```bash
 # Will lint all the app & packages with the supported `lint` script.
-# See `@hedhog/eslint-config` to customize the behavior.
+# See `@hed-hog/eslint-config` to customize the behavior.
 pnpm run lint
 ```
 
@@ -83,7 +83,7 @@ pnpm run lint
 
 ```bash
 # Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
-# See `@hedhog/eslint-config/prettier-base.js` to customize the behavior.
+# See `@hed-hog/eslint-config/prettier-base.js` to customize the behavior.
 pnpm format
 ```
 

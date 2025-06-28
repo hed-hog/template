@@ -1,7 +1,7 @@
-import { MailModule as MailMainModule } from '@hedhog/api-mail';
-import { PaginationModule } from '@hedhog/api-pagination';
-import { PrismaModule } from '@hedhog/api-prisma';
-import { LocaleModule } from '@hedhog/api-locale';
+import { MailModule as MailMainModule } from '@hed-hog/api-mail';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
+import { LocaleModule } from '@hed-hog/api-locale';
 import { forwardRef, Module } from '@nestjs/common';
 import { MailSentModule } from '../mail-sent/mail-sent.module';
 import { MailController } from './mail.controller';

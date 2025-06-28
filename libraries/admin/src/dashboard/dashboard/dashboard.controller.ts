@@ -9,11 +9,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
-import { Locale } from '@hedhog/api-locale';
-import { Pagination } from '@hedhog/api-pagination';
+import { Locale } from '@hed-hog/api-locale';
+import { Pagination } from '@hed-hog/api-pagination';
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
-import { DeleteDTO } from '@hedhog/api';
+import { DeleteDTO } from '@hed-hog/api';
 
 @Controller('/dashboard')
 export class DashboardController {

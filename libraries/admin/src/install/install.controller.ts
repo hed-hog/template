@@ -1,4 +1,4 @@
-import { Public } from '@hedhog/api';
+import { Public } from '@hed-hog/api';
 import { Body, Controller, Post } from '@nestjs/common';
 import { InstallDTO } from './dto/install.dto';
 import { InstallService } from './install.service';

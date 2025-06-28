@@ -1,4 +1,4 @@
-import { SchemaService } from '@hedhog/api-prisma';
+import { SchemaService } from '@hed-hog/api-prisma';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   mkdir,
@@ -10,7 +10,7 @@ import {
 } from 'fs/promises';
 import { parse, stringify } from 'yaml';
 import { CreatePackageDto } from './dto/create-package.dto';
-import { toKebabCase, toPascalCase } from '@hedhog/api';
+import { toKebabCase, toPascalCase } from '@hed-hog/api';
 import { SaveTableDTO } from './dto/save-table.dto';
 import { createHash } from 'crypto';
 import { SaveScreenDTO } from './dto/save-screen.dto';
@@ -206,7 +206,7 @@ export class DeveloperService {
   private getEslintConfig(): string {
     return `/** @type {import("eslint").Linter.Config} */
 module.exports = {
-    extends: ['@hedhog/eslint-config/nest.js'],
+    extends: ['@hed-hog/eslint-config/nest.js'],
     parserOptions: {
         project: 'tsconfig.json',
         tsconfigRootDir: __dirname,
@@ -217,7 +217,7 @@ module.exports = {
 
   private getTsconfig(): string {
     return `{
-    "extends": "@hedhog/typescript-config/nestjs-library.json",
+    "extends": "@hed-hog/typescript-config/nestjs-library.json",
     "include": ["src"],
     "compilerOptions": {
         "composite": true,
@@ -232,7 +232,7 @@ module.exports = {
   private getPrettierConfig(): string {
     return `/** @type {import("prettier").Config} */
 module.exports = {
-    ...require('@hedhog/eslint-config/prettier-base'),
+    ...require('@hed-hog/eslint-config/prettier-base'),
 };
 `;
   }
@@ -241,7 +241,7 @@ module.exports = {
     const kebabName = toKebabCase(name);
     return JSON.stringify(
       {
-        name: `@hedhog/${kebabName}`,
+        name: `@hed-hog/${kebabName}`,
         version: '0.0.1',
         main: 'dist/index.js',
         types: 'dist/index.d.ts',
@@ -380,8 +380,8 @@ export class ${pascal}Service {
         for (const dir of packages) {
           if (!dir.isDirectory()) continue;
           const kebab = toKebabCase(dir.name);
-          paths[`@hedhog/${kebab}`] = [`../${kebab}/src`];
-          paths[`@hedhog/${kebab}/*`] = [`../${kebab}/src/*`];
+          paths[`@hed-hog/${kebab}`] = [`../${kebab}/src`];
+          paths[`@hed-hog/${kebab}/*`] = [`../${kebab}/src/*`];
         }
         await this.writeFileUtf8(
           tsConfigPath,
@@ -420,10 +420,10 @@ export class ${pascal}Service {
       tsConfigData.compilerOptions = tsConfigData.compilerOptions || {};
       tsConfigData.compilerOptions.paths =
         tsConfigData.compilerOptions.paths || {};
-      tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}`] = [
+      tsConfigData.compilerOptions.paths[`@hed-hog/${kebabName}`] = [
         `../${kebabName}/src`,
       ];
-      tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}/*`] = [
+      tsConfigData.compilerOptions.paths[`@hed-hog/${kebabName}/*`] = [
         `../${kebabName}/src/*`,
       ];
       await this.writeFileUtf8(
@@ -455,8 +455,8 @@ export class ${pascal}Service {
         for (const dir of libraries) {
           if (!dir.isDirectory()) continue;
           const kebab = toKebabCase(dir.name);
-          paths[`@hedhog/${kebab}`] = [`../../libraries/${kebab}/src`];
-          paths[`@hedhog/${kebab}/*`] = [`../../libraries/${kebab}/src/*`];
+          paths[`@hed-hog/${kebab}`] = [`../../libraries/${kebab}/src`];
+          paths[`@hed-hog/${kebab}/*`] = [`../../libraries/${kebab}/src/*`];
         }
         await this.writeFileUtf8(
           tsConfigPath,
@@ -501,10 +501,10 @@ export class ${pascal}Service {
       tsConfigData.compilerOptions = tsConfigData.compilerOptions || {};
       tsConfigData.compilerOptions.paths =
         tsConfigData.compilerOptions.paths || {};
-      tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}`] = [
+      tsConfigData.compilerOptions.paths[`@hed-hog/${kebabName}`] = [
         `../../packages/${kebabName}/src`,
       ];
-      tsConfigData.compilerOptions.paths[`@hedhog/${kebabName}/*`] = [
+      tsConfigData.compilerOptions.paths[`@hed-hog/${kebabName}/*`] = [
         `../../packages/${kebabName}/src/*`,
       ];
       await this.writeFileUtf8(

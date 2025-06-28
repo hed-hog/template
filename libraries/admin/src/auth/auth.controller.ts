@@ -1,5 +1,5 @@
-import { Public, Role, User } from '@hedhog/api';
-import { Locale } from '@hedhog/api-locale';
+import { Public, Role, User } from '@hed-hog/api';
+import { Locale } from '@hed-hog/api-locale';
 import {
   Body,
   Controller,

@@ -1,4 +1,4 @@
-import { PrismaModule } from '@hedhog/api-prisma';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { CoreController } from './core.controller';

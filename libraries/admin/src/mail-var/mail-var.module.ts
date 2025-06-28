@@ -1,5 +1,5 @@
-import { PaginationModule } from '@hedhog/api-pagination';
-import { PrismaModule } from '@hedhog/api-prisma';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { forwardRef, Module } from '@nestjs/common';
 import { MailVarService } from './mail-var.service';
 import { MailVarController } from './mail-var.controller';

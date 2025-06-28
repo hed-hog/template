@@ -1,5 +1,5 @@
-import { Pagination } from '@hedhog/api-pagination';
-import { Locale } from '@hedhog/api-locale';
+import { Pagination } from '@hed-hog/api-pagination';
+import { Locale } from '@hed-hog/api-locale';
 import {
   Body,
   Controller,
@@ -15,7 +15,7 @@ import {
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
 import { DashboardItemService } from './dashboard-item.service';
-import { Role, DeleteDTO } from '@hedhog/api';
+import { Role, DeleteDTO } from '@hed-hog/api';
 
 @Role()
 @Controller('dashboard-item')

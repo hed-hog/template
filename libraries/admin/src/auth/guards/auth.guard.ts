@@ -1,4 +1,4 @@
-import { IS_PUBLIC_KEY } from '@hedhog/api';
+import { IS_PUBLIC_KEY } from '@hed-hog/api';
 import {
   CanActivate,
   ExecutionContext,

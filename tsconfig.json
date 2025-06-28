@@ -1,9 +1,9 @@
 {
-  "extends": "@hedhog/typescript-config/base.json",
+  "extends": "@hed-hog/typescript-config/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@hedhog/api-prisma/*": ["packages/api-prisma/src/*"]
+      "@hed-hog/api-prisma/*": ["packages/api-prisma/src/*"]
     }
   }
 }

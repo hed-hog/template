@@ -1,5 +1,5 @@
 {
-  "name": "@hedhog/admin",
+  "name": "@hed-hog/admin",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,11 +10,11 @@
     "prod": "pnpm build && pnpm version patch && pnpm publish --access public --no-git-checks --no-verify-registry"
   },
   "dependencies": {
-    "@hedhog/api": "workspace:*",
-    "@hedhog/api-locale": "workspace:*",
-    "@hedhog/api-mail": "workspace:*",
-    "@hedhog/api-pagination": "workspace:*",
-    "@hedhog/api-prisma": "workspace:*",
+    "@hed-hog/api": "workspace:*",
+    "@hed-hog/api-locale": "workspace:*",
+    "@hed-hog/api-mail": "workspace:*",
+    "@hed-hog/api-pagination": "workspace:*",
+    "@hed-hog/api-prisma": "workspace:*",
     "@nestjs/axios": "*",
     "@nestjs/common": "*",
     "@nestjs/config": "^4.0.2",

@@ -1,6 +1,6 @@
-import { DeleteDTO, Role } from '@hedhog/api';
-import { Locale } from '@hedhog/api-locale';
-import { Pagination } from '@hedhog/api-pagination';
+import { DeleteDTO, Role } from '@hed-hog/api';
+import { Locale } from '@hed-hog/api-locale';
+import { Pagination } from '@hed-hog/api-pagination';
 import {
   Body,
   Controller,

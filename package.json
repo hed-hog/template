@@ -15,11 +15,11 @@
     "init:env": "npx ts-node ./scripts/init-env.ts",
     "clean": "node ./scripts/clean",
     "postinstall": "npm run init:env",
-    "db:update": "pnpm --filter @hedhog/api-prisma prisma:generate && pnpm --filter api prisma:update"
+    "db:update": "pnpm --filter @hed-hog/api-prisma prisma:generate && pnpm --filter api prisma:update"
   },
   "devDependencies": {
-    "@hedhog/eslint-config": "workspace:*",
-    "@hedhog/typescript-config": "workspace:*",
+    "@hed-hog/eslint-config": "workspace:*",
+    "@hed-hog/typescript-config": "workspace:*",
     "@types/node": "^24.0.0",
     "@types/react": "^19.1.7",
     "@types/react-dom": "^19.1.6",

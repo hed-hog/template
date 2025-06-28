@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InstallDTO } from './dto/install.dto';
-import { PrismaService } from '@hedhog/api-prisma';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { genSalt, hash } from 'bcrypt';
 import { promises as fs } from 'fs';
 import { realpath, writeFile } from 'fs/promises';

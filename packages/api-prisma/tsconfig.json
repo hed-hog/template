@@ -1,5 +1,5 @@
 {
-  "extends": "@hedhog/typescript-config/nestjs-library.json",
+  "extends": "@hed-hog/typescript-config/nestjs-library.json",
   "include": ["src"],
   "compilerOptions": {
     "composite": true,

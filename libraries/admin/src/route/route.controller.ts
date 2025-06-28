@@ -1,4 +1,4 @@
-import { Pagination, PaginationDTO } from '@hedhog/api-pagination';
+import { Pagination, PaginationDTO } from '@hed-hog/api-pagination';
 import {
   Body,
   Controller,
@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { DeleteDTO } from '../dto/delete.dto';
 import { UpdateIdsDTO } from '../dto/update-ids.dto';
-import { Locale } from '@hedhog/api-locale';
-import { Role } from '@hedhog/api';
+import { Locale } from '@hed-hog/api-locale';
+import { Role } from '@hed-hog/api';
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
 import { RouteService } from './route.service';

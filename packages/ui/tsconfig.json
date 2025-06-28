@@ -1,5 +1,5 @@
 {
-  "extends": "@hedhog/typescript-config/react-library.json",
+  "extends": "@hed-hog/typescript-config/react-library.json",
   "compilerOptions": {
     "outDir": "dist"
   },

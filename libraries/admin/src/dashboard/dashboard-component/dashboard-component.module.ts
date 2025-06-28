@@ -1,6 +1,6 @@
-import { PaginationModule } from '@hedhog/api-pagination';
-import { PrismaModule } from '@hedhog/api-prisma';
-import { LocaleModule } from '@hedhog/api-locale';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
+import { LocaleModule } from '@hed-hog/api-locale';
 import { forwardRef, Module } from '@nestjs/common';
 import { DashboardComponentService } from './dashboard-component.service';
 import { DashboardComponentController } from './dashboard-component.controller';

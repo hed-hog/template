@@ -1,5 +1,5 @@
 import { IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator';
-import { WithLocaleDTO } from '@hedhog/api-locale';
+import { WithLocaleDTO } from '@hed-hog/api-locale';
 
 export class CreateDTO {
   @IsNumber()

@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { PrismaModule } from '@hedhog/api-prisma';
-import { PaginationModule } from '@hedhog/api-pagination';
-import { MailModule } from '@hedhog/api-mail';
-import { LocaleModule } from '@hedhog/api-locale';
-import { AdminModule } from '@hedhog/admin';
-import { HealthyModule } from '@hedhog/api-healthy';
-import { DeveloperModule } from '@hedhog/api-developer';
+import { PrismaModule } from '@hed-hog/api-prisma';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { MailModule } from '@hed-hog/api-mail';
+import { LocaleModule } from '@hed-hog/api-locale';
+import { AdminModule } from '@hed-hog/admin';
+import { HealthyModule } from '@hed-hog/api-healthy';
+import { DeveloperModule } from '@hed-hog/api-developer';
 
 @Module({
   imports: [
