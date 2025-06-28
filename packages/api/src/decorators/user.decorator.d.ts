@@ -1,2 +1,2 @@
-export declare const User: (...dataOrPipes: (string | import("@nestjs/common").PipeTransform<any, any> | import("@nestjs/common").Type<import("@nestjs/common").PipeTransform<any, any>>)[]) => ParameterDecorator;
+export declare const User: (...dataOrPipes: (string | import("node_modules/@nestjs/common").PipeTransform<any, any> | import("node_modules/@nestjs/common").Type<import("node_modules/@nestjs/common").PipeTransform<any, any>>)[]) => ParameterDecorator;
 //# sourceMappingURL=user.decorator.d.ts.map
