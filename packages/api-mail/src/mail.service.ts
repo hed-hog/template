@@ -3,7 +3,7 @@ import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import * as mimemessage from 'mimemessage';
 import { firstValueFrom } from 'rxjs';
 import { MailConfigurationTypeEnum } from './enums/mail-configuration-type.enum';
-import { MailModuleOptions } from './interfaces/mail-module-options.interface';
+import type { MailModuleOptions } from './interfaces/mail-module-options.interface';
 import { Mail, MAIL_MODULE_OPTIONS } from './mail.consts';
 
 @Injectable()
@@ -186,9 +186,8 @@ export class MailService implements OnModuleInit {
       refreshToken,
     });
 
-    const { auth } = await import('googleapis/build/src/apis/oauth2');
-
-    const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectURI);
+    const { google } = await import('googleapis');
+    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectURI);
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken,
