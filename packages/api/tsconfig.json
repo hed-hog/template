@@ -2,9 +2,6 @@
   "extends": "@hed-hog/typescript-config/nestjs-library.json",
   "include": ["src"],
   "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
     "outDir": "dist",
     "rootDir": "src"
   }

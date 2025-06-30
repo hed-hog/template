@@ -1,8 +1,31 @@
 {
-  "extends": "@hed-hog/typescript-config/package.production.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node"],
+    "composite": true,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "removeComments": true,
+    "strictBindCallApply": false,
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "moduleResolution": "NodeNext",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
     "paths": {
       "@prisma/client": [
         "../../packages/api-prisma/node_modules/.prisma/client"
@@ -28,6 +51,5 @@
       "@hed-hog/admin": ["../../libraries/admin/dist"],
       "@hed-hog/admin/*": ["../../libraries/admin/dist/*"]
     }
-  },
-  "exclude": ["node_modules", "dist", ".turbo"]
+  }
 }
