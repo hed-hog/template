@@ -6,7 +6,11 @@
     "esModuleInterop": true,
     "incremental": false,
     "isolatedModules": true,
-    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "es2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "NodeNext",
     "moduleDetection": "force",
     "moduleResolution": "NodeNext",
@@ -14,6 +18,68 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2022"
+    "target": "ES2022",
+    "paths": {
+      "@prisma/client": [
+        "../../packages/api-prisma/node_modules/.prisma/client"
+      ],
+      "@prisma/client/*": [
+        "../../packages/api-prisma/node_modules/.prisma/client/*"
+      ],
+      "@hed-hog/admin": [
+        "../../libraries/admin/src"
+      ],
+      "@hed-hog/admin/*": [
+        "../../libraries/admin/src/*"
+      ],
+      "@hed-hog/api": [
+        "../../packages/api/src"
+      ],
+      "@hed-hog/api/*": [
+        "../../packages/api/src/*"
+      ],
+      "@hed-hog/api-developer": [
+        "../../packages/api-developer/src"
+      ],
+      "@hed-hog/api-developer/*": [
+        "../../packages/api-developer/src/*"
+      ],
+      "@hed-hog/api-healthy": [
+        "../../packages/api-healthy/src"
+      ],
+      "@hed-hog/api-healthy/*": [
+        "../../packages/api-healthy/src/*"
+      ],
+      "@hed-hog/api-locale": [
+        "../../packages/api-locale/src"
+      ],
+      "@hed-hog/api-locale/*": [
+        "../../packages/api-locale/src/*"
+      ],
+      "@hed-hog/api-mail": [
+        "../../packages/api-mail/src"
+      ],
+      "@hed-hog/api-mail/*": [
+        "../../packages/api-mail/src/*"
+      ],
+      "@hed-hog/api-pagination": [
+        "../../packages/api-pagination/src"
+      ],
+      "@hed-hog/api-pagination/*": [
+        "../../packages/api-pagination/src/*"
+      ],
+      "@hed-hog/api-prisma": [
+        "../../packages/api-prisma/src"
+      ],
+      "@hed-hog/api-prisma/*": [
+        "../../packages/api-prisma/src/*"
+      ],
+      "@hed-hog/ui": [
+        "../../packages/ui/src"
+      ],
+      "@hed-hog/ui/*": [
+        "../../packages/ui/src/*"
+      ]
+    }
   }
 }
