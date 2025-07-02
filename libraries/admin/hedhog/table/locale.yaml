@@ -1,0 +1,14 @@
+columns:
+  - type: pk
+  - name: code
+    isUnique: true
+    type: char
+    length: 2
+  - name: region
+    type: char
+    length: 2
+  - name: enabled
+    type: boolean
+    default: true
+  - type: created_at
+  - type: updated_at
