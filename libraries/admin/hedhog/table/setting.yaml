@@ -16,7 +16,6 @@ columns:
       - boolean
       - json
     default: string
-  - type: slug
   - name: component
     type: enum
     enum:
