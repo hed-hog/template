@@ -2,12 +2,14 @@ columns:
   - type: pk
   - name: menu_id
     type: fk
+    isNullable: true
     references:
       table: menu
       column: id
       onDelete: CASCADE
   - type: slug
   - name: url
+    isNullable: true
     length: 255
   - name: order
     type: int

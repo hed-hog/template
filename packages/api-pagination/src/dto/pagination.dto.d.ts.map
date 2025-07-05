@@ -1,1 +1,0 @@
-{"version":3,"file":"pagination.dto.d.ts","sourceRoot":"","sources":["pagination.dto.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,kBAAkB,EAAE,MAAM,2BAA2B,CAAC;AAC/D,qBAAa,aAAa;IAIxB,IAAI,EAAE,MAAM,CAAC;IAKb,QAAQ,EAAE,MAAM,CAAC;IAIjB,MAAM,EAAE,MAAM,CAAC;IAIf,SAAS,EAAE,MAAM,CAAC;IAKlB,SAAS,EAAE,kBAAkB,CAAC;IAI9B,MAAM,EAAE,MAAM,CAAC;CAChB"}
