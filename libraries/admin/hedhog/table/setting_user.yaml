@@ -1,14 +1,15 @@
 columns:
+  - type: pk
   - name: user_id
     type: fk
-    isPrimary: true
+    isUnique: true
     references:
       table: user
       column: id
       onDelete: CASCADE
   - name: setting_id
     type: fk
-    isPrimary: true
+    isUnique: true
     references:
       table: setting
       column: id

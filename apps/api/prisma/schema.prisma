@@ -6,3 +6,416 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model dashboard {
+  id               Int                @id @default(autoincrement())
+  slug             String             @unique(map: "dashboard_slug_unique") @db.VarChar
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @default(now()) @db.Timestamp(6)
+  dashboard_item   dashboard_item[]
+  dashboard_locale dashboard_locale[]
+}
+
+model dashboard_component {
+  id                         Int                          @id @default(autoincrement())
+  slug                       String                       @unique(map: "dashboard_component_slug_unique") @db.VarChar
+  path                       String                       @db.VarChar
+  min_width                  Int                          @default(1)
+  max_width                  Int?
+  min_height                 Int                          @default(1)
+  max_height                 Int?
+  width                      Int
+  height                     Int
+  is_resizable               Boolean                      @default(true)
+  created_at                 DateTime                     @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime                     @default(now()) @db.Timestamp(6)
+  dashboard_component_locale dashboard_component_locale[]
+  dashboard_item             dashboard_item[]
+}
+
+model dashboard_component_locale {
+  id                     Int                 @id @default(autoincrement())
+  locale_id              Int
+  dashboard_component_id Int
+  name                   String              @db.VarChar(255)
+  dashboard_component    dashboard_component @relation(fields: [dashboard_component_id], references: [id], onDelete: Cascade, map: "dashboard_component_dashboard_component_id_fkey")
+  locale                 locale              @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+}
+
+model dashboard_item {
+  id                  Int                 @id @default(autoincrement())
+  component_id        Int
+  dashboard_id        Int
+  width               Int
+  height              Int
+  x_axis              Int
+  y_axis              Int
+  created_at          DateTime            @default(now()) @db.Timestamp(6)
+  updated_at          DateTime            @default(now()) @db.Timestamp(6)
+  dashboard_component dashboard_component @relation(fields: [component_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "dashboard_component_component_id_fkey")
+  dashboard           dashboard           @relation(fields: [dashboard_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "dashboard_dashboard_id_fkey")
+  dashboard_user      dashboard_user[]
+}
+
+model dashboard_locale {
+  id           Int       @id @default(autoincrement())
+  locale_id    Int
+  dashboard_id Int
+  name         String    @db.VarChar(255)
+  dashboard    dashboard @relation(fields: [dashboard_id], references: [id], onDelete: Cascade, map: "dashboard_dashboard_id_fkey")
+  locale       locale    @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+}
+
+model dashboard_user {
+  id             Int            @id @default(autoincrement())
+  item_id        Int
+  user_id        Int
+  width          Int
+  height         Int
+  x_axis         Int
+  y_axis         Int
+  created_at     DateTime       @default(now()) @db.Timestamp(6)
+  updated_at     DateTime       @default(now()) @db.Timestamp(6)
+  dashboard_item dashboard_item @relation(fields: [item_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "dashboard_item_item_id_fkey")
+  user           user           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+}
+
+model locale {
+  id                         Int                          @id @default(autoincrement())
+  code                       String                       @unique(map: "locale_code_unique") @db.Char(2)
+  region                     String                       @db.Char(2)
+  enabled                    Boolean                      @default(true)
+  created_at                 DateTime                     @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime                     @default(now()) @db.Timestamp(6)
+  dashboard_component_locale dashboard_component_locale[]
+  dashboard_locale           dashboard_locale[]
+  menu_locale                menu_locale[]
+  multifactor_locale         multifactor_locale[]
+  role_locale                role_locale[]
+  screen_locale              screen_locale[]
+  setting_group_locale       setting_group_locale[]
+  setting_locale             setting_locale[]
+  translation                translation[]
+}
+
+model menu {
+  id          Int           @id @default(autoincrement())
+  menu_id     Int?
+  slug        String        @unique(map: "menu_slug_unique") @db.VarChar
+  url         String?       @db.VarChar
+  order       Int           @default(0)
+  icon        String        @db.VarChar
+  created_at  DateTime      @default(now()) @db.Timestamp(6)
+  updated_at  DateTime      @default(now()) @db.Timestamp(6)
+  menu        menu?         @relation("menuTomenu", fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_menu  menu[]        @relation("menuTomenu")
+  menu_locale menu_locale[]
+  menu_screen menu_screen[] @ignore
+  role_menu   role_menu[]   @ignore
+}
+
+model menu_locale {
+  id        Int    @id @default(autoincrement())
+  locale_id Int
+  menu_id   Int
+  name      String @db.VarChar(255)
+  locale    locale @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+  menu      menu   @relation(fields: [menu_id], references: [id], onDelete: Cascade, map: "menu_menu_id_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model menu_screen {
+  menu_id   Int
+  screen_id Int
+  menu      menu   @relation(fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_menu_id_fkey")
+  screen    screen @relation(fields: [screen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "screen_screen_id_fkey")
+
+  @@ignore
+}
+
+model multifactor {
+  id                 Int                  @id @default(autoincrement())
+  slug               String               @unique(map: "multifactor_slug_unique") @db.VarChar
+  created_at         DateTime             @default(now()) @db.Timestamp(6)
+  updated_at         DateTime             @default(now()) @db.Timestamp(6)
+  multifactor_locale multifactor_locale[]
+  user               user[]
+}
+
+model multifactor_locale {
+  id             Int         @id @default(autoincrement())
+  locale_id      Int
+  multifactor_id Int
+  name           String      @db.VarChar(255)
+  locale         locale      @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+  multifactor    multifactor @relation(fields: [multifactor_id], references: [id], onDelete: Cascade, map: "multifactor_multifactor_id_fkey")
+}
+
+model role {
+  id          Int           @id @default(autoincrement())
+  slug        String        @unique(map: "role_slug_unique") @db.VarChar
+  created_at  DateTime      @default(now()) @db.Timestamp(6)
+  updated_at  DateTime      @default(now()) @db.Timestamp(6)
+  role_locale role_locale[]
+  role_menu   role_menu[]   @ignore
+  role_route  role_route[]  @ignore
+  role_screen role_screen[] @ignore
+  role_user   role_user[]   @ignore
+}
+
+model role_locale {
+  id          Int     @id @default(autoincrement())
+  locale_id   Int
+  role_id     Int
+  name        String  @db.VarChar(255)
+  description String? @db.VarChar(511)
+  locale      locale  @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+  role        role    @relation(fields: [role_id], references: [id], onDelete: Cascade, map: "role_role_id_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model role_menu {
+  role_id    Int
+  menu_id    Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  menu       menu     @relation(fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_menu_id_fkey")
+  role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model role_route {
+  role_id    Int
+  route_id   Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
+  route      route    @relation(fields: [route_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "route_route_id_fkey")
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model role_screen {
+  role_id    Int
+  screen_id  Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
+  screen     screen   @relation(fields: [screen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "screen_screen_id_fkey")
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model role_user {
+  role_id    Int
+  user_id    Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+
+  @@ignore
+}
+
+model route {
+  id           Int               @id @default(autoincrement())
+  url          String            @db.VarChar
+  method       route_method_enum
+  description  String?           @db.VarChar
+  created_at   DateTime          @default(now()) @db.Timestamp(6)
+  updated_at   DateTime          @default(now()) @db.Timestamp(6)
+  role_route   role_route[]      @ignore
+  route_screen route_screen[]    @ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model route_screen {
+  route_id   Int
+  screen_id  Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  route      route    @relation(fields: [route_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "route_route_id_fkey")
+  screen     screen   @relation(fields: [screen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "screen_screen_id_fkey")
+
+  @@ignore
+}
+
+model screen {
+  id            Int             @id @default(autoincrement())
+  slug          String          @unique(map: "screen_slug_unique") @db.VarChar
+  icon          String?         @db.VarChar
+  created_at    DateTime        @default(now()) @db.Timestamp(6)
+  updated_at    DateTime        @default(now()) @db.Timestamp(6)
+  menu_screen   menu_screen[]   @ignore
+  role_screen   role_screen[]   @ignore
+  route_screen  route_screen[]  @ignore
+  screen_locale screen_locale[]
+}
+
+model screen_locale {
+  id          Int     @id @default(autoincrement())
+  locale_id   Int
+  screen_id   Int
+  name        String  @db.VarChar(255)
+  description String? @db.VarChar(511)
+  locale      locale  @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+  screen      screen  @relation(fields: [screen_id], references: [id], onDelete: Cascade, map: "screen_screen_id_fkey")
+}
+
+model setting {
+  id             Int                    @id @default(autoincrement())
+  group_id       Int
+  slug           String                 @unique(map: "setting_slug_unique") @db.VarChar
+  type           setting_type_enum      @default(string)
+  component      setting_component_enum @default(input_text)
+  value          String?                @db.VarChar
+  user_override  Boolean                @default(false)
+  created_at     DateTime               @default(now()) @db.Timestamp(6)
+  updated_at     DateTime               @default(now()) @db.Timestamp(6)
+  setting_group  setting_group          @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "setting_group_group_id_fkey")
+  setting_list   setting_list[]
+  setting_locale setting_locale[]
+  setting_user   setting_user[]         @ignore
+}
+
+model setting_group {
+  id                   Int                    @id @default(autoincrement())
+  icon                 String                 @db.VarChar
+  slug                 String                 @unique(map: "setting_group_slug_unique") @db.VarChar
+  created_at           DateTime               @default(now()) @db.Timestamp(6)
+  updated_at           DateTime               @default(now()) @db.Timestamp(6)
+  setting              setting[]
+  setting_group_locale setting_group_locale[]
+}
+
+model setting_group_locale {
+  id               Int           @id @default(autoincrement())
+  locale_id        Int
+  setting_group_id Int
+  name             String        @db.VarChar(63)
+  description      String?       @db.VarChar(255)
+  locale           locale        @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+  setting_group    setting_group @relation(fields: [setting_group_id], references: [id], onDelete: Cascade, map: "setting_group_setting_group_id_fkey")
+}
+
+model setting_list {
+  id         Int      @id @default(autoincrement())
+  setting_id Int
+  order      Int      @default(0)
+  value      String   @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  setting    setting  @relation(fields: [setting_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "setting_setting_id_fkey")
+}
+
+model setting_locale {
+  id          Int     @id @default(autoincrement())
+  locale_id   Int
+  setting_id  Int
+  description String? @db.VarChar(255)
+  name        String? @db.VarChar(63)
+  locale      locale  @relation(fields: [locale_id], references: [id], onDelete: Cascade, map: "locale_locale_id_fkey")
+  setting     setting @relation(fields: [setting_id], references: [id], onDelete: Cascade, map: "setting_setting_id_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model setting_user {
+  user_id    Int
+  setting_id Int
+  value      String?  @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  setting    setting  @relation(fields: [setting_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "setting_setting_id_fkey")
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+
+  @@ignore
+}
+
+model translation {
+  id                    Int                   @id @default(autoincrement())
+  locale_id             Int
+  namespace_id          Int
+  name                  String                @db.VarChar
+  value                 String                @db.VarChar
+  created_at            DateTime              @default(now()) @db.Timestamp(6)
+  updated_at            DateTime              @default(now()) @db.Timestamp(6)
+  locale                locale                @relation(fields: [locale_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "locale_locale_id_fkey")
+  translation_namespace translation_namespace @relation(fields: [namespace_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "translation_namespace_namespace_id_fkey")
+}
+
+model translation_namespace {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar
+  created_at  DateTime      @default(now()) @db.Timestamp(6)
+  updated_at  DateTime      @default(now()) @db.Timestamp(6)
+  translation translation[]
+}
+
+model user {
+  id                 Int                  @id @default(autoincrement())
+  multifactor_id     Int?
+  name               String               @db.VarChar
+  email              String               @unique(map: "user_email_unique") @db.VarChar
+  password           String               @db.VarChar
+  code               String?              @db.VarChar
+  created_at         DateTime             @default(now()) @db.Timestamp(6)
+  updated_at         DateTime             @default(now()) @db.Timestamp(6)
+  dashboard_user     dashboard_user[]
+  role_user          role_user[]          @ignore
+  setting_user       setting_user[]       @ignore
+  multifactor        multifactor?         @relation(fields: [multifactor_id], references: [id], onUpdate: NoAction, map: "multifactor_multifactor_id_fkey")
+  user_activity      user_activity[]
+  user_code_recovery user_code_recovery[]
+}
+
+model user_activity {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  ip         String   @db.VarChar
+  user_agent String   @db.VarChar
+  message    String   @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+}
+
+model user_code_recovery {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  code       String   @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  user       user?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+}
+
+enum route_method_enum {
+  GET
+  POST
+  PATCH
+  DELETE
+  PUT
+  OPTIONS
+  HEAD
+}
+
+enum setting_component_enum {
+  input_text   @map("input-text")
+  input_number @map("input-number")
+  combobox
+  radio
+  color_picker @map("color-picker")
+  switch
+  checkbox
+}
+
+enum setting_type_enum {
+  string
+  array
+  number
+  boolean
+  json
+}

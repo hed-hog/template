@@ -1,14 +1,15 @@
 columns:
+  - type: pk
   - name: role_id
     type: fk
-    isPrimary: true
+    isUnique: true
     references:
       table: role
       column: id
       onDelete: CASCADE
   - name: menu_id
     type: fk
-    isPrimary: true
+    isUnique: true
     references:
       table: menu
       column: id

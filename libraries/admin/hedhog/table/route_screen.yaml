@@ -1,14 +1,15 @@
 columns:
+  - type: pk
   - name: route_id
     type: fk
-    isPrimary: true
+    isUnique: true
     references:
       table: route
       column: id
       onDelete: CASCADE
   - name: screen_id
     type: fk
-    isPrimary: true
+    isUnique: true
     references:
       table: screen
       column: id
