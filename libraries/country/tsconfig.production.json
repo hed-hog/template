@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "es2017",
+    "module": "commonjs",
+    "lib": ["es2017", "es7", "es6"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node"],
+    "paths": {
+      "@prisma/client": [
+        "../../packages/api-prisma/node_modules/.prisma/client"
+      ],
+      "@prisma/client/*": [
+        "../../packages/api-prisma/node_modules/.prisma/client/*"
+      ],
+      "@hed-hog/api": ["../../packages/api/dist"],
+      "@hed-hog/api/*": ["../../packages/api/dist/*"],
+      "@hed-hog/api-locale": ["../../packages/api-locale/dist"],
+      "@hed-hog/api-locale/*": ["../../packages/api-locale/dist/*"],
+      "@hed-hog/api-mail": ["../../packages/api-mail/dist"],
+      "@hed-hog/api-mail/*": ["../../packages/api-mail/dist/*"],
+      "@hed-hog/api-pagination": ["../../packages/api-pagination/dist"],
+      "@hed-hog/api-pagination/*": ["../../packages/api-pagination/dist/*"],
+      "@hed-hog/api-prisma": ["../../packages/api-prisma/dist"],
+      "@hed-hog/api-prisma/*": ["../../packages/api-prisma/dist/*"],
+      "@hed-hog/api-healthy": ["../../packages/api-healthy/dist"],
+      "@hed-hog/api-healthy/*": ["../../packages/api-healthy/dist/*"],
+      "@hed-hog/api-developer": ["../../packages/api-developer/dist"],
+      "@hed-hog/api-developer/*": ["../../packages/api-developer/dist/*"],
+
+      "@hed-hog/admin": ["../../libraries/admin/dist"],
+      "@hed-hog/admin/*": ["../../libraries/admin/dist/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".turbo"]
+}

@@ -1,0 +1,12 @@
+columns:
+  - type: pk
+  - name: code
+    varchar: 3
+  - name: name
+    type: locale_varchar
+    length: 255
+    locale:
+      en: Name
+      pt: Nome
+  - type: created_at
+  - type: updated_at

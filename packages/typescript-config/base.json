@@ -32,6 +32,24 @@
       "@hed-hog/admin/*": [
         "../../libraries/admin/src/*"
       ],
+      "@hed-hog/contact": [
+        "../../libraries/contact/src"
+      ],
+      "@hed-hog/contact/*": [
+        "../../libraries/contact/src/*"
+      ],
+      "@hed-hog/country": [
+        "../../libraries/country/src"
+      ],
+      "@hed-hog/country/*": [
+        "../../libraries/country/src/*"
+      ],
+      "@hed-hog/file": [
+        "../../libraries/file/src"
+      ],
+      "@hed-hog/file/*": [
+        "../../libraries/file/src/*"
+      ],
       "@hed-hog/api": [
         "../../packages/api/src"
       ],

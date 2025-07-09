@@ -1,10 +1,9 @@
 {
-  "name": "@hed-hog/admin",
-  "version": "0.0.12",
+  "name": "@hed-hog/country",
+  "version": "0.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "_dev": "pnpm build --watch",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "prebuild": "npx ts-node ../../scripts/build-dependencies.ts libraries/admin",
     "build": "tsc --project tsconfig.production.json",
@@ -14,24 +13,13 @@
   "dependencies": {
     "@hed-hog/api": "workspace:*",
     "@hed-hog/api-locale": "workspace:*",
-    "@hed-hog/api-mail": "workspace:*",
     "@hed-hog/api-pagination": "workspace:*",
     "@hed-hog/api-prisma": "workspace:*",
-    "@nestjs/axios": "*",
     "@nestjs/common": "*",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11",
     "@nestjs/jwt": "^11",
-    "@nestjs/mapped-types": "*",
-    "axios": "^1.9.0",
-    "bcrypt": "6.0.0",
-    "multer": "^2.0.1",
-    "png-to-ico": "^2.1.8",
-    "qrcode": "^1.5.4",
-    "rxjs": "^7.8.2",
-    "sharp": "^0.34.2",
-    "speakeasy": "^2.0.0",
-    "uuid": "^11.1.0"
+    "@nestjs/mapped-types": "*"
   },
   "exports": {
     ".": {
