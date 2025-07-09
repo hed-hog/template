@@ -15,7 +15,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "prisma:update": "ts-node ../../scripts/reset-prisma-schema.ts && prisma db pull && pnpm --filter @hed-hog/api-prisma prisma:update && prisma generate"
+    "prisma:update": "ts-node ../../scripts/reset-prisma-schema.ts && prisma db pull && pnpm --filter @hed-hog/api-prisma prisma:update && prisma generate",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@hed-hog/api": "workspace:*",
