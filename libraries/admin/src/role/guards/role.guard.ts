@@ -93,22 +93,16 @@ export class RoleGuard implements CanActivate {
         break;
     }
 
-    const route = await (this.prisma as any).route.count({
+    const route = await this.prisma.route.count({
       where: {
         method: httpMethod,
         url: fullPath,
         role_route: {
-          some: {
-            role: {
-              role_user: {
-                some: {
-                  user_id: {
-                    equals: userId,
-                  },
-                },
-              },
-            },
-          },
+          role: {
+            role_user: {
+              user_id: userId,
+            }
+          }
         },
       },
     });

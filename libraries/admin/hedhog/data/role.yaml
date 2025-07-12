@@ -6,9 +6,6 @@
     en: System administrator with full access.
     pt: Administrador do sistema com acesso total.
   relations:
-    user:
-      - where:
-          email: root@hedhog.com
     menu:
       - where:
           id:
@@ -29,9 +26,6 @@
     en: Manage screen in the system.
     pt: Gerenciar telas no sistema.
   relations:
-    user:
-      - where:
-          email: user@hedhog.com
     route:
       - where:
           url:
@@ -47,11 +41,6 @@
     en: Access to administrative features.
     pt: Acesso a funcionalidades administrativas.
   relations:
-    user:
-      - where:
-          email: root@hedhog.com
-      - where:
-          email: user@hedhog.com
     route:
       - where:
           method: GET

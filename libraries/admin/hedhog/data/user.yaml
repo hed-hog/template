@@ -2,7 +2,15 @@
   email: root@hedhog.com
   password:
     hash: changeme
+  relations:
+    role:
+      - where:
+          slug: admin
 - name: User
   email: user@hedhog.com
   password:
     hash: changeme
+  relations:
+    role:
+      - where:
+          slug: admin-access
