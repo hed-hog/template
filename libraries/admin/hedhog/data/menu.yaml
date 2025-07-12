@@ -4,6 +4,10 @@
     en: Setting
     pt: Configurações
   slug: /management/setting
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /management
@@ -12,6 +16,10 @@
   name:
     en: Settings
     pt: Configurações
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /settings
@@ -21,6 +29,10 @@
   icon: settings
   url: /settings/setting-group
   slug: /settings/setting-group
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /settings
@@ -30,6 +42,10 @@
   icon: user-cog
   url: /settings/setting-user
   slug: /settings/setting-user
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /settings
@@ -39,18 +55,30 @@
   icon: world
   url: /settings/locale
   slug: /settings/locale
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /
   icon: dashboard
   name:
     en: Dashboard
     pt: Dashboard
   slug: /
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /management
   icon: settings-2
   name:
     en: Management
     pt: Gerenciamento
   slug: /management
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /management
@@ -60,6 +88,10 @@
     en: User
     pt: Usuários
   slug: /management/user
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /management
@@ -69,6 +101,10 @@
     en: Role
     pt: Cargos
   slug: /management/role
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /management
@@ -78,6 +114,10 @@
     en: Screen
     pt: Telas
   slug: /management/screen
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /management
@@ -87,6 +127,10 @@
     en: Menu
     pt: Menu
   slug: /management/menu
+  relations:
+    role:
+      - where:
+          slug: admin
 - menu_id:
     where:
       slug: /management
@@ -96,6 +140,10 @@
     en: Route
     pt: Rotas
   slug: /management/route
+  relations:
+    role:
+      - where:
+          slug: admin
 - name:
     en: Dashboard
     pt: Dashboard

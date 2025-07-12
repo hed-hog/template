@@ -6,6 +6,10 @@
     en: Screen to manage a group of settings
     pt: Tela para gerenciar grupo de configurações
   icon: settings
+  relations:
+    role:
+      - where:
+          slug: admin
 - name:
     en: Setting User
     pt: Configuração de Usuário
@@ -14,6 +18,10 @@
     en: Screen to manage user settings
     pt: Tela para gerenciar configurações de usuário
   icon: user-cog
+  relations:
+    role:
+      - where:
+          slug: admin
 - name:
     en: Locale
     pt: Locale
@@ -23,6 +31,9 @@
     pt: Tela para gerenciar localização/tradução
   icon: world
   relations:
+    role:
+      - where:
+          slug: admin
     route:
       - where:
           url:
@@ -36,6 +47,9 @@
     en: Manage role assigned to user.
     pt: Gerenciar funções atribuídas a usuários.
   relations:
+    role:
+      - where:
+          slug: admin
     route:
       - where:
           url:
@@ -49,6 +63,9 @@
     en: Manage the screen available in the system.
     pt: Gerenciar as telas disponíveis no sistema.
   relations:
+    role:
+      - where:
+          slug: admin
     route:
       - where:
           url:
@@ -62,6 +79,9 @@
     en: Manage route for navigation within the system.
     pt: Gerenciar rotas para navegação dentro do sistema.
   relations:
+    role:
+      - where:
+          slug: admin
     route:
       - where:
           url:
@@ -74,6 +94,10 @@
     en: Screen to manage dashboard
     pt: Tela para gerenciar dashboard
   icon: dashboard
+  relations:
+    role:
+      - where:
+          slug: admin
 - name:
     en: Dashboard Component
     pt: Componente de Dashboard
@@ -82,6 +106,10 @@
     en: Screen to manage dashboard component
     pt: Tela para gerenciar componentes de dashboard
   icon: dashboard
+  relations:
+    role:
+      - where:
+          slug: admin
 - name:
     en: Dashboard User
     pt: Componente de Dashboard
@@ -90,6 +118,10 @@
     en: Screen to manage dashboard user
     pt: Tela para gerenciar usuários de dashboard
   icon: dashboard
+  relations:
+    role:
+      - where:
+          slug: admin
 - name:
     en: Dashboard Item
     pt: Item de Dashboard
@@ -98,3 +130,7 @@
     en: Screen to manage dashboard item
     pt: Tela para gerenciar itens de dashboard
   icon: dashboard
+  relations:
+    role:
+      - where:
+          slug: admin

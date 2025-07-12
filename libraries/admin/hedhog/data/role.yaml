@@ -6,33 +6,10 @@
     en: System administrator with full access.
     pt: Administrador do sistema com acesso total.
   relations:
-    menu:
-      - where:
-          id:
-            gte: 0
     route:
       - where:
           id:
             gte: 0
-    screen:
-      - where:
-          id:
-            gte: 0
-- slug: screen-manager
-  name:
-    en: Screen Manager
-    pt: Gerente de Telas
-  description:
-    en: Manage screen in the system.
-    pt: Gerenciar telas no sistema.
-  relations:
-    route:
-      - where:
-          url:
-            like: /screen%
-    menu:
-      - where:
-          slug: /
 - slug: admin-access
   name:
     en: Admin Access
