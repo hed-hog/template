@@ -5,11 +5,6 @@
   description:
     en: System administrator with full access.
     pt: Administrador do sistema com acesso total.
-  relations:
-    route:
-      - where:
-          id:
-            gte: 0
 - slug: admin-access
   name:
     en: Admin Access

@@ -1,133 +1,195 @@
 - url: /auth/verify
   method: GET
-- url: /menu/system
-  method: GET
-- url: /menu
-  method: GET
-- url: /menu/:menuId/role
-  method: GET
-- url: /menu/:menuId/screen
-  method: GET
-- url: /menu/:menuId/role
-  method: PATCH
-- url: /menu/:menuId/screen
-  method: PATCH
-- url: /menu/:menuId
-  method: GET
-- url: /menu
-  method: POST
-- url: /menu/:menuId
-  method: PATCH
-- url: /menu
-  method: DELETE
-- url: /menu/order
-  method: PATCH
-- url: /role
-  method: GET
-- url: /role/:roleId/user
-  method: GET
-- url: /role/:roleId/menu
-  method: GET
-- url: /role/:roleId/route
-  method: GET
-- url: /role/:roleId/screen
-  method: GET
-- url: /role/:roleId/user
-  method: PATCH
-- url: /role/:roleId/menu
-  method: PATCH
-- url: /role/:roleId/route
-  method: PATCH
-- url: /role/:roleId/screen
-  method: PATCH
-- url: /role/:roleId
-  method: GET
-- url: /role
-  method: POST
-- url: /role/:roleId
-  method: PATCH
-- url: /role
-  method: DELETE
-- url: /route
-  method: GET
-- url: /route/:routeId
-  method: GET
-- url: /route
-  method: POST
-- url: /route/:routeId
-  method: PATCH
-- url: /route
-  method: DELETE
-- url: /route/:routeId/role
-  method: GET
-- url: /route/:routeId/role
-  method: PATCH
-- url: /route/:routeId/screen
-  method: GET
-- url: /route/:routeId/screen
-  method: PATCH
-- url: /screen
-  method: GET
-- url: /screen/:screenId/role
-  method: GET
-- url: /screen/:screenId/route
-  method: GET
-- url: /screen/:screenId/role
-  method: PATCH
-- url: /screen/:screenId/route
-  method: PATCH
-- url: /screen/:screenId
-  method: GET
-- url: /screen
-  method: POST
-- url: /screen/:screenId
-  method: PATCH
-- url: /screen
-  method: DELETE
-- url: /user
-  method: GET
-- url: /user/:userId/role
-  method: GET
-- url: /user/:userId/role
-  method: PATCH
-- url: /user/:userId
-  method: GET
-- url: /user
-  method: POST
-- url: /user/:userId
-  method: PATCH
-- url: /user
-  method: DELETE
-- url: /locale
-  method: GET
-- url: /locale/:localeId
-  method: GET
-- url: /locale
-  method: POST
-- url: /locale
-  method: PUT
-- url: /locale/:localeId
-  method: PATCH
-- url: /locale
-  method: DELETE
-- url: /file
-  method: GET
-- url: /file/:id
-  method: GET
-- url: /file/download/:token
-  method: GET
-- url: /file/download/:id
-  method: PUT
-- url: /file
-  method: POST
-- url: /file
-  method: DELETE
-- url: /translation-namespace
-  method: GET
   relations: &a1
     role:
       - where:
           slug: admin
+- url: /menu/system
+  method: GET
+  relations: *a1
+- url: /menu
+  method: GET
+  relations: *a1
+- url: /menu/:menuId/role
+  method: GET
+  relations: *a1
+- url: /menu/:menuId/screen
+  method: GET
+  relations: *a1
+- url: /menu/:menuId/role
+  method: PATCH
+  relations: *a1
+- url: /menu/:menuId/screen
+  method: PATCH
+  relations: *a1
+- url: /menu/:menuId
+  method: GET
+  relations: *a1
+- url: /menu
+  method: POST
+  relations: *a1
+- url: /menu/:menuId
+  method: PATCH
+  relations: *a1
+- url: /menu
+  method: DELETE
+  relations: *a1
+- url: /menu/order
+  method: PATCH
+  relations: *a1
+- url: /role
+  method: GET
+  relations: *a1
+- url: /role/:roleId/user
+  method: GET
+  relations: *a1
+- url: /role/:roleId/menu
+  method: GET
+  relations: *a1
+- url: /role/:roleId/route
+  method: GET
+  relations: *a1
+- url: /role/:roleId/screen
+  method: GET
+  relations: *a1
+- url: /role/:roleId/user
+  method: PATCH
+  relations: *a1
+- url: /role/:roleId/menu
+  method: PATCH
+  relations: *a1
+- url: /role/:roleId/route
+  method: PATCH
+  relations: *a1
+- url: /role/:roleId/screen
+  method: PATCH
+  relations: *a1
+- url: /role/:roleId
+  method: GET
+  relations: *a1
+- url: /role
+  method: POST
+  relations: *a1
+- url: /role/:roleId
+  method: PATCH
+  relations: *a1
+- url: /role
+  method: DELETE
+  relations: *a1
+- url: /route
+  method: GET
+  relations: *a1
+- url: /route/:routeId
+  method: GET
+  relations: *a1
+- url: /route
+  method: POST
+  relations: *a1
+- url: /route/:routeId
+  method: PATCH
+  relations: *a1
+- url: /route
+  method: DELETE
+  relations: *a1
+- url: /route/:routeId/role
+  method: GET
+  relations: *a1
+- url: /route/:routeId/role
+  method: PATCH
+  relations: *a1
+- url: /route/:routeId/screen
+  method: GET
+  relations: *a1
+- url: /route/:routeId/screen
+  method: PATCH
+  relations: *a1
+- url: /screen
+  method: GET
+  relations: *a1
+- url: /screen/:screenId/role
+  method: GET
+  relations: *a1
+- url: /screen/:screenId/route
+  method: GET
+  relations: *a1
+- url: /screen/:screenId/role
+  method: PATCH
+  relations: *a1
+- url: /screen/:screenId/route
+  method: PATCH
+  relations: *a1
+- url: /screen/:screenId
+  method: GET
+  relations: *a1
+- url: /screen
+  method: POST
+  relations: *a1
+- url: /screen/:screenId
+  method: PATCH
+  relations: *a1
+- url: /screen
+  method: DELETE
+  relations: *a1
+- url: /user
+  method: GET
+  relations: *a1
+- url: /user/:userId/role
+  method: GET
+  relations: *a1
+- url: /user/:userId/role
+  method: PATCH
+  relations: *a1
+- url: /user/:userId
+  method: GET
+  relations: *a1
+- url: /user
+  method: POST
+  relations: *a1
+- url: /user/:userId
+  method: PATCH
+  relations: *a1
+- url: /user
+  method: DELETE
+  relations: *a1
+- url: /locale
+  method: GET
+  relations: *a1
+- url: /locale/:localeId
+  method: GET
+  relations: *a1
+- url: /locale
+  method: POST
+  relations: *a1
+- url: /locale
+  method: PUT
+  relations: *a1
+- url: /locale/:localeId
+  method: PATCH
+  relations: *a1
+- url: /locale
+  method: DELETE
+  relations: *a1
+- url: /file
+  method: GET
+  relations: *a1
+- url: /file/:id
+  method: GET
+  relations: *a1
+- url: /file/download/:token
+  method: GET
+  relations: *a1
+- url: /file/download/:id
+  method: PUT
+  relations: *a1
+- url: /file
+  method: POST
+  relations: *a1
+- url: /file
+  method: DELETE
+  relations: *a1
+- url: /translation-namespace
+  method: GET
+  relations: *a1
 - url: /translation-namespace
   method: POST
   relations: *a1
@@ -142,262 +204,154 @@
   relations: *a1
 - url: /translation
   method: GET
-  relations: &a2
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /translation
   method: POST
-  relations: *a2
+  relations: *a1
 - url: /translation/:id
   method: GET
-  relations: *a2
+  relations: *a1
 - url: /translation/:id
   method: PATCH
-  relations: *a2
+  relations: *a1
 - url: /translation
   method: DELETE
-  relations: *a2
+  relations: *a1
 - url: /multifactor
   method: GET
-  relations: &a3
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /multifactor
   method: POST
-  relations: *a3
+  relations: *a1
 - url: /multifactor/:id
   method: GET
-  relations: *a3
+  relations: *a1
 - url: /multifactor/:id
   method: PATCH
-  relations: *a3
+  relations: *a1
 - url: /multifactor
   method: DELETE
-  relations: *a3
+  relations: *a1
 - url: /user/:id
   method: GET
-  relations: &a4
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /user/:id
   method: PATCH
-  relations: *a4
+  relations: *a1
 - url: /screen/:id
   method: GET
-  relations: &a5
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /screen/:id
   method: PATCH
-  relations: *a5
+  relations: *a1
 - url: /menu/:id
   method: GET
-  relations: &a6
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /menu/:id
   method: PATCH
-  relations: *a6
+  relations: *a1
 - url: /menu-screen
   method: GET
-  relations: &a7
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /menu-screen
   method: POST
-  relations: *a7
+  relations: *a1
 - url: /menu-screen/:menu_id
   method: GET
-  relations: *a7
+  relations: *a1
 - url: /menu-screen/:menu_id
   method: PATCH
-  relations: *a7
+  relations: *a1
 - url: /menu-screen
   method: DELETE
-  relations: *a7
+  relations: *a1
 - url: /dashboard
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard
   method: POST
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard/:id
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard/:id
   method: PATCH
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard
   method: DELETE
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-component
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-component
   method: POST
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-component/:id
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-component/:id
   method: PATCH
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-component
   method: DELETE
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-item
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-item
   method: POST
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-item/:id
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-item/:id
   method: PATCH
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-item
   method: DELETE
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-user
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-user
   method: POST
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-user/:id
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-user/:id
   method: PATCH
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /dashboard-user
   method: DELETE
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting/group/:slug
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting/user
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting
   method: POST
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting/:settingId
   method: GET
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting/user/:slug
   method: PUT
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting/:slug
   method: PUT
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting
   method: PUT
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting
   method: DELETE
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
 - url: /setting/:settingId
   method: PATCH
-  relations:
-    role:
-      - where:
-          slug: admin
+  relations: *a1
