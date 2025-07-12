@@ -1,357 +1,708 @@
 - url: /auth/verify
   method: GET
-  relations: &a1
+  relations:
     role:
       - where:
           slug: admin
 - url: /menu/system
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:menuId/role
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:menuId/screen
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:menuId/role
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:menuId/screen
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:menuId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:menuId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/order
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/user
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/menu
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/route
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/screen
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/user
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/menu
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/route
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId/screen
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role/:roleId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /role
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route/:routeId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route/:routeId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route/:routeId/role
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route/:routeId/role
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route/:routeId/screen
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /route/:routeId/screen
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:screenId/role
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:screenId/route
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:screenId/role
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:screenId/route
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:screenId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:screenId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user/:userId/role
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user/:userId/role
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user/:userId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user/:userId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /locale
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /locale/:localeId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /locale
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /locale
   method: PUT
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /locale/:localeId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /locale
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /file
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /file/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /file/download/:token
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /file/download/:id
   method: PUT
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /file
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /file
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation-namespace
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation-namespace
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation-namespace/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation-namespace/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation-namespace
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /translation
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /multifactor
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /multifactor
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /multifactor/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /multifactor/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /multifactor
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /user/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /screen/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu-screen
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu-screen
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu-screen/:menu_id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu-screen/:menu_id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /menu-screen
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-component
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-component
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-component/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-component/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-component
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-item
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-item
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-item/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-item/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-item
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-user
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-user
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-user/:id
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-user/:id
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /dashboard-user
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting/group/:slug
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting/user
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting
   method: POST
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting/:settingId
   method: GET
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting/user/:slug
   method: PUT
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting/:slug
   method: PUT
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting
   method: PUT
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting
   method: DELETE
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
 - url: /setting/:settingId
   method: PATCH
-  relations: *a1
+  relations:
+    role:
+      - where:
+          slug: admin
