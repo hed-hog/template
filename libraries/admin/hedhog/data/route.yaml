@@ -4,12 +4,16 @@
     role:
       - where:
           slug: admin
+      - where:
+          slug: admin-access
 - url: /menu/system
   method: GET
   relations:
     role:
       - where:
           slug: admin
+      - where:
+          slug: admin-access
 - url: /menu
   method: GET
   relations:
@@ -652,6 +656,8 @@
     role:
       - where:
           slug: admin
+      - where:
+          slug: admin-access
 - url: /setting/user
   method: GET
   relations:
@@ -688,6 +694,8 @@
     role:
       - where:
           slug: admin
+      - where:
+          slug: admin-access
 - url: /setting
   method: PUT
   relations:

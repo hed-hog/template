@@ -12,21 +12,6 @@
   description:
     en: Access to administrative features.
     pt: Acesso a funcionalidades administrativas.
-  relations:
-    route:
-      - where:
-          method: GET
-          url:
-            in:
-              - /menu/system
-              - /auth/verify
-              - /setting/group/:slug
-              - /setting/group
-      - where:
-          method: PUT
-          url:
-            in:
-              - /setting/:slug
 - slug: user
   name:
     en: User
