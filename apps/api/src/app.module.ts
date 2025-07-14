@@ -7,6 +7,8 @@ import { PaginationModule } from '@hed-hog/api-pagination';
 import { MailModule } from '@hed-hog/api-mail';
 import { LocaleModule } from '@hed-hog/api-locale';
 import { AdminModule } from '@hed-hog/admin';
+import { FileModule } from '@hed-hog/file';
+import { ContactModule } from '@hed-hog/contact';
 import { HealthyModule } from '@hed-hog/api-healthy';
 import { DeveloperModule } from '@hed-hog/api-developer';
 
@@ -15,6 +17,8 @@ import { DeveloperModule } from '@hed-hog/api-developer';
     DeveloperModule,
     HealthyModule,
     AdminModule,
+    FileModule,
+    ContactModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
     PrismaModule,
     PaginationModule,

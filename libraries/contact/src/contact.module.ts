@@ -1,8 +1,8 @@
-import { AdminModule } from '@hedhog/admin';
-import { LocaleModule } from '@hedhog/locale';
-import { MailModule } from '@hedhog/mail';
-import { PaginationModule } from '@hedhog/pagination';
-import { PrismaModule } from '@hedhog/prisma';
+import { AdminModule } from '@hed-hog/admin';
+import { LocaleModule } from '@hed-hog/api-locale';
+import { MailModule } from '@hed-hog/api-mail';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';

@@ -1,5 +1,5 @@
-import { MailService } from '@hedhog/mail';
-import { PrismaService } from '@hedhog/prisma';
+import { MailService } from '@hed-hog/api-mail';
+import { PrismaService } from '@hed-hog/api-prisma';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';

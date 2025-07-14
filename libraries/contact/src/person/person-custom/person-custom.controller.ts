@@ -1,5 +1,5 @@
-import { Pagination } from '@hedhog/pagination';
-import { Role } from '@hedhog/core';
+import { Pagination } from '@hed-hog/api-pagination';
+import { Role } from '@hed-hog/api';
 import {
   Body,
   Controller,
@@ -15,8 +15,8 @@ import {
 import { PersonCustomService } from './person-custom.service';
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
-import { DeleteDTO } from '@hedhog/core';
-import { Locale } from '@hedhog/locale';
+import { DeleteDTO } from '@hed-hog/api';
+import { Locale } from '@hed-hog/api-locale';
 
 @Role()
 @Controller('person/:personId/person-custom')

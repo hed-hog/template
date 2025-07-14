@@ -1,6 +1,6 @@
-import { DeleteDTO } from '@hedhog/core';
-import { PaginationDTO, PaginationService } from '@hedhog/pagination';
-import { PrismaService } from '@hedhog/prisma';
+import { DeleteDTO } from '@hed-hog/api';
+import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   Inject,

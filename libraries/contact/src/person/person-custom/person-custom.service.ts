@@ -1,7 +1,7 @@
-import { DeleteDTO } from '@hedhog/core';
-import { LocaleService } from '@hedhog/locale';
-import { PaginationDTO, PaginationService } from '@hedhog/pagination';
-import { PrismaService } from '@hedhog/prisma';
+import { DeleteDTO } from '@hed-hog/api';
+import { LocaleService } from '@hed-hog/api-locale';
+import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   forwardRef,

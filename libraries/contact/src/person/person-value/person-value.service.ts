@@ -1,5 +1,5 @@
-import { PaginationService, PaginationDTO } from '@hedhog/pagination';
-import { PrismaService } from '@hedhog/prisma';
+import { PaginationService, PaginationDTO } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   Injectable,
   NotFoundException,
@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
-import { DeleteDTO } from '@hedhog/core';
+import { DeleteDTO } from '@hed-hog/api';
 
 @Injectable()
 export class PersonValueService {

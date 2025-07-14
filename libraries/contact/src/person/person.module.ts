@@ -1,6 +1,6 @@
-import { AdminModule } from "@hedhog/admin";
-import { PaginationModule } from "@hedhog/pagination";
-import { PrismaModule } from "@hedhog/prisma";
+import { AdminModule } from "@hed-hog/admin";
+import { PaginationModule } from "@hed-hog/api-pagination";
+import { PrismaModule } from "@hed-hog/api-prisma";
 import { forwardRef, Module } from "@nestjs/common";
 import { PersonValueController } from "./person-value/person-value.controller";
 import { PersonValueService } from "./person-value/person-value.service";

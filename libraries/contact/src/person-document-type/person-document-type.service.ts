@@ -1,5 +1,5 @@
-import { PaginationDTO, PaginationService } from '@hedhog/pagination';
-import { PrismaService } from '@hedhog/prisma';
+import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
+import { PrismaService } from '@hed-hog/api-prisma';
 import {
   BadRequestException,
   Inject,
@@ -7,9 +7,9 @@ import {
   forwardRef
 } from '@nestjs/common';
 import { CreateDTO } from './dto/create.dto';
-import { DeleteDTO } from '@hedhog/core';
+import { DeleteDTO } from '@hed-hog/api';
 import { UpdateDTO } from './dto/update.dto';
-import { LocaleService } from '@hedhog/locale';
+import { LocaleService } from '@hed-hog/api-locale';
 
 @Injectable()
 export class PersonDocumentTypeService {

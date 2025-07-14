@@ -11,6 +11,8 @@
     "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.27.0",
+    "@google-cloud/storage": "^7.16.0",
     "@hed-hog/admin": "workspace:*",
     "@hed-hog/api": "workspace:*",
     "@hed-hog/api-locale": "workspace:*",
@@ -21,7 +23,8 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11",
     "@nestjs/jwt": "^11",
-    "@nestjs/mapped-types": "*"
+    "@nestjs/mapped-types": "*",
+    "aws-sdk": "2.1691.0"
   },
   "exports": {
     ".": {

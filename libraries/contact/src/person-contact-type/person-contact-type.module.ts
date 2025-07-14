@@ -1,6 +1,6 @@
-import { AdminModule } from '@hedhog/admin';
-import { PaginationModule } from '@hedhog/pagination';
-import { PrismaModule } from '@hedhog/prisma';
+import { AdminModule } from '@hed-hog/admin';
+import { PaginationModule } from '@hed-hog/api-pagination';
+import { PrismaModule } from '@hed-hog/api-prisma';
 import { forwardRef, Module } from '@nestjs/common';
 import { PersonContactTypeService } from './person-contact-type.service';
 import { PersonContactTypeController } from './person-contact-type.controller';

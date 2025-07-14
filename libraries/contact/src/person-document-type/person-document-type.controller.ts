@@ -1,5 +1,5 @@
-import { Pagination } from '@hedhog/pagination';
-import { Locale } from '@hedhog/locale';
+import { Pagination } from '@hed-hog/api-pagination';
+import { Locale } from '@hed-hog/api-locale';
 import {
   Body,
   Controller,
@@ -15,7 +15,7 @@ import {
 import { CreateDTO } from './dto/create.dto';
 import { UpdateDTO } from './dto/update.dto';
 import { PersonDocumentTypeService } from './person-document-type.service';
-import { Role, DeleteDTO } from '@hedhog/core';
+import { Role, DeleteDTO } from '@hed-hog/api';
 
 @Role()
 @Controller('person-document-type')
