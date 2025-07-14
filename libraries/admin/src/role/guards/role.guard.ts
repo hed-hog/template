@@ -98,9 +98,13 @@ export class RoleGuard implements CanActivate {
         method: httpMethod,
         url: fullPath,
         role_route: {
-          role: {
-            role_user: {
-              user_id: userId,
+          some: {
+            role: {
+              role_user: {
+                some: {
+                  user_id: userId,
+                }
+              }
             }
           }
         },

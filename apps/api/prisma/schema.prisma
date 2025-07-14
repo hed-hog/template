@@ -110,8 +110,8 @@ model menu {
   menu        menu?         @relation("menuTomenu", fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   other_menu  menu[]        @relation("menuTomenu")
   menu_locale menu_locale[]
-  menu_screen menu_screen?
-  role_menu   role_menu?
+  menu_screen menu_screen[]
+  role_menu   role_menu[]
 }
 
 model menu_locale {
@@ -125,10 +125,12 @@ model menu_locale {
 
 model menu_screen {
   id        Int    @id @default(autoincrement())
-  menu_id   Int    @unique(map: "menu_screen_menu_id_unique")
-  screen_id Int    @unique(map: "menu_screen_screen_id_unique")
+  menu_id   Int
+  screen_id Int
   menu      menu   @relation(fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_menu_id_fkey")
   screen    screen @relation(fields: [screen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "screen_screen_id_fkey")
+
+  @@unique([menu_id, screen_id], map: "menu_screen_menu_id_screen_id_unique")
 }
 
 model multifactor {
@@ -155,10 +157,10 @@ model role {
   created_at  DateTime      @default(now()) @db.Timestamp(6)
   updated_at  DateTime      @default(now()) @db.Timestamp(6)
   role_locale role_locale[]
-  role_menu   role_menu?
-  role_route  role_route?
-  role_screen role_screen?
-  role_user   role_user?
+  role_menu   role_menu[]
+  role_route  role_route[]
+  role_screen role_screen[]
+  role_user   role_user[]
 }
 
 model role_locale {
@@ -173,42 +175,50 @@ model role_locale {
 
 model role_menu {
   id         Int      @id @default(autoincrement())
-  role_id    Int      @unique(map: "role_menu_role_id_unique")
-  menu_id    Int      @unique(map: "role_menu_menu_id_unique")
+  role_id    Int
+  menu_id    Int
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   menu       menu     @relation(fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_menu_id_fkey")
   role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
+
+  @@unique([role_id, menu_id], map: "role_menu_role_id_menu_id_unique")
 }
 
 model role_route {
   id         Int      @id @default(autoincrement())
-  role_id    Int      @unique(map: "role_route_role_id_unique")
-  route_id   Int      @unique(map: "role_route_route_id_unique")
+  role_id    Int
+  route_id   Int
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
   route      route    @relation(fields: [route_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "route_route_id_fkey")
+
+  @@unique([role_id, route_id], map: "role_route_role_id_route_id_unique")
 }
 
 model role_screen {
   id         Int      @id @default(autoincrement())
-  role_id    Int      @unique(map: "role_screen_role_id_unique")
-  screen_id  Int      @unique(map: "role_screen_screen_id_unique")
+  role_id    Int
+  screen_id  Int
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
   screen     screen   @relation(fields: [screen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "screen_screen_id_fkey")
+
+  @@unique([role_id, screen_id], map: "role_screen_role_id_screen_id_unique")
 }
 
 model role_user {
   id         Int      @id @default(autoincrement())
-  role_id    Int      @unique(map: "role_user_role_id_unique")
-  user_id    Int      @unique(map: "role_user_user_id_unique")
+  role_id    Int
+  user_id    Int
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   role       role     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_role_id_fkey")
   user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+
+  @@unique([role_id, user_id], map: "role_user_role_id_user_id_unique")
 }
 
 model route {
@@ -218,18 +228,20 @@ model route {
   description  String?           @db.VarChar
   created_at   DateTime          @default(now()) @db.Timestamp(6)
   updated_at   DateTime          @default(now()) @db.Timestamp(6)
-  role_route   role_route?
-  route_screen route_screen?
+  role_route   role_route[]
+  route_screen route_screen[]
 }
 
 model route_screen {
   id         Int      @id @default(autoincrement())
-  route_id   Int      @unique(map: "route_screen_route_id_unique")
-  screen_id  Int      @unique(map: "route_screen_screen_id_unique")
+  route_id   Int
+  screen_id  Int
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   route      route    @relation(fields: [route_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "route_route_id_fkey")
   screen     screen   @relation(fields: [screen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "screen_screen_id_fkey")
+
+  @@unique([route_id, screen_id], map: "route_screen_route_id_screen_id_unique")
 }
 
 model screen {
@@ -238,9 +250,9 @@ model screen {
   icon          String?         @db.VarChar
   created_at    DateTime        @default(now()) @db.Timestamp(6)
   updated_at    DateTime        @default(now()) @db.Timestamp(6)
-  menu_screen   menu_screen?
-  role_screen   role_screen?
-  route_screen  route_screen?
+  menu_screen   menu_screen[]
+  role_screen   role_screen[]
+  route_screen  route_screen[]
   screen_locale screen_locale[]
 }
 
@@ -267,7 +279,7 @@ model setting {
   setting_group  setting_group          @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "setting_group_group_id_fkey")
   setting_list   setting_list[]
   setting_locale setting_locale[]
-  setting_user   setting_user?
+  setting_user   setting_user[]
 }
 
 model setting_group {
@@ -312,13 +324,15 @@ model setting_locale {
 
 model setting_user {
   id         Int      @id @default(autoincrement())
-  user_id    Int      @unique(map: "setting_user_user_id_unique")
-  setting_id Int      @unique(map: "setting_user_setting_id_unique")
+  user_id    Int
+  setting_id Int
   value      String?  @db.VarChar
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   setting    setting  @relation(fields: [setting_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "setting_setting_id_fkey")
   user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_user_id_fkey")
+
+  @@unique([user_id, setting_id], map: "setting_user_user_id_setting_id_unique")
 }
 
 model translation {
@@ -351,8 +365,8 @@ model user {
   created_at         DateTime             @default(now()) @db.Timestamp(6)
   updated_at         DateTime             @default(now()) @db.Timestamp(6)
   dashboard_user     dashboard_user[]
-  role_user          role_user?
-  setting_user       setting_user?
+  role_user          role_user[]
+  setting_user       setting_user[]
   multifactor        multifactor?         @relation(fields: [multifactor_id], references: [id], onUpdate: NoAction, map: "multifactor_multifactor_id_fkey")
   user_activity      user_activity[]
   user_code_recovery user_code_recovery[]
