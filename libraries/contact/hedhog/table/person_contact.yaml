@@ -1,0 +1,34 @@
+columns:
+  - type: pk
+  - name: person_id
+    isUnique: true
+    type: fk
+    references:
+      table: person
+      column: id
+      onDelete: CASCADE
+  - name: type_id
+    isUnique: true
+    type: fk
+    references:
+      table: person_contact_type
+      column: id
+      onDelete: CASCADE
+    locale:
+      en: Type
+      pt: Tipo
+  - name: primary
+    type: boolean
+    default: false
+    locale:
+      en: Primary
+      pt: Principal
+  - name: value
+    isUnique: true
+    type: varchar
+    length: 255
+    locale:
+      en: Value
+      pt: Valor
+  - type: created_at
+  - type: updated_at

@@ -1,0 +1,55 @@
+columns:
+  - type: pk
+  - name: person_id
+    isUnique: true
+    type: fk
+    references:
+      table: person
+      column: id
+      onDelete: CASCADE
+  - name: type_id
+    isUnique: true
+    type: fk
+    references:
+      table: person_document_type
+      column: id
+      onDelete: CASCADE
+    locale:
+      en: Type
+      pt: Tipo
+  - name: country_id
+    type: fk
+    references:
+      table: country
+      column: id
+      onDelete: RESTRICT
+    locale:
+      en: Country
+      pt: País
+  - name: primary
+    type: boolean
+    default: false
+    locale:
+      en: Primary
+      pt: Principal
+  - name: value
+    type: varchar
+    length: 63
+    isUnique: true
+    locale:
+      en: Value
+      pt: Valor
+  - name: issued_at
+    type: date
+    isNullable: true
+    locale:
+      en: Issued
+      pt: Emissão
+  - name: expiry_at
+    type: date
+    isNullable: true
+    locale:
+      en: Expiry
+      pt: Validade
+  - type: created_at
+  - type: updated_at

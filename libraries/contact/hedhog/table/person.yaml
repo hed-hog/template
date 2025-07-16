@@ -1,0 +1,38 @@
+columns:
+  - type: pk
+  - name: name
+    type: varchar
+    length: 255
+    field: text
+    locale:
+      en: Name
+      pt: Nome
+  - name: photo_id
+    type: fk
+    isNullable: true
+    references:
+      table: file
+      column: id
+      onDelete: SET NULL
+    locale:
+      en: Photo
+      pt: Foto
+  - name: type_id
+    type: fk
+    isPrimary: false
+    field: combobox
+    references:
+      table: person_type
+      column: id
+      onDelete: CASCADE
+    locale:
+      en: Type
+      pt: Tipo
+  - name: birth_at
+    type: date
+    isNullable: true
+    locale:
+      en: Birth
+      pt: Nascimento
+  - type: created_at
+  - type: updated_at

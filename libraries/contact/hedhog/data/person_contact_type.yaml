@@ -1,0 +1,20 @@
+- name:
+    en: Phone
+    pt: Telefone
+  slug: PHONE
+- name:
+    en: Email
+    pt: E-mail
+  slug: EMAIL
+- name:
+    en: Fax
+    pt: Fax
+  slug: FAX
+- name:
+    en: WhatsApp
+    pt: WhatsApp
+  slug: WHATSAPP
+- name:
+    en: Telegram
+    pt: Telegram
+  slug: TELEGRAM

@@ -1,0 +1,16 @@
+columns:
+  - type: pk
+  - name: person_id
+    type: fk
+    references:
+      table: person
+      column: id
+      onDelete: CASCADE
+  - name: value
+    type: varchar
+    length: 255
+    locale:
+      en: Value
+      pt: Valor
+  - type: created_at
+  - type: updated_at

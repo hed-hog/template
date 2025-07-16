@@ -1,0 +1,85 @@
+columns:
+  - type: pk
+  - name: person_id
+    type: fk
+    references:
+      table: person
+      column: id
+      onDelete: CASCADE
+  - name: country_id
+    type: fk
+    references:
+      table: country
+      column: id
+      onDelete: RESTRICT
+    locale:
+      en: Country
+      pt: País
+  - name: type_id
+    type: fk
+    references:
+      table: person_address_type
+      column: id
+      onDelete: CASCADE
+    locale:
+      en: Type
+      pt: Tipo
+  - name: primary
+    type: boolean
+    default: false
+    locale:
+      en: Primary
+      pt: Principal
+  - name: street
+    type: varchar
+    length: 255
+    locale:
+      en: Street
+      pt: Rua
+  - name: number
+    type: varchar
+    length: 15
+    isNullable: true
+    locale:
+      en: Number
+      pt: Número
+  - name: complement
+    type: varchar
+    length: 255
+    isNullable: true
+    locale:
+      en: Complement
+      pt: Complemento
+  - name: district
+    type: varchar
+    length: 255
+    locale:
+      en: District
+      pt: Bairro
+  - name: city
+    type: varchar
+    length: 255
+    locale:
+      en: City
+      pt: Cidade
+  - name: state
+    type: varchar
+    length: 255
+    locale:
+      en: State
+      pt: Estado
+  - name: postal_code
+    type: varchar
+    length: 20
+    locale:
+      en: Postal Code
+      pt: CEP
+  - name: reference
+    type: varchar
+    length: 60
+    isNullable: true
+    locale:
+      en: Reference
+      pt: Referência
+  - type: created_at
+  - type: updated_at

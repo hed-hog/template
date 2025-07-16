@@ -1,0 +1,23 @@
+columns:
+  - type: pk
+  - name: filename # nome original do arquivo
+  - name: path # caminho relativo ou URL do arquivo
+  - name: provider_id
+    type: fk
+    references:
+      table: file_provider
+      column: id
+      onDelete: CASCADE
+  - name: location
+  - name: mimetype_id
+    type: fk
+    references:
+      table: file_mimetype
+      column: id
+      onDelete: CASCADE
+  - name: size
+    type: int
+    unsigned: true
+    default: 0
+  - type: created_at
+  - type: updated_at

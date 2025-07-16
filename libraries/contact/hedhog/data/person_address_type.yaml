@@ -1,0 +1,28 @@
+- name:
+    en: Residential
+    pt: Residencial
+  slug: RESIDENTIAL
+- name:
+    en: Commercial
+    pt: Comercial
+  slug: COMMERCIAL
+- name:
+    en: Correspondence
+    pt: Correspondência
+  slug: CORRESPONDENCE
+- name:
+    en: Alternative
+    pt: Alternativo
+  slug: ALTERNATIVE
+- name:
+    en: Work
+    pt: Trabalho
+  slug: WORK
+- name:
+    en: Billing
+    pt: Cobrança
+  slug: BILLING
+- name:
+    en: Shipping
+    pt: Entrega
+  slug: SHIPPING

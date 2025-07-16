@@ -1,0 +1,15 @@
+columns:
+  - type: pk
+  - type: slug
+    locale:
+      en: Slug
+      pt: Slug
+  - name: name
+    type: locale_varchar
+    length: 31
+    isUnique: true
+    locale:
+      en: Name
+      pt: Nome
+  - type: created_at
+  - type: updated_at

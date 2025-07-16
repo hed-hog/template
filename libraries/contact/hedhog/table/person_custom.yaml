@@ -1,0 +1,30 @@
+columns:
+  - type: pk
+  - name: person_id
+    isUnique: true
+    type: fk
+    references:
+      table: person
+      column: id
+      onDelete: CASCADE
+  - name: type_id
+    isUnique: true
+    type: fk
+    references:
+      table: person_custom_type
+      column: id
+      onDelete: CASCADE
+  - name: value
+    type: text
+    isNullable: true
+    locale:
+      en: Value
+      pt: Valor
+  - name: name
+    type: varchar_locale
+    length: 31
+    locale:
+      en: Name
+      pt: Nome
+  - type: created_at
+  - type: updated_at

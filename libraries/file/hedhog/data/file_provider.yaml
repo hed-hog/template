@@ -1,0 +1,12 @@
+- slug: local
+  name:
+    en: Local
+    pt: Local
+- slug: s3
+  name:
+    en: Amazon S3
+    pt: Amazon S3
+- slug: abs
+  name:
+    en: Azure Blob Storage
+    pt: Azure Blob Storage

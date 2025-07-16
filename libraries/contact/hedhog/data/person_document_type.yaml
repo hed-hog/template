@@ -1,0 +1,35 @@
+- name:
+    en: ID
+    pt: RG
+  slug: RG
+  country_id:
+    where:
+      code: BRA
+- name:
+    en: SSN
+    pt: CPF
+  slug: CPF
+  country_id:
+    where:
+      code: BRA
+- name:
+    en: EIN
+    pt: CNPJ
+  slug: CNPJ
+  country_id:
+    where:
+      code: BRA
+- name:
+    en: Passport
+    pt: Passaporte
+  slug: PASSPORT
+  country_id:
+    where:
+      code: BRA
+- name:
+    en: Driver License
+    pt: CNH
+  slug: CNH
+  country_id:
+    where:
+      code: BRA

@@ -1,0 +1,23 @@
+columns:
+  - type: pk
+  - type: fk
+    name: country_id
+    references:
+      table: country
+      column: id
+      onDelete: RESTRICT
+    locale:
+      en: Country
+      pt: País
+  - type: slug
+    locale:
+      en: Slug
+      pt: Slug
+  - name: name
+    type: locale_varchar
+    length: 63
+    locale:
+      en: Name
+      pt: Nome
+  - type: created_at
+  - type: updated_at

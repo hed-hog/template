@@ -1,0 +1,18 @@
+columns:
+  - type: pk
+  - name: person_id
+    isUnique: true
+    type: fk
+    references:
+      table: person
+      column: id
+      onDelete: CASCADE
+  - name: user_id
+    isUnique: true
+    type: fk
+    references:
+      table: user
+      column: id
+      onDelete: CASCADE
+  - type: created_at
+  - type: updated_at

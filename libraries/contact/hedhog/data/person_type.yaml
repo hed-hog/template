@@ -1,0 +1,12 @@
+- name:
+    en: Physical
+    pt: Física
+  slug: PHYSICAL
+- name:
+    en: Legal
+    pt: Jurídica
+  slug: LEGAL
+- name:
+    en: International
+    pt: Internacional
+  slug: INTERNATIONAL
