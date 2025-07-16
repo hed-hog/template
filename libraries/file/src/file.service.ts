@@ -1,3 +1,4 @@
+import { Express } from 'express';
 import { SettingService } from '@hed-hog/admin';
 import { PaginationDTO, PaginationService } from '@hed-hog/api-pagination';
 import { PrismaService } from '@hed-hog/api-prisma';

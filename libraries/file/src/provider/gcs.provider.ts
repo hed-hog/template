@@ -1,6 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import { BadRequestException } from '@nestjs/common';
 import { AbstractProvider } from './abstract.provider';
+import { Express } from 'express';
 
 export class GCSProvider extends AbstractProvider {
   private storage: Storage;

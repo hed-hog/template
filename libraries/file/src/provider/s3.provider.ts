@@ -1,3 +1,4 @@
+import { Express } from 'express';
 import { BadRequestException } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 import { AbstractProvider } from './abstract.provider';

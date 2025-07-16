@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { createReadStream, existsSync } from 'fs';
 import { mkdir, unlink, writeFile } from 'fs/promises';
-import * as jsonwebtoken from 'jsonwebtoken';
+import jsonwebtoken from 'jsonwebtoken';
 import { join, sep } from 'path';
 import { Stream } from 'stream';
 import { AbstractProvider } from './abstract.provider';
+import { Express } from 'express';
 
 export class LocalProvider extends AbstractProvider {
   constructor(private setting: Record<string, string>) {

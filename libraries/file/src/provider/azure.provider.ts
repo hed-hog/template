@@ -6,6 +6,7 @@ import {
 } from '@azure/storage-blob';
 import { BadRequestException } from '@nestjs/common';
 import { AbstractProvider } from './abstract.provider';
+import { Express } from 'express';
 
 export class AzureProvider extends AbstractProvider {
   constructor(private setting: Record<string, string>) {

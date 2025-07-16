@@ -1,3 +1,4 @@
+import { Express } from 'express';
 import { Role } from '@hed-hog/api';
 import { Pagination } from '@hed-hog/api-pagination';
 import {
