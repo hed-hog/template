@@ -1,6 +1,6 @@
 columns:
   - type: pk
-  - name: slug
+  - type: slug
   - name: name
     type: varchar_locale
     locale:
