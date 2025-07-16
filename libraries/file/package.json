@@ -1,13 +1,13 @@
 {
   "name": "@hed-hog/file",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "prebuild": "npx ts-node ../../scripts/build-dependencies.ts libraries/admin",
+    "prebuild": "npx ts-node ../../scripts/build-dependencies.ts libraries/file",
     "build": "tsc --project tsconfig.production.json",
-    "patch": "npx ts-node ../../scripts/patch.ts libraries/admin",
+    "patch": "npx ts-node ../../scripts/patch.ts libraries/file",
     "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
