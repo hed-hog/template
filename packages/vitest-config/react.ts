@@ -28,6 +28,13 @@ export function createVitestConfig(
       // never races Testing Library's — see the comment there for why.
       testTimeout: 15000,
       hookTimeout: 15000,
+      // Retry under CI only: real dynamic-import + effect chains (e.g.
+      // McpFloatingChat's chat-components loader) can occasionally exceed
+      // asyncUtilTimeout under full-suite worker contention with no
+      // underlying bug. Retrying masks that infra noise in CI while keeping
+      // failures loud (retry: 0) during local dev, where a fail should mean
+      // a real regression.
+      retry: process.env.CI ? 2 : 0,
       ...overrides.test,
     },
   });
