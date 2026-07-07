@@ -1,7 +1,8 @@
 name: CI
 
-# Gate de qualidade executado manualmente (workflow_dispatch no GitHub Actions
-# ou `pnpm test` localmente), num único job encadeado:
+# Gate de qualidade rodado em push/PR para `master` e também manualmente
+# (workflow_dispatch no GitHub Actions ou `pnpm test` localmente), num único
+# job encadeado:
 #
 #   1. Instala e builda os workspaces `@hed-hog/*` (+ client Prisma) UMA vez.
 #   2. Roda o gate obrigatório de testes unitários (18 pacotes, Jest backend +
@@ -15,6 +16,10 @@ name: CI
 # quality). Unificado num job só, o install/build acontece uma única vez.
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 # Um novo disparo manual no mesmo ref cancela execuções antigas — só a mais
 # recente importa para o gate.

@@ -1,9 +1,14 @@
 name: Security
 
 # Scanning de segurança: auditoria de dependências (pnpm audit) e análise
-# estática (CodeQL). Roda manualmente (workflow_dispatch) e semanalmente.
+# estática (CodeQL). Roda em push/PR para `master`, manualmente
+# (workflow_dispatch) e semanalmente.
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
   schedule:
     # Segundas às 06:00 UTC.
     - cron: '0 6 * * 1'

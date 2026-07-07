@@ -1,5 +1,8 @@
 # HedHog Framework - Bootstrap Template
 
+[![CI](https://github.com/hed-hog/template/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/hed-hog/template/actions/workflows/ci.yml)
+[![Security](https://github.com/hed-hog/template/actions/workflows/security.yml/badge.svg?branch=master)](https://github.com/hed-hog/template/actions/workflows/security.yml)
+
 This is the bootstrap template for the **HedHog Framework**, a modular framework based on NestJS and Next.js for building enterprise applications. Use it as a starting point for a new project.
 
 > 🌐 Official website and full documentation: **[hedhog.com](https://hedhog.com)**
