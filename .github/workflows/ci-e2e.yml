@@ -1,0 +1,143 @@
+name: E2E (Playwright)
+
+# Roda os testes e2e Playwright dos apps front-end (matrix abaixo) contra o
+# stack vivo (infra + API compilada + Chromium real, um dev server Next.js por
+# leg da matrix). Bem mais pesado que o ci.yml (que só cobre a API via
+# supertest) — por isso fica de fora do gate obrigatório de PR e roda só
+# agendado + sob demanda. Ver docs/testing.md §5b para rodar isso localmente.
+# Adicione novas apps front-end à matrix conforme forem criadas no projeto.
+on:
+  schedule:
+    - cron: '0 6 * * *' # 03:00 America/Sao_Paulo
+  workflow_dispatch:
+
+concurrency:
+  group: ci-e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: E2E — ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [admin]
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: hub
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: hub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hub"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Segredos de teste (não-produção) — espelham ci.yml/TESTING.md.
+      DATABASE_URL: postgresql://hub:changeme@localhost:5432/hub
+      JWT_SECRET: ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
+      JWT_EXPIRES_IN: 7d
+      PEPPER: QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==
+      ENCRYPTION_SECRET: RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
+      CORS_ALLOWED_ORIGINS: http://localhost:3200
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      API_URL: http://localhost:3100
+      # Cada setup provisiona/loga várias vezes seguidas — mesmo motivo do ci.yml.
+      DISABLE_RATE_LIMIT: 'true'
+      # Env do proxy /api do admin (ver next.config.*: rewrites()).
+      NEXT_PUBLIC_API_BASE_URL: /api
+      INTERNAL_API_URL: http://localhost:3100
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build libraries & packages
+        run: pnpm run build:libs
+
+      - name: Build API
+        working-directory: apps/api
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm exec nest build && pnpm run copy:core-assets
+
+      - name: Apply database migrations
+        working-directory: apps/api
+        run: pnpm prisma:deploy
+
+      - name: Start API server
+        working-directory: apps/api
+        run: |
+          pnpm start:prod > "${{ runner.temp }}/api.log" 2>&1 &
+          echo "API_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3100/health > /dev/null 2>&1; then
+              echo "API is up."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy in time." >&2
+          exit 1
+
+      - name: Seed installation
+        # Idempotente na prática: se já instalado, o endpoint responde de forma
+        # não-fatal; a suíte só precisa de um usuário root para os fluxos de auth.
+        run: |
+          curl -fsS -X POST http://localhost:3100/install \
+            -H 'Content-Type: application/json' \
+            -d '{"appName":"HedHog","slogan":"Administration Panel","userName":"Root User","email":"root@hedhog.com","password":"changeme"}' \
+            || echo "Install endpoint returned non-2xx (possivelmente já instalado) — seguindo."
+
+      - name: Install Playwright browsers
+        working-directory: apps/${{ matrix.app }}
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright — ${{ matrix.app }}
+        working-directory: apps/${{ matrix.app }}
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.app }}
+          path: apps/${{ matrix.app }}/playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Dump API logs on failure
+        if: failure()
+        run: cat "${{ runner.temp }}/api.log" || true

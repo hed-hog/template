@@ -1,0 +1,17 @@
+{
+  "extends": "@hed-hog/typescript-config/package.production.json",
+  "include": [
+    "src/**/*.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "react-jsx",
+    "tsBuildInfoFile": "./dist/tsconfig.production.tsbuildinfo"
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".turbo"
+  ]
+}

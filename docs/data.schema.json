@@ -1,0 +1,297 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hedhog.dev/schemas/data.schema.json",
+  "title": "HedHog Data YAML",
+  "description": "Schema for hedhog/data/{tableName}.yaml files. The root MUST be an array of row objects. The file name (without extension) must match the table name in hedhog/table/.",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/DataRow"
+  },
+  "definitions": {
+    "DataRow": {
+      "type": "object",
+      "title": "Data Row",
+      "description": "A single row to insert into the table. Keys are column names. The special key 'relations' inserts rows into related tables within the same CTE transaction.",
+      "properties": {
+        "relations": {
+          "$ref": "#/definitions/RelationsBlock"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/ColumnValue"
+      }
+    },
+
+    "ColumnValue": {
+      "title": "Column Value",
+      "description": "The value for a column in a data row. Can be a scalar, an FK sub-select lookup (where:), or a locale translation object.",
+      "oneOf": [
+        {
+          "title": "Scalar Value",
+          "description": "A plain string, number, boolean, or null.",
+          "$ref": "#/definitions/ScalarValue"
+        },
+        {
+          "title": "FK Lookup",
+          "description": "A sub-select that resolves the FK value at migration time using a WHERE clause.",
+          "$ref": "#/definitions/WhereObject"
+        },
+        {
+          "title": "Locale Object",
+          "description": "Translation values for locale_varchar or locale_text columns. Keys are ISO locale codes.",
+          "$ref": "#/definitions/LocaleObject"
+        }
+      ]
+    },
+
+    "ScalarValue": {
+      "title": "Scalar Value",
+      "description": "A plain primitive value to insert directly.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "null" }
+      ]
+    },
+
+    "WhereObject": {
+      "type": "object",
+      "title": "FK Sub-Select Lookup",
+      "description": "Resolves a FK column value using a sub-select: (SELECT pk FROM table WHERE ...). Useful to reference rows by a readable key instead of a hard-coded ID.",
+      "required": ["where"],
+      "additionalProperties": false,
+      "properties": {
+        "where": {
+          "type": "object",
+          "title": "WHERE Conditions",
+          "description": "A map of column names to values or operator objects. Multiple entries are joined with AND.",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/definitions/WhereConditionValue"
+          }
+        }
+      }
+    },
+
+    "WhereConditionValue": {
+      "title": "WHERE Condition Value",
+      "description": "A plain scalar (equality) or an operator object for the WHERE clause.",
+      "oneOf": [
+        {
+          "title": "Plain equality",
+          "description": "Generates: \"col\" = 'value'",
+          "type": "string"
+        },
+        {
+          "title": "Plain equality (numeric)",
+          "description": "Generates: \"col\" = 'value'",
+          "type": "number"
+        },
+        {
+          "title": "Plain equality (boolean)",
+          "description": "Generates: \"col\" = 'value'",
+          "type": "boolean"
+        },
+        {
+          "$ref": "#/definitions/WhereOperator"
+        }
+      ]
+    },
+
+    "WhereOperator": {
+      "type": "object",
+      "title": "WHERE Operator",
+      "description": "An object with exactly one operator key that defines how to compare the column value.",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "equals": {
+          "description": "\"col\" = 'value'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "notEquals": {
+          "description": "\"col\" <> 'value'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "not": {
+          "description": "\"col\" <> 'value' (alias for notEquals)",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "in": {
+          "type": "array",
+          "description": "\"col\" IN ('a', 'b', 'c')",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "number" }
+            ]
+          }
+        },
+        "notIn": {
+          "type": "array",
+          "description": "\"col\" NOT IN ('a', 'b')",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "number" }
+            ]
+          }
+        },
+        "like": {
+          "type": "string",
+          "description": "\"col\" LIKE 'pattern%'"
+        },
+        "notLike": {
+          "type": "string",
+          "description": "\"col\" NOT LIKE 'pattern%'"
+        },
+        "contains": {
+          "description": "\"col\" LIKE '%value%'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "notContains": {
+          "description": "\"col\" NOT LIKE '%value%'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "gt": {
+          "description": "\"col\" > 'value'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "gte": {
+          "description": "\"col\" >= 'value'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "lt": {
+          "description": "\"col\" < 'value'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "lte": {
+          "description": "\"col\" <= 'value'",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "isNull": {
+          "type": "boolean",
+          "const": true,
+          "description": "\"col\" IS NULL"
+        },
+        "isNotNull": {
+          "type": "boolean",
+          "const": true,
+          "description": "\"col\" IS NOT NULL"
+        }
+      }
+    },
+
+    "LocaleObject": {
+      "type": "object",
+      "title": "Locale Translation Object",
+      "description": "Provides translated values for locale_varchar or locale_text columns. Keys must be valid ISO locale codes. Each entry generates an INSERT into the <tableName>_locale companion table. All keys must be recognized locale codes — if any key is not a locale code the object is treated as raw JSON.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "en": {
+          "description": "English translation.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "pt": {
+          "description": "Portuguese translation.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "es": {
+          "description": "Spanish translation.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "it": {
+          "description": "Italian translation.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        },
+        "jp": {
+          "description": "Japanese translation.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        }
+      }
+    },
+
+    "RelationsBlock": {
+      "type": "object",
+      "title": "Relations Block",
+      "description": "A mapping of target table names to arrays of rows to insert in related tables. All inserts are performed within the same SQL transaction using PostgreSQL CTEs (WITH ... INSERT ... RETURNING). The CLI auto-detects whether a junction (intermediate) table is needed.",
+      "additionalProperties": {
+        "type": "array",
+        "description": "Array of rows to insert into (or look up in) the related table.",
+        "items": {
+          "$ref": "#/definitions/RelationRow"
+        }
+      }
+    },
+
+    "RelationRow": {
+      "type": "object",
+      "title": "Relation Row",
+      "description": "A row in a related table. Has two modes:\n1. Junction table lookup: use a top-level 'where' key to identify the target row by a natural key. The parent FK is injected automatically.\n2. Direct child insert: provide column values directly. An FK back to the parent is injected automatically.\nNested 'relations' are supported recursively.",
+      "properties": {
+        "where": {
+          "type": "object",
+          "title": "Top-Level WHERE (junction table mode)",
+          "description": "Conditions to find the target row for a many-to-many relationship. The CLI uses this to look up the target row's PK and inserts it together with the parent FK into the junction table. Keys are column names; values are plain values or operator objects.",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/definitions/WhereConditionValue"
+          }
+        },
+        "relations": {
+          "$ref": "#/definitions/RelationsBlock"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/ColumnValue"
+      }
+    }
+  }
+}

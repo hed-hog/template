@@ -1,0 +1,65 @@
+name: Security
+
+# Scanning de segurança: auditoria de dependências (pnpm audit) e análise
+# estática (CodeQL). Roda manualmente (workflow_dispatch) e semanalmente.
+on:
+  workflow_dispatch:
+  schedule:
+    # Segundas às 06:00 UTC.
+    - cron: '0 6 * * 1'
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-audit:
+    name: Dependency audit (pnpm)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Audit (high/critical)
+        # report-only por enquanto: há dívida pré-existente (muita em tooling
+        # transitivo). TODO: remover `continue-on-error` quando a dívida de
+        # dependências high/critical for triada/resolvida, tornando o gate real.
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
+  codeql:
+    name: CodeQL (JS/TS)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Perform CodeQL analysis
+        id: analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          output: codeql-results
+          upload: never
+
+      - name: Upload CodeQL SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif
+          path: ${{ steps.analyze.outputs.sarif-output }}
+          if-no-files-found: error

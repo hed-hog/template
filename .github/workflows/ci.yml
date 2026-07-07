@@ -1,0 +1,160 @@
+name: CI
+
+# Gate de qualidade executado manualmente (workflow_dispatch no GitHub Actions
+# ou `pnpm test` localmente), num único job encadeado:
+#
+#   1. Instala e builda os workspaces `@hed-hog/*` (+ client Prisma) UMA vez.
+#   2. Roda o gate obrigatório de testes unitários (18 pacotes, Jest backend +
+#      Vitest frontend); lint e typecheck ficam report-only (dívida pré-existente).
+#   3. Sobe Postgres + Redis, aplica migrations, semeia /install, compila a API
+#      (`nest build`) e a inicia a partir do build (`node dist`), e roda as 10
+#      suítes E2E (contract, security, all-endpoints, reports, auth...).
+#
+# Antes eram dois jobs (quality + e2e-api) que rodavam `pnpm install` +
+# `build:libs` cada um — trabalho duplicado sem paralelismo (e2e dependia de
+# quality). Unificado num job só, o install/build acontece uma única vez.
+on:
+  workflow_dispatch:
+
+# Um novo disparo manual no mesmo ref cancela execuções antigas — só a mais
+# recente importa para o gate.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint, typecheck, unit & API E2E
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: hub
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: hub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hub"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Segredos de teste (não-produção) — espelham TESTING.md.
+      DATABASE_URL: postgresql://hub:changeme@localhost:5432/hub
+      JWT_SECRET: ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
+      JWT_EXPIRES_IN: 7d
+      PEPPER: QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==
+      ENCRYPTION_SECRET: RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
+      CORS_ALLOWED_ORIGINS: http://localhost:3200
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      API_URL: http://localhost:3100
+      # A suíte E2E faz muitos logins seguidos; desabilita o rate-limit no
+      # ambiente de teste (o mecanismo de 429 é coberto por throttler.spec.ts).
+      DISABLE_RATE_LIMIT: 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        # Versão herdada de `packageManager` no package.json.
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build libraries & packages
+        # Gera os `dist/` dos workspaces `@hed-hog/*` (dos quais apps e libs
+        # dependem para resolver tipos/imports) e o client Prisma a partir do
+        # schema commitado. Sem esta etapa, typecheck e test não resolvem os
+        # imports de workspace num checkout limpo.
+        run: pnpm run build:libs
+
+      - name: Unit tests (gate obrigatório)
+        # Sem `continue-on-error`: se o gate falhar, o job para aqui, antes do
+        # caminho caro de build + E2E da API.
+        run: pnpm turbo run test
+
+      - name: Lint (report-only)
+        # TODO: remover `continue-on-error` e tornar bloqueante quando a dívida
+        # de lint existente for zerada.
+        run: pnpm turbo run lint
+        continue-on-error: true
+
+      - name: Typecheck (report-only)
+        # TODO: remover `continue-on-error` quando a dívida de tipos pré-existente
+        # for corrigida.
+        run: pnpm turbo run typecheck
+        continue-on-error: true
+
+      - name: Build API
+        working-directory: apps/api
+        # Compila a API para `dist/` e leva templates + arquivos de idioma junto.
+        # Chama `nest build` direto (não `pnpm run build`) para pular o hook
+        # `prebuild` = `prisma:update`, que faria `prisma db pull`; o client
+        # Prisma já foi gerado por `build:libs`. O bump de heap espelha o
+        # Dockerfile (build:docker), evitando o OOM que ocorria no `nest start`.
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm exec nest build && pnpm run copy:core-assets
+
+      - name: Apply database migrations
+        working-directory: apps/api
+        run: pnpm prisma:deploy
+
+      - name: Start API server
+        working-directory: apps/api
+        # Sobe o servidor compilado (`node dist`, via start:prod) em background —
+        # startup rápido e baixo consumo de memória — e guarda os logs.
+        run: |
+          pnpm start:prod > "${{ runner.temp }}/api.log" 2>&1 &
+          echo "API_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3100/health > /dev/null 2>&1; then
+              echo "API is up."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy in time." >&2
+          exit 1
+
+      - name: Seed installation
+        # Idempotente na prática: se já instalado, o endpoint responde de forma
+        # não-fatal; a suíte só precisa de um usuário root para os fluxos de auth.
+        run: |
+          curl -fsS -X POST http://localhost:3100/install \
+            -H 'Content-Type: application/json' \
+            -d '{"appName":"HedHog","slogan":"Administration Panel","userName":"Root User","email":"root@hedhog.com","password":"changeme"}' \
+            || echo "Install endpoint returned non-2xx (possivelmente já instalado) — seguindo."
+
+      - name: Run API E2E tests
+        working-directory: apps/api
+        run: pnpm test:e2e
+
+      - name: Dump API logs on failure
+        if: failure()
+        run: cat "${{ runner.temp }}/api.log" || true

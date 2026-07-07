@@ -1,0 +1,26 @@
+{
+  "extends": "@hed-hog/typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@hed-hog/api": ["packages/api/src"],
+      "@hed-hog/api/*": ["packages/api/src/*"],
+      "@hed-hog/api-healthy": ["packages/api-healthy/src"],
+      "@hed-hog/api-healthy/*": ["packages/api-healthy/src/*"],
+      "@hed-hog/api-locale": ["packages/api-locale/src"],
+      "@hed-hog/api-locale/*": ["packages/api-locale/src/*"],
+      "@hed-hog/api-mail": ["packages/api-mail/src"],
+      "@hed-hog/api-mail/*": ["packages/api-mail/src/*"],
+      "@hed-hog/api-pagination": ["packages/api-pagination/src"],
+      "@hed-hog/api-pagination/*": ["packages/api-pagination/src/*"],
+      "@hed-hog/api-prisma": ["packages/api-prisma/src"],
+      "@hed-hog/api-prisma/*": ["packages/api-prisma/src/*"],
+      "@hed-hog/next-app-provider": ["packages/next-app-provider/src"],
+      "@hed-hog/next-app-provider/*": ["packages/next-app-provider/src/*"],
+      "@hed-hog/api-types": ["packages/api-types/src"],
+      "@hed-hog/api-types/*": ["packages/api-types/src/*"],
+      "@hed-hog/admin": ["libraries/admin/src"],
+      "@hed-hog/admin/*": ["libraries/admin/src/*"]
+    }
+  }
+}

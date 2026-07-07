@@ -1,0 +1,39 @@
+{
+  "name": "@hed-hog/api-locale",
+  "version": "0.0.14",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "_dev": "pnpm build --watch",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prebuild": "pnpm --dir ../.. exec ts-node ./scripts/build-dependencies.ts packages/api-locale",
+    "build": "tsc --project tsconfig.production.json",
+    "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api-locale",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
+  },
+  "dependencies": {
+    "@nestjs/common": "*",
+    "@nestjs/mapped-types": "*",
+    "@hed-hog/api-pagination": "workspace:*",
+    "@hed-hog/api-prisma": "workspace:*",
+    "@hed-hog/api": "workspace:*",
+    "class-validator": "*",
+    "express": "*"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  }
+}

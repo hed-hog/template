@@ -1,0 +1,18 @@
+packages:
+  - apps/*
+  - packages/*
+  - libraries/*
+
+ignoredBuiltDependencies:
+  - argon2
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - core-js-pure
+  - ffmpeg-static
+  - ffprobe-static
+  - prisma
+  - sharp
+  - unrs-resolver

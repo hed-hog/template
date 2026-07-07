@@ -1,0 +1,39 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@hed-hog/core/(.*)$": "<rootDir>/../../../libraries/core/src/$1",
+    "^@hed-hog/core$": "<rootDir>/../../../libraries/core/src",
+    "^@hed-hog-pro/category/(.*)$": "<rootDir>/../../../libraries/category/src/$1",
+    "^@hed-hog-pro/category$": "<rootDir>/../../../libraries/category/src",
+    "^@hed-hog-pro/crm/(.*)$": "<rootDir>/../../../libraries/crm/src/$1",
+    "^@hed-hog-pro/crm$": "<rootDir>/../../../libraries/crm/src",
+    "^@hed-hog/contact-us/(.*)$": "<rootDir>/../../../libraries/contact-us/src/$1",
+    "^@hed-hog/contact-us$": "<rootDir>/../../../libraries/contact-us/src",
+    "^@hed-hog/content/(.*)$": "<rootDir>/../../../libraries/content/src/$1",
+    "^@hed-hog/content$": "<rootDir>/../../../libraries/content/src",
+    "^@hed-hog/developer-mode/(.*)$": "<rootDir>/../../../libraries/developer-mode/src/$1",
+    "^@hed-hog/developer-mode$": "<rootDir>/../../../libraries/developer-mode/src",
+    "^@hed-hog/faq/(.*)$": "<rootDir>/../../../libraries/faq/src/$1",
+    "^@hed-hog/faq$": "<rootDir>/../../../libraries/faq/src",
+    "^@hed-hog-pro/tag/(.*)$": "<rootDir>/../../../libraries/tag/src/$1",
+    "^@hed-hog-pro/tag$": "<rootDir>/../../../libraries/tag/src",
+    "^@hed-hog/api/(.*)$": "<rootDir>/../../../packages/api/src/$1",
+    "^@hed-hog/api$": "<rootDir>/../../../packages/api/src",
+    "^@hed-hog/api-healthy/(.*)$": "<rootDir>/../../../packages/api-healthy/src/$1",
+    "^@hed-hog/api-healthy$": "<rootDir>/../../../packages/api-healthy/src",
+    "^@hed-hog/api-locale/(.*)$": "<rootDir>/../../../packages/api-locale/src/$1",
+    "^@hed-hog/api-locale$": "<rootDir>/../../../packages/api-locale/src",
+    "^@hed-hog/api-mail/(.*)$": "<rootDir>/../../../packages/api-mail/src/$1",
+    "^@hed-hog/api-mail$": "<rootDir>/../../../packages/api-mail/src",
+    "^@hed-hog/api-pagination/(.*)$": "<rootDir>/../../../packages/api-pagination/src/$1",
+    "^@hed-hog/api-pagination$": "<rootDir>/../../../packages/api-pagination/src",
+    "^@hed-hog/api-prisma/(.*)$": "<rootDir>/../../../packages/api-prisma/src/$1",
+    "^@hed-hog/api-prisma$": "<rootDir>/../../../packages/api-prisma/src"
+  }
+}

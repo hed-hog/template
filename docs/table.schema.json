@@ -1,0 +1,369 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hedhog.dev/schemas/table.schema.json",
+  "title": "HedHog Table YAML",
+  "description": "Schema for hedhog/table/{tableName}.yaml files. The file name (without extension) is the PostgreSQL table name.",
+  "type": "object",
+  "required": ["columns"],
+  "additionalProperties": false,
+  "properties": {
+    "columns": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered list of column definitions for this table.",
+      "items": {
+        "$ref": "#/definitions/TableColumn"
+      }
+    }
+  },
+  "definitions": {
+    "TableColumn": {
+      "description": "A single column definition. Use the 'type' discriminator to select the correct column shape.",
+      "oneOf": [
+        { "$ref": "#/definitions/PkColumn" },
+        { "$ref": "#/definitions/FkColumn" },
+        { "$ref": "#/definitions/SlugColumn" },
+        { "$ref": "#/definitions/OrderColumn" },
+        { "$ref": "#/definitions/CreatedAtColumn" },
+        { "$ref": "#/definitions/UpdatedAtColumn" },
+        { "$ref": "#/definitions/LocaleVarcharColumn" },
+        { "$ref": "#/definitions/LocaleTextColumn" },
+        { "$ref": "#/definitions/EnumColumn" },
+        { "$ref": "#/definitions/NativeColumn" }
+      ]
+    },
+
+    "PkColumn": {
+      "type": "object",
+      "title": "Primary Key Column",
+      "description": "Auto-generates: id SERIAL NOT NULL PRIMARY KEY. The 'name' is always forced to 'id'.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "pk",
+          "description": "Marks this as the primary key column."
+        },
+        "name": {
+          "type": "string",
+          "description": "Ignored — always set to 'id' by the CLI."
+        },
+        "isPrimaryKey": {
+          "type": "boolean",
+          "description": "Redundant when type is 'pk'. Always true."
+        },
+        "isNullable": {
+          "type": "boolean",
+          "description": "Redundant when type is 'pk'. Always false."
+        }
+      }
+    },
+
+    "FkColumn": {
+      "type": "object",
+      "title": "Foreign Key Column",
+      "description": "Creates: <name> INTEGER NOT NULL + ALTER TABLE ADD CONSTRAINT FOREIGN KEY.",
+      "required": ["name", "type", "references"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Column name, e.g. 'user_id'. Required."
+        },
+        "type": {
+          "type": "string",
+          "const": "fk"
+        },
+        "isNullable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true to allow NULL (optional FK)."
+        },
+        "isUnique": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true to add a UNIQUE INDEX on the FK column."
+        },
+        "references": {
+          "$ref": "#/definitions/FkReferences"
+        }
+      }
+    },
+
+    "SlugColumn": {
+      "type": "object",
+      "title": "Slug Column",
+      "description": "Auto-generates: slug VARCHAR(255) NOT NULL UNIQUE. Name is always forced to 'slug'.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "slug"
+        },
+        "name": {
+          "type": "string",
+          "description": "Ignored — always set to 'slug' by the CLI."
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 255,
+          "description": "Override the default VARCHAR length (255)."
+        }
+      }
+    },
+
+    "OrderColumn": {
+      "type": "object",
+      "title": "Order Column",
+      "description": "Auto-generates: order INTEGER NOT NULL DEFAULT 0. Name is always forced to 'order'.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "order"
+        },
+        "name": {
+          "type": "string",
+          "description": "Ignored — always set to 'order' by the CLI."
+        }
+      }
+    },
+
+    "CreatedAtColumn": {
+      "type": "object",
+      "title": "Created At Timestamp Column",
+      "description": "Auto-generates: created_at TIMESTAMPTZ NOT NULL DEFAULT now(). Name is always forced to 'created_at'.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "created_at"
+        },
+        "name": {
+          "type": "string",
+          "description": "Ignored — always set to 'created_at' by the CLI."
+        }
+      }
+    },
+
+    "UpdatedAtColumn": {
+      "type": "object",
+      "title": "Updated At Timestamp Column",
+      "description": "Auto-generates: updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), plus a trg_touch_updated_at trigger to auto-update the value on every UPDATE. Name is always forced to 'updated_at'.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "updated_at"
+        },
+        "name": {
+          "type": "string",
+          "description": "Ignored — always set to 'updated_at' by the CLI."
+        }
+      }
+    },
+
+    "LocaleVarcharColumn": {
+      "type": "object",
+      "title": "Locale VARCHAR Column",
+      "description": "A translatable VARCHAR column. NOT placed in the main table — instead it is routed to the auto-generated <tableName>_locale companion table.",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Column name, e.g. 'title'. Required."
+        },
+        "type": {
+          "type": "string",
+          "const": "locale_varchar"
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 255,
+          "description": "VARCHAR length for this locale column. Defaults to 255."
+        },
+        "isNullable": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+
+    "LocaleTextColumn": {
+      "type": "object",
+      "title": "Locale TEXT Column",
+      "description": "A translatable TEXT column. NOT placed in the main table — instead it is routed to the auto-generated <tableName>_locale companion table.",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Column name, e.g. 'description'. Required."
+        },
+        "type": {
+          "type": "string",
+          "const": "locale_text"
+        },
+        "isNullable": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+
+    "EnumColumn": {
+      "type": "object",
+      "title": "Enum Column",
+      "description": "Creates a PostgreSQL custom ENUM type named <tableName>_<columnName>_enum and uses it as the column type. Either 'enum' or 'values' must be provided.",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "anyOf": [
+        { "required": ["enum"] },
+        { "required": ["values"] }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Column name. Required."
+        },
+        "type": {
+          "type": "string",
+          "const": "enum"
+        },
+        "enum": {
+          "type": "array",
+          "description": "List of allowed enum string values.",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "values": {
+          "type": "array",
+          "description": "Alias for 'enum'. Use either 'enum' or 'values', not both.",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "isNullable": {
+          "type": "boolean",
+          "default": false
+        },
+        "default": {
+          "type": "string",
+          "description": "Default enum value. Must be one of the values listed in 'enum'/'values'."
+        }
+      }
+    },
+
+    "NativeColumn": {
+      "type": "object",
+      "title": "Native PostgreSQL Column",
+      "description": "A column using a native PostgreSQL type (e.g. VARCHAR, TEXT, INTEGER, JSONB, UUID) or a short alias (int, datetime, char, bytes). Any type not matching a special alias will be validated against the list of known PostgreSQL types.",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Column name in snake_case. Required."
+        },
+        "type": {
+          "type": "string",
+          "description": "Native PostgreSQL type or short alias. Must not be a special alias (pk, fk, slug, order, created_at, updated_at, locale_varchar, locale_text, enum).",
+          "not": {
+            "enum": [
+              "pk",
+              "fk",
+              "slug",
+              "order",
+              "created_at",
+              "updated_at",
+              "locale_varchar",
+              "locale_text",
+              "enum"
+            ]
+          },
+          "examples": [
+            "VARCHAR",
+            "TEXT",
+            "INTEGER",
+            "BIGINT",
+            "BOOLEAN",
+            "JSONB",
+            "UUID",
+            "TIMESTAMPTZ",
+            "DATE",
+            "NUMERIC",
+            "BYTEA",
+            "int",
+            "datetime",
+            "char",
+            "bytes"
+          ]
+        },
+        "isNullable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow NULL. When omitted, defaults to NOT NULL."
+        },
+        "isUnique": {
+          "type": "boolean",
+          "default": false,
+          "description": "Create a UNIQUE INDEX on this column."
+        },
+        "isPrimaryKey": {
+          "type": "boolean",
+          "default": false,
+          "description": "Mark this column as PRIMARY KEY. Prefer 'type: pk' for new tables."
+        },
+        "default": {
+          "description": "DEFAULT value. For TIMESTAMPTZ columns use the string \"now()\"."
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Character length for VARCHAR and CHAR columns. If omitted, CHAR defaults to 1."
+        }
+      }
+    },
+
+    "FkReferences": {
+      "type": "object",
+      "title": "FK References",
+      "description": "Defines the target of a foreign key constraint.",
+      "required": ["table", "column"],
+      "additionalProperties": false,
+      "properties": {
+        "table": {
+          "type": "string",
+          "description": "Name of the referenced table."
+        },
+        "column": {
+          "type": "string",
+          "description": "Name of the referenced column (usually 'id')."
+        },
+        "onDelete": {
+          "type": "string",
+          "enum": ["CASCADE", "SET NULL", "SET DEFAULT", "RESTRICT", "NO ACTION"],
+          "default": "NO ACTION",
+          "description": "Referential action when the referenced row is deleted."
+        },
+        "onUpdate": {
+          "type": "string",
+          "enum": ["CASCADE", "SET NULL", "SET DEFAULT", "RESTRICT", "NO ACTION"],
+          "default": "NO ACTION",
+          "description": "Referential action when the referenced column value is updated."
+        }
+      }
+    }
+  }
+}

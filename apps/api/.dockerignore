@@ -1,0 +1,82 @@
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs (will be built in container)
+dist/
+build/
+.next/
+out/
+.turbo/
+
+# Tests (not needed in production)
+test/
+tests/
+**/*.test.ts
+**/*.spec.ts
+coverage/
+.nyc_output/
+
+# Environment files (will be provided at runtime)
+.env
+.env.local
+.env.*.local
+# Keep docker example files and production env for build
+!.env.docker.example
+!.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (keep DOCKER.md for reference)
+README.md
+CONTRIBUTING.md
+LICENSE
+docs/
+!DOCKER.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Kubernetes
+k8s/
+helm/
+
+# Docker (but keep entrypoint script)
+docker-compose*.yml
+!docker-entrypoint.sh
+
+# Backup
+backup/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Storage (app specific, may contain user uploads)
+apps/api/storage/
+
+# Package manager lock files (KEEP pnpm-lock.yaml, exclude others)
+package-lock.json
+yarn.lock
+
+storage/

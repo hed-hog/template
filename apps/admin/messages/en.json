@@ -1,0 +1,81 @@
+{
+  "core": {
+    "TagSelectorSheet": {
+      "addTag": "Add tag",
+      "sheetTitle": "Manage tags",
+      "sheetDescription": "Select existing tags or create a new one.",
+      "createLabel": "New tag",
+      "createPlaceholder": "Type the tag name",
+      "createAction": "Create tag",
+      "popularTitle": "Most used tags",
+      "selectedTitle": "Selected tags",
+      "noTags": "No tags",
+      "cancel": "Cancel",
+      "apply": "Apply",
+      "removeTagAria": "Remove tag {tag}",
+      "messages": {
+        "createSuccess": "Tag created successfully",
+        "createError": "Could not create the tag",
+        "updateError": "Could not update tags"
+      }
+    },
+    "AiAgentPage": {
+      "breadcrumbDashboard": "Dashboard",
+      "breadcrumbManagement": "Management",
+      "breadcrumbCurrent": "AI Agents",
+      "title": "AI Agents",
+      "description": "Manage agents for OpenAI and Gemini",
+      "newAgent": "New agent",
+      "searchPlaceholder": "Search by slug",
+      "columnProvider": "Provider",
+      "columnModel": "Model",
+      "columnExternalId": "External Agent ID",
+      "columnActions": "Actions",
+      "loading": "Loading...",
+      "empty": "No agents found",
+      "editTitle": "Edit agent",
+      "createTitle": "New agent",
+      "dialogDescription": "Configure slug, provider and agent behavior.",
+      "fieldSlug": "Slug",
+      "fieldSlugPlaceholder": "finance-support",
+      "fieldProvider": "Provider",
+      "fieldProviderPlaceholder": "Select provider",
+      "providerOpenai": "OpenAI",
+      "providerGemini": "Gemini",
+      "fieldModel": "Model (optional)",
+      "fieldModelPlaceholder": "gpt-4o-mini",
+      "fieldInstructions": "Instructions (optional)",
+      "fieldInstructionsPlaceholder": "You are an agent specialized in...",
+      "cancel": "Cancel",
+      "saveChanges": "Save changes",
+      "createAgent": "Create agent",
+      "deleteTitle": "Delete agent?",
+      "deleteDescription": "This action cannot be undone. The agent will be permanently deleted.",
+      "delete": "Delete",
+      "toastUpdatedSuccess": "Agent updated successfully",
+      "toastCreatedSuccess": "Agent created successfully",
+      "toastSaveError": "Error saving agent",
+      "toastDeletedSuccess": "Agent removed successfully",
+      "toastDeleteError": "Error removing agent",
+      "validationSlugMinLength": "Slug must be at least 2 characters"
+    }
+  },
+  "DesktopAuth": {
+    "title": "Authorize HedHog Desktop",
+    "subtitle": "The desktop app wants to access your account.",
+    "authorize": "Authorize",
+    "cancel": "Cancel",
+    "successTitle": "Authorization successful!",
+    "successMessage": "You can now close this tab and return to the app.",
+    "error": "Could not issue the token. Please try again."
+  },
+  "developer-mode": {
+    "Sections": {
+      "wizard": {
+        "processing": "Processing...",
+        "awaitingResponse": "Awaiting server response...",
+        "terminal": "terminal"
+      }
+    }
+  }
+}
