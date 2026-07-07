@@ -114,14 +114,18 @@ jobs:
 
       - name: Build API
         working-directory: apps/api
-        # Compila a API para `dist/` e leva templates + arquivos de idioma junto.
-        # Chama `nest build` direto (não `pnpm run build`) para pular o hook
-        # `prebuild` = `prisma:update`, que faria `prisma db pull`; o client
-        # Prisma já foi gerado por `build:libs`. O bump de heap espelha o
-        # Dockerfile (build:docker), evitando o OOM que ocorria no `nest start`.
+        # Compila a API para `dist/`. Chama `nest build` direto (não `pnpm run
+        # build`) para pular o hook `prebuild` = `prisma:update`, que faria
+        # `prisma db pull`; o client Prisma já foi gerado por `build:libs`. O
+        # bump de heap espelha o Dockerfile (build:docker), evitando o OOM que
+        # ocorria no `nest start`.
+        #
+        # `copy:core-assets` (templates + arquivos de idioma da lib `core`)
+        # não roda aqui: este template não traz `libraries/core` commitado
+        # (ver README) — não há assets de core a copiar num checkout limpo.
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm exec nest build && pnpm run copy:core-assets
+        run: pnpm exec nest build
 
       - name: Apply database migrations
         working-directory: apps/api

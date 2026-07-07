@@ -88,7 +88,7 @@ jobs:
         working-directory: apps/api
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm exec nest build && pnpm run copy:core-assets
+        run: pnpm exec nest build
 
       - name: Apply database migrations
         working-directory: apps/api
