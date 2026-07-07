@@ -24,6 +24,10 @@ export function createVitestConfig(
       environment: 'jsdom',
       setupFiles: ['@hed-hog/vitest-config/setup'],
       include: ['src/**/*.{test,spec}.{ts,tsx}'],
+      // Kept well above setup.ts's asyncUtilTimeout so Vitest's own timeout
+      // never races Testing Library's — see the comment there for why.
+      testTimeout: 15000,
+      hookTimeout: 15000,
       ...overrides.test,
     },
   });
