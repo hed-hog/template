@@ -1,3 +1,4 @@
+import { SettingService } from '@hed-hog/core';
 import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -36,15 +37,24 @@ async function bootstrap() {
   // X-Powered-By. Config in ./security/helmet-options (shared with the tests).
   app.use(helmet(helmetOptions));
 
-  // Body size limit: this template has no `core` library (and its
-  // settings-driven `api-body-size-limit`) installed, so it's configured via
-  // env var instead, same convention as CORS below.
-  const bodySizeLimitMb = Number(process.env.API_BODY_SIZE_LIMIT_MB ?? 50);
+  const settingService = app.get(SettingService);
 
-  app.use(
-    express.json({ limit: `${bodySizeLimitMb}mb` }),
-    express.urlencoded({ limit: `${bodySizeLimitMb}mb`, extended: true })
-  );
+  app.use(async (req: any, res: any, next: any) => {
+    try {
+      const vals = await settingService.getSettingValues('api-body-size-limit');
+      const limitMb = Number(vals['api-body-size-limit'] ?? 50);
+      express.json({ limit: `${limitMb}mb` })(req, res, (err: any) => {
+        if (err) return next(err);
+        express.urlencoded({ limit: `${limitMb}mb`, extended: true })(
+          req,
+          res,
+          next
+        );
+      });
+    } catch {
+      express.json({ limit: '50mb' })(req, res, next);
+    }
+  });
 
   const corsOrigins = getCorsOrigins();
   const corsDomains = getCorsDomains();
