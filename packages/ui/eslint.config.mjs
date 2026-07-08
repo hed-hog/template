@@ -8,6 +8,9 @@ const compat = new FlatCompat({
 });
 
 export default [
+  {
+    ignores: ['eslint.config.mjs'],
+  },
   ...compat.config({
     extends: ['@hed-hog/eslint-config/react-internal.js'],
     parserOptions: {
