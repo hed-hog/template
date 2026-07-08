@@ -292,6 +292,10 @@ describe('McpFloatingChat', () => {
     openWidget();
 
     expect(await screen.findByText('title')).toBeInTheDocument();
+    // Conversation list auto-opens (no conversation selected yet) and now
+    // replaces the message area entirely; close it to reveal the empty state.
+    await screen.findByText('emptyConversations');
+    fireEvent.click(screen.getByLabelText('closeConversations'));
     expect(screen.getByText('emptyState')).toBeInTheDocument();
   });
 
@@ -586,6 +590,8 @@ describe('McpFloatingChat', () => {
     await renderWidget();
     openWidget();
     expect(await screen.findByText('title')).toBeInTheDocument();
+    await screen.findByText('emptyConversations');
+    fireEvent.click(screen.getByLabelText('closeConversations'));
 
     fireEvent.click(screen.getByText('send'));
     // Nothing should happen — still showing empty state, no request errors.

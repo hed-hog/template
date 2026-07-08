@@ -14,6 +14,8 @@ import {
   Bot,
   ChevronDown,
   ExternalLink,
+  GripHorizontal,
+  GripVertical,
   MessageSquare,
   Plus,
   Search,
@@ -24,6 +26,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   ComponentType,
+  PointerEvent as ReactPointerEvent,
   RefObject,
   useCallback,
   useEffect,
@@ -32,6 +35,20 @@ import {
   useState,
 } from 'react';
 import { toast } from 'sonner';
+
+import {
+  ChatLayout,
+  clampChatLayout,
+  usePersistedChatLayout,
+} from '@/hooks/use-persisted-chat-layout';
+
+const DEFAULT_PANEL_WIDTH = 390;
+const DEFAULT_PANEL_HEIGHT = 540;
+const MIN_PANEL_WIDTH = 320;
+const MIN_PANEL_HEIGHT = 400;
+const PANEL_VIEWPORT_GUTTER = 24;
+
+type InteractionMode = 'drag' | 'resize-top' | 'resize-left' | null;
 
 const MCP_FLOATING_CHAT_OPEN_EVENT = 'mcp-floating-chat:open';
 const CORE_LIBRARY_SLUG = 'core';
@@ -140,6 +157,143 @@ export function McpFloatingChat() {
   const streamingTimeoutRef = useRef<number | null>(null);
   const streamingRunRef = useRef(0);
   const isOpenRef = useRef(isOpen);
+  const hasAutoOpenedConversationListRef = useRef(false);
+
+  const [viewportSize, setViewportSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+
+  useEffect(() => {
+    function updateViewportSize() {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    }
+    updateViewportSize();
+    window.addEventListener('resize', updateViewportSize);
+    return () => window.removeEventListener('resize', updateViewportSize);
+  }, []);
+
+  const defaultPanelLayout = useMemo<ChatLayout>(() => {
+    /* v8 ignore next 3 -- SSR-only guard, unreachable under jsdom where window is always defined */
+    if (typeof window === 'undefined') {
+      return {
+        x: 0,
+        y: 0,
+        width: DEFAULT_PANEL_WIDTH,
+        height: DEFAULT_PANEL_HEIGHT,
+      };
+    }
+    return {
+      x: window.innerWidth - DEFAULT_PANEL_WIDTH - 20,
+      y: window.innerHeight - DEFAULT_PANEL_HEIGHT - 80,
+      width: DEFAULT_PANEL_WIDTH,
+      height: DEFAULT_PANEL_HEIGHT,
+    };
+  }, []);
+
+  const panelBounds = useMemo(
+    () => ({
+      minWidth: MIN_PANEL_WIDTH,
+      maxWidth: viewportSize
+        ? Math.max(MIN_PANEL_WIDTH, viewportSize.width - PANEL_VIEWPORT_GUTTER)
+        : DEFAULT_PANEL_WIDTH,
+      minHeight: MIN_PANEL_HEIGHT,
+      maxHeight: viewportSize
+        ? Math.max(
+            MIN_PANEL_HEIGHT,
+            viewportSize.height - PANEL_VIEWPORT_GUTTER
+          )
+        : DEFAULT_PANEL_HEIGHT,
+    }),
+    [viewportSize]
+  );
+
+  const [panelLayout, setPanelLayout] = usePersistedChatLayout({
+    storageId: 'mcp-chat-widget',
+    defaultLayout: defaultPanelLayout,
+    enabled: !isMobile,
+    ...panelBounds,
+  });
+
+  const [previewPanelLayout, setPreviewPanelLayout] =
+    useState<ChatLayout | null>(null);
+  const [interactionMode, setInteractionMode] =
+    useState<InteractionMode>(null);
+  const interactionStateRef = useRef({
+    startX: 0,
+    startY: 0,
+    startLayout: panelLayout,
+  });
+
+  const currentPanelLayout = previewPanelLayout ?? panelLayout;
+
+  useEffect(() => {
+    if (!interactionMode) return;
+
+    function handlePointerMove(event: PointerEvent) {
+      const deltaX = event.clientX - interactionStateRef.current.startX;
+      const deltaY = event.clientY - interactionStateRef.current.startY;
+      const start = interactionStateRef.current.startLayout;
+
+      let next: ChatLayout;
+      if (interactionMode === 'drag') {
+        next = { ...start, x: start.x + deltaX, y: start.y + deltaY };
+      } else if (interactionMode === 'resize-top') {
+        next = {
+          ...start,
+          y: start.y + deltaY,
+          height: start.height - deltaY,
+        };
+      } else {
+        next = {
+          ...start,
+          x: start.x + deltaX,
+          width: start.width - deltaX,
+        };
+      }
+
+      setPreviewPanelLayout(clampChatLayout(next, panelBounds));
+    }
+
+    function handlePointerUp() {
+      setInteractionMode(null);
+      setPreviewPanelLayout((current) => {
+        if (current) setPanelLayout(current);
+        return null;
+      });
+    }
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp, { once: true });
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [interactionMode, panelBounds, setPanelLayout]);
+
+  const startInteraction = useCallback(
+    (mode: Exclude<InteractionMode, null>, event: ReactPointerEvent) => {
+      if (isMobile) return;
+      event.preventDefault();
+      interactionStateRef.current = {
+        startX: event.clientX,
+        startY: event.clientY,
+        startLayout: currentPanelLayout,
+      };
+      setInteractionMode(mode);
+    },
+    [currentPanelLayout, isMobile]
+  );
+
+  const handleHeaderPointerDown = useCallback(
+    (event: ReactPointerEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest('button, a')) return;
+      startInteraction('drag', event);
+    },
+    [startInteraction]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -517,6 +671,8 @@ export function McpFloatingChat() {
     )
       return;
 
+    setIsConversationListOpen(false);
+
     let activeConvId = conversationId;
 
     if (!activeConvId) {
@@ -652,8 +808,13 @@ export function McpFloatingChat() {
   };
 
   useEffect(() => {
+    if (!isOpen) hasAutoOpenedConversationListRef.current = false;
+  }, [isOpen]);
+
+  useEffect(() => {
     if (shouldHideWidget || !isOpen) return;
-    if (conversationId === null) {
+    if (conversationId === null && !hasAutoOpenedConversationListRef.current) {
+      hasAutoOpenedConversationListRef.current = true;
       setIsConversationListOpen(true);
     }
     void fetchConversations();
@@ -718,9 +879,74 @@ export function McpFloatingChat() {
                 : { duration: 0.15, ease: 'easeOut' }
             }
             className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background sm:inset-auto sm:bottom-20 sm:right-5 sm:h-135 sm:w-97.5 sm:rounded-xl sm:border sm:shadow-2xl"
+            style={
+              !isMobile
+                ? {
+                    left: currentPanelLayout.x,
+                    top: currentPanelLayout.y,
+                    right: 'auto',
+                    bottom: 'auto',
+                    width: currentPanelLayout.width,
+                    height: currentPanelLayout.height,
+                  }
+                : undefined
+            }
           >
+            {!isMobile && (
+              <>
+                <button
+                  type="button"
+                  aria-label={tChatPage('resizePanel')}
+                  className="group absolute -top-1.5 left-0 z-20 flex h-3 w-full cursor-ns-resize items-center justify-center"
+                  onPointerDown={(e) => startInteraction('resize-top', e)}
+                >
+                  <span
+                    className={`absolute inset-x-0 h-px transition-colors duration-150 ${
+                      interactionMode === 'resize-top'
+                        ? 'bg-primary'
+                        : 'bg-border group-hover:bg-primary/70'
+                    }`}
+                  />
+                  <span
+                    className={`relative z-10 pointer-events-none rounded-full border p-0.5 shadow-sm transition-colors ${
+                      interactionMode === 'resize-top'
+                        ? 'border-primary bg-primary/15 text-primary-foreground'
+                        : 'bg-border/80 text-muted-foreground/70 group-hover:border-primary group-hover:bg-primary/15 group-hover:text-primary-foreground'
+                    }`}
+                  >
+                    <GripHorizontal className="size-3" />
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={tChatPage('resizePanel')}
+                  className="group absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-ew-resize items-center justify-center"
+                  onPointerDown={(e) => startInteraction('resize-left', e)}
+                >
+                  <span
+                    className={`absolute inset-y-0 w-px transition-colors duration-150 ${
+                      interactionMode === 'resize-left'
+                        ? 'bg-primary'
+                        : 'bg-border group-hover:bg-primary/70'
+                    }`}
+                  />
+                  <span
+                    className={`relative z-10 pointer-events-none rounded-full border p-0.5 shadow-sm transition-colors ${
+                      interactionMode === 'resize-left'
+                        ? 'border-primary bg-primary/15 text-primary-foreground'
+                        : 'bg-border/80 text-muted-foreground/70 group-hover:border-primary group-hover:bg-primary/15 group-hover:text-primary-foreground'
+                    }`}
+                  >
+                    <GripVertical className="size-3" />
+                  </span>
+                </button>
+              </>
+            )}
             {/* Header */}
-            <div className="relative z-10 flex shrink-0 items-center gap-2 border-b bg-muted/30 px-3 py-2.5">
+            <div
+              className={`relative z-10 flex shrink-0 items-center gap-2 border-b bg-muted/30 px-3 py-2.5${isMobile ? '' : ' cursor-move'}`}
+              onPointerDown={isMobile ? undefined : handleHeaderPointerDown}
+            >
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
                 <Bot className="h-3.5 w-3.5 text-primary" />
               </div>
@@ -798,8 +1024,8 @@ export function McpFloatingChat() {
               </Tooltip>
             </div>
 
-            {isConversationListOpen && (
-              <div className="relative z-20 shrink-0 overflow-hidden border-b bg-background shadow-sm">
+            {isConversationListOpen ? (
+              <div className="relative z-20 flex flex-1 min-h-0 flex-col overflow-hidden bg-background">
                 <div className="px-3 pb-1 pt-2">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     {tChatPage('conversations')}
@@ -816,7 +1042,7 @@ export function McpFloatingChat() {
                     />
                   </div>
                 </div>
-                <ScrollArea className="h-56 px-2 pb-2">
+                <ScrollArea className="flex-1 min-h-0 px-2 pb-2">
                   {isLoadingConversations ? (
                     <div className="space-y-2 pt-1">
                       {Array.from({ length: 4 }).map((_, idx) => (
@@ -855,10 +1081,7 @@ export function McpFloatingChat() {
                   )}
                 </ScrollArea>
               </div>
-            )}
-
-            {/* Message area */}
-            {messages.length === 0 && !isSending ? (
+            ) : messages.length === 0 && !isSending ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
                   <Bot className="h-6 w-6 text-primary" />
