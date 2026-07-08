@@ -81,6 +81,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install HedHog CLI
+        run: npm i -g @hed-hog/cli
+
+      - name: Add core library
+        # See ci.yml for details — required at runtime by
+        # apps/api/src/main.ts (SettingService) and copy:core-assets.
+        run: hedhog add core
+
+      - name: Install core library dependencies
+        run: pnpm install --no-frozen-lockfile
+
       - name: Build libraries & packages
         run: pnpm run build:libs
 

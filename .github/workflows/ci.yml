@@ -88,6 +88,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install HedHog CLI
+        run: npm i -g @hed-hog/cli
+
+      - name: Add core library
+        # Downloads libraries/core, generates + applies its Prisma migration
+        # against the `postgres` service (already healthy by the time steps
+        # run) — see docs/YAML-SPEC.md. Required at runtime by
+        # apps/api/src/main.ts (SettingService) and by copy:core-assets below.
+        run: hedhog add core
+
+      - name: Install core library dependencies
+        # `hedhog add core` adds a new workspace member not reflected in the
+        # committed pnpm-lock.yaml, so link it with a non-frozen install
+        # (ephemeral to this run — nothing gets committed back).
+        run: pnpm install --no-frozen-lockfile
+
       - name: Build libraries & packages
         # Gera os `dist/` dos workspaces `@hed-hog/*` (dos quais apps e libs
         # dependem para resolver tipos/imports) e o client Prisma a partir do
