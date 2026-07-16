@@ -213,7 +213,7 @@ export const fetchAdminApiJson = async <T>(
       code: getAdminApiErrorCode(error),
       url,
     });
-  } /* v8 ignore next */ finally {
+  } finally {
     cleanup?.();
   }
 };

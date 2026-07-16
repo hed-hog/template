@@ -20,6 +20,7 @@ type FormActionsProps = {
   submitIcon?: React.ReactNode;
   submitLabel: React.ReactNode;
   submitSize?: React.ComponentProps<typeof Button>['size'];
+  submitTestId?: string;
   submitType?: React.ComponentProps<typeof Button>['type'];
 };
 
@@ -36,6 +37,7 @@ function FormActions({
   submitIcon,
   submitLabel,
   submitSize = 'default',
+  submitTestId,
   submitType = 'button',
 }: FormActionsProps) {
   const content = (
@@ -67,6 +69,7 @@ function FormActions({
           className="w-full sm:min-w-28 sm:w-auto"
           disabled={submitDisabled}
           onClick={onSubmit}
+          data-testid={submitTestId ?? (sheet ? 'sheet-submit' : undefined)}
         >
           {submitIcon}
           {submitLabel}

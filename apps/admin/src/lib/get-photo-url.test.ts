@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { getPhotoUrl } from './get-photo-url';
 
-// getPhotoUrl reads the env at call time, so it's enough to stub it per test.
+// getPhotoUrl lê o env em tempo de chamada, então basta fixá-lo por teste.
 const BASE = 'http://api.test';
 
 describe('getPhotoUrl', () => {
@@ -13,19 +13,19 @@ describe('getPhotoUrl', () => {
     vi.unstubAllEnvs();
   });
 
-  it('positive numeric id builds the avatar URL', () => {
+  it('id numérico positivo monta a URL do avatar', () => {
     expect(getPhotoUrl(12)).toBe(`${BASE}/user/avatar/12`);
   });
 
-  it('numeric string is converted', () => {
+  it('string numérica é convertida', () => {
     expect(getPhotoUrl('34')).toBe(`${BASE}/user/avatar/34`);
   });
 
-  it('non-numeric string falls back to placeholder', () => {
+  it('string não numérica cai no placeholder', () => {
     expect(getPhotoUrl('abc')).toBe('/placeholder.png');
   });
 
-  it('zero, negative, null and undefined fall back to placeholder', () => {
+  it('zero, negativo, null e undefined caem no placeholder', () => {
     expect(getPhotoUrl(0)).toBe('/placeholder.png');
     expect(getPhotoUrl(-3)).toBe('/placeholder.png');
     expect(getPhotoUrl(null)).toBe('/placeholder.png');

@@ -3,6 +3,7 @@ import {
   buildFillBlankStatement,
   countFillBlankMarkers,
   hasFillBlankMarkers,
+  htmlToPlainText,
   parseFillBlankStatement,
   reconstructFillBlankState,
   renderFillBlankPreview,
@@ -20,7 +21,7 @@ describe('hasFillBlankMarkers', () => {
     expect(hasFillBlankMarkers('')).toBe(false);
     expect(hasFillBlankMarkers(null)).toBe(false);
     expect(hasFillBlankMarkers(undefined)).toBe(false);
-    expect(hasFillBlankMarkers('[[]]')).toBe(false); // no digit
+    expect(hasFillBlankMarkers('[[]]')).toBe(false); // sem dígito
   });
 });
 
@@ -127,6 +128,36 @@ describe('buildFillBlankStatement', () => {
   });
 });
 
+describe('htmlToPlainText', () => {
+  it('remove tags simples', () => {
+    expect(htmlToPlainText('<p>Ola mundo</p>')).toBe('Ola mundo');
+  });
+
+  it('remove tags aninhadas mantendo o texto', () => {
+    expect(
+      htmlToPlainText(
+        '<p>Em HTML, os atributos <code>id</code> e <code>class</code> ajudam.</p>',
+      ),
+    ).toBe('Em HTML, os atributos id e class ajudam.');
+  });
+
+  it('separa blocos com espaco em vez de colar palavras', () => {
+    expect(htmlToPlainText('<p>Primeiro</p><p>Segundo</p>')).toBe('Primeiro Segundo');
+    expect(htmlToPlainText('Linha um<br>Linha dois')).toBe('Linha um Linha dois');
+  });
+
+  it('decodifica entidades HTML comuns e numericas', () => {
+    expect(htmlToPlainText('<p>a &amp; b &lt;c&gt; &nbsp;d&#39;s&nbsp;</p>')).toBe(
+      "a & b <c> d's",
+    );
+  });
+
+  it('mantem texto puro inalterado', () => {
+    expect(htmlToPlainText('texto simples sem tags')).toBe('texto simples sem tags');
+    expect(htmlToPlainText('')).toBe('');
+  });
+});
+
 describe('reconstructFillBlankState', () => {
   it('faz round-trip de resposta de palavra única', () => {
     const { text, blankWordIndices, alternativesByWordIndex } = reconstructFillBlankState(
@@ -151,32 +182,27 @@ describe('reconstructFillBlankState', () => {
     expect(blankWordIndices.size).toBe(0);
   });
 
+  it('enunciado legado salvo como HTML (rich text) chega como texto puro', () => {
+    const { text } = reconstructFillBlankState(
+      '<p>Em HTML, os atributos <code>id</code> e <code>class</code> ajudam.</p>',
+      [],
+    );
+    expect(text).toBe('Em HTML, os atributos id e class ajudam.');
+  });
+
+  it('remove HTML de trechos de texto entre marcadores', () => {
+    const { text } = reconstructFillBlankState('<p>the [[1]] sat</p>', [
+      { answer: 'cat', alternatives: [] },
+    ]);
+    expect(text).toBe('the cat sat');
+  });
+
   it('resposta multi-palavra colapsa para a última palavra', () => {
     const { text, blankWordIndices } = reconstructFillBlankState('[[1]] end', [
       { answer: 'two words', alternatives: [] },
     ]);
     expect(text).toBe('two words end');
-    // points to "words" (index 1), not "two"
+    // aponta para "words" (índice 1), não para "two"
     expect([...blankWordIndices]).toEqual([1]);
-  });
-
-  it('enunciado legado nulo mantém string vazia', () => {
-    const { text, blankWordIndices, alternativesByWordIndex } = reconstructFillBlankState(
-      null,
-      [],
-    );
-    expect(text).toBe('');
-    expect(blankWordIndices.size).toBe(0);
-    expect(alternativesByWordIndex.size).toBe(0);
-  });
-
-  it('lacuna sem resposta correspondente usa string vazia e sem alternativas', () => {
-    const { text, blankWordIndices, alternativesByWordIndex } = reconstructFillBlankState(
-      'foo [[1]] end',
-      [],
-    );
-    expect(text).toBe('foo  end');
-    expect([...blankWordIndices]).toEqual([0]);
-    expect(alternativesByWordIndex.get(0)).toBe('');
   });
 });

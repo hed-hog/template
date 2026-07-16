@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    // Revalidates the icon cache
+    // Revalida o cache do ícone
     // Note: revalidateTag API changed in Next.js 16
     // revalidateTag('system-icon');
     revalidatePath('/icon');

@@ -19,7 +19,6 @@ import {
 import { getHubForwardUrl } from '../../_shared/oauth-hub';
 
 function CallbackOAuthLogin() {
-  /* v8 ignore next -- unreachable: Page() only renders CallbackOAuthLogin when providerName (same source) is already truthy, so the ?? '' fallback here is never exercised */
   const providerName = String(useParams().provider ?? '');
   const normalizedProviderName = normalizeOAuthProviderName(providerName);
   const router = useRouter();
@@ -29,12 +28,14 @@ function CallbackOAuthLogin() {
   const searchParams = useSearchParams();
   const code = searchParams.get('code') ?? '';
   const state = searchParams.get('state') ?? '';
+  // Microsoft Entra ID exchanges its large code server-side and forwards only a
+  // short single-use `ref`; other providers still forward the raw `code`.
+  const ref = searchParams.get('ref') ?? '';
   const [error, setError] = useState('');
-  const processedCodeRef = useRef<string | null>(null);
+  const processedKeyRef = useRef<string | null>(null);
   const { request, setAccessToken, getUrlAfterLogin, getSettingValue } = useApp();
 
   useEffect(() => {
-    /* v8 ignore next 3 -- unreachable: Page() wrapper already returns null when !providerName */
     if (!providerName) {
       router.replace('/');
     }
@@ -45,7 +46,8 @@ function CallbackOAuthLogin() {
       try {
         // Hub forwarding: if this callback belongs to another app, hand the code
         // off to that app and let it complete the login (do not consume it here).
-        if (typeof window !== 'undefined') {
+        // The Entra `ref` bounce carries no `state`, so this is skipped for it.
+        if (!ref && typeof window !== 'undefined') {
           const forwardUrl = getHubForwardUrl({
             appUrls: getSettingValue('app-urls'),
             state,
@@ -64,15 +66,18 @@ function CallbackOAuthLogin() {
           window.history.replaceState({}, '', window.location.pathname);
         }
 
-        if (hasProcessedOAuthCallback(normalizedProviderName, 'login', code)) {
+        const processedKey = ref || code;
+        if (hasProcessedOAuthCallback(normalizedProviderName, 'login', processedKey)) {
           setError(t('alreadyProcessed'));
           return;
         }
 
-        markOAuthCallbackAsProcessed(normalizedProviderName, 'login', code);
+        markOAuthCallbackAsProcessed(normalizedProviderName, 'login', processedKey);
 
         const { data } = await request<{ accessToken?: string }>({
-          url: `/oauth/${normalizedProviderName}/callback/login?code=${code}`,
+          url: ref
+            ? `/oauth/${normalizedProviderName}/redeem?ref=${encodeURIComponent(ref)}`
+            : `/oauth/${normalizedProviderName}/callback/login?code=${code}`,
         });
 
         if (data.accessToken) {
@@ -86,13 +91,15 @@ function CallbackOAuthLogin() {
       }
     }
 
-    if (code && processedCodeRef.current !== code) {
-      processedCodeRef.current = code;
+    const key = ref || code;
+    if (key && processedKeyRef.current !== key) {
+      processedKeyRef.current = key;
       void createOAuthLogin();
     }
   }, [
     code,
     state,
+    ref,
     request,
     normalizedProviderName,
     setAccessToken,
@@ -102,7 +109,6 @@ function CallbackOAuthLogin() {
     t,
   ]);
 
-  /* v8 ignore next 3 -- unreachable: Page() wrapper already returns null when !providerName */
   if (!providerName) {
     return null;
   }
@@ -186,11 +192,8 @@ function CallbackOAuthLogin() {
                 >
                   {t('buttonRetry')}
                 </Button>
-              {/* v8 ignore next 5 -- unreachable: error is always truthy here since !error was false */}
               </>
-            ) : (
-              null
-            )}
+            ) : null}
           </CardContent>
         </Card>
       </div>

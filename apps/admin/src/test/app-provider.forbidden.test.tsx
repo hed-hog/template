@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { http, HttpResponse, server } from '@hed-hog/vitest-config';
 
-// The provider imports Next deps that don't exist in the test environment; we mock them.
+// O provider importa deps de Next que não existem no ambiente de teste; mockamos.
 const push = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
@@ -48,10 +48,10 @@ describe('AppProvider — 403 e falha de refresh (integração)', () => {
   beforeEach(() => {
     push.mockClear();
     localStorage.clear();
-    // usehooks-ts (useLocalStorage) serializes with JSON.stringify.
+    // usehooks-ts (useLocalStorage) serializa com JSON.stringify.
     localStorage.setItem(LocalStorageKeys.AccessToken, JSON.stringify('tok-123'));
     localStorage.setItem(LocalStorageKeys.RefreshToken, JSON.stringify('rt-123'));
-    // /auth/verify fires on mount (enabled: !!accessToken).
+    // /auth/verify dispara no mount (enabled: !!accessToken).
     server.use(
       http.get(`${API}/auth/verify`, () => HttpResponse.json({ id: 7, name: 'Root' })),
     );
@@ -83,7 +83,7 @@ describe('AppProvider — 403 e falha de refresh (integração)', () => {
     expect(onError).toHaveBeenCalled();
     const ctx = onError.mock.calls[0]?.[1];
     expect(ctx.statusCode).toBe(403);
-    // 403 must not tear down the session.
+    // 403 não deve derrubar a sessão.
     expect(push).not.toHaveBeenCalledWith('/login');
   });
 

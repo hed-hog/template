@@ -14,18 +14,27 @@ import { toast } from 'sonner';
 interface CopyButtonProps {
   value: string;
   className?: string;
+  /** Mensagem exibida no toast/tooltip/aria. Default: crm.ContactPage.copiedToClipboard. */
+  copiedMessage?: string;
+  /** Ao copiar, exibe toast de sucesso. Default: true. */
+  showToast?: boolean;
 }
 
-export function CopyButton({ value, className }: CopyButtonProps) {
+export function CopyButton({
+  value,
+  className,
+  copiedMessage,
+  showToast = true,
+}: CopyButtonProps) {
   const t = useTranslations('crm.ContactPage');
   const [copied, setCopied] = useState(false);
-  const copiedText = t('copiedToClipboard');
+  const copiedText = copiedMessage ?? t('copiedToClipboard');
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success(copiedText);
+    if (showToast) toast.success(copiedText);
   };
 
   return (

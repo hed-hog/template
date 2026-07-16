@@ -108,6 +108,37 @@ export function splitStatementSegments(text: string): StatementSegment[] {
   });
 }
 
+// ── HTML → plain text (rich-text statements pasted/switched into fill-blank) ────
+
+const LOOKS_LIKE_HTML = /<\/?[a-z][\s\S]*>/i;
+const BLOCK_BREAK_TAGS = /<\/(p|div|li|h[1-6]|blockquote|tr)>|<br\s*\/?>/gi;
+const ANY_TAG = /<[^>]+>/g;
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: ' ',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+};
+
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&([a-z]+);/gi, (entity, name) => NAMED_ENTITIES[name.toLowerCase()] ?? entity);
+}
+
+/** Converts rich-text HTML (e.g. from the statement's WYSIWYG editor) into plain text. */
+export function htmlToPlainText(value: string): string {
+  if (!value || !LOOKS_LIKE_HTML.test(value)) return value ?? '';
+  return decodeHtmlEntities(
+    value.replace(BLOCK_BREAK_TAGS, ' ').replace(ANY_TAG, ''),
+  )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function splitAlternatives(text: string): string[] {
   return text
     .split(',')
@@ -166,12 +197,18 @@ export function reconstructFillBlankState(
   const blankWordIndices = new Set<number>();
   const alternativesByWordIndex = new Map<number, string>();
 
-  if (!hasFillBlankMarkers(statement)) {
+  // A statement saved from a rich-text editor (e.g. after switching question
+  // types, or a legacy question authored before this editor existed) may still
+  // carry HTML markup; strip it once, up front, before it reaches the
+  // plain-text tokenizer. Markers (`[[n]]`) are plain text and survive intact.
+  const cleanStatement = htmlToPlainText(statement ?? '');
+
+  if (!hasFillBlankMarkers(cleanStatement)) {
     // Legacy question (no markers): keep the text as-is, nothing pre-selected.
-    return { text: statement ?? '', blankWordIndices, alternativesByWordIndex };
+    return { text: cleanStatement, blankWordIndices, alternativesByWordIndex };
   }
 
-  const parts = parseFillBlankStatement(statement);
+  const parts = parseFillBlankStatement(cleanStatement);
   let text = '';
 
   for (const part of parts) {

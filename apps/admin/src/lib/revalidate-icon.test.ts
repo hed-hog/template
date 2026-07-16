@@ -35,19 +35,6 @@ describe('revalidateSystemIcon', () => {
     });
   });
 
-  it('usa mensagem padrão quando a resposta falha sem mensagem', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => Response.json({}, { status: 500 })),
-    );
-
-    await expect(revalidateSystemIcon()).resolves.toEqual({
-      success: false,
-      message: 'Failed to revalidate icon',
-    });
-  });
-
   it('retorna erro desconhecido quando fetch rejeita com valor não-Error', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal(

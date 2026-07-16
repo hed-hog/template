@@ -86,7 +86,6 @@ export default function UnsubscribePage() {
 
   // Confirm unsubscribe
   const handleConfirm = async () => {
-    /* v8 ignore next */
     if (state.status !== 'ready') return;
     const { info } = state;
 

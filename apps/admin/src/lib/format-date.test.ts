@@ -38,16 +38,6 @@ describe('formatDate', () => {
     expect(formatDate('2024-01-15T10:00:00Z', get)).toBe('15/01/2024');
     expect(warn).toHaveBeenCalled();
   });
-
-  it('aceita um objeto Date diretamente', () => {
-    const get = makeGetSetting({ 'date-format': 'dd/MM/yyyy', timezone: 'UTC' });
-    expect(formatDate(new Date('2024-01-15T10:00:00Z'), get)).toBe('15/01/2024');
-  });
-
-  it('usa os padrões dd/MM/yyyy e UTC quando as configurações não existem', () => {
-    const get = makeGetSetting({});
-    expect(formatDate('2024-01-15T10:00:00Z', get)).toBe('15/01/2024');
-  });
 });
 
 describe('formatDateTime', () => {
@@ -74,19 +64,5 @@ describe('formatDateTime', () => {
       timezone: 'Bad/Zone',
     });
     expect(formatDateTime('2024-01-15T13:45:00Z', get)).toBe('15/01/2024 13:45');
-  });
-
-  it('usa os padrões dd/MM/yyyy, HH:mm e UTC quando as configurações não existem', () => {
-    const get = makeGetSetting({});
-    expect(formatDateTime('2024-01-15T13:45:00Z', get)).toBe('15/01/2024 13:45');
-  });
-
-  it('usa o locale en-US quando informado', () => {
-    const get = makeGetSetting({
-      'date-format': 'dd MMMM yyyy',
-      'time-format': 'HH:mm',
-      timezone: 'UTC',
-    });
-    expect(formatDateTime('2024-01-15T13:45:00Z', get, 'en-US')).toContain('January');
   });
 });

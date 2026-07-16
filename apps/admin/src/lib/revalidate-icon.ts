@@ -1,12 +1,12 @@
 /**
- * Forces revalidation of the system icon cache.
- * Call this function after updating the 'icon-url' setting.
+ * Força a revalidação do cache do ícone do sistema.
+ * Chame esta função após atualizar a configuração 'icon-url'.
  *
  * @example
  * ```tsx
  * import { revalidateSystemIcon } from '@/lib/revalidate-icon';
  *
- * // After saving the settings
+ * // Após salvar as configurações
  * await revalidateSystemIcon();
  * ```
  */

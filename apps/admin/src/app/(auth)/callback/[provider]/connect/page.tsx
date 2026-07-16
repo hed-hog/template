@@ -18,7 +18,6 @@ import {
 } from '../../_shared/oauth-callback-guard';
 
 function CallbackConnect() {
-  /* v8 ignore next -- unreachable: Page() only renders CallbackConnect when providerName (same source) is already truthy, so the ?? '' fallback here is never exercised */
   const providerName = String(useParams().provider ?? '');
   const normalizedProviderName = normalizeOAuthProviderName(providerName);
   const router = useRouter();
@@ -27,12 +26,13 @@ function CallbackConnect() {
   const providerTheme = getOAuthProviderTheme(normalizedProviderName);
   const searchParams = useSearchParams();
   const code = searchParams.get('code') ?? '';
+  // Microsoft Entra ID forwards a short single-use `ref`; others forward the raw `code`.
+  const ref = searchParams.get('ref') ?? '';
   const [error, setError] = useState('');
-  const processedCodeRef = useRef<string | null>(null);
+  const processedKeyRef = useRef<string | null>(null);
   const { request, setAccessToken } = useApp();
 
   useEffect(() => {
-    /* v8 ignore next 3 -- unreachable: Page() wrapper already returns null when !providerName */
     if (!providerName) {
       router.replace('/');
     }
@@ -45,15 +45,18 @@ function CallbackConnect() {
           window.history.replaceState({}, '', window.location.pathname);
         }
 
-        if (hasProcessedOAuthCallback(normalizedProviderName, 'connect', code)) {
+        const processedKey = ref || code;
+        if (hasProcessedOAuthCallback(normalizedProviderName, 'connect', processedKey)) {
           setError(t('alreadyProcessed'));
           return;
         }
 
-        markOAuthCallbackAsProcessed(normalizedProviderName, 'connect', code);
+        markOAuthCallbackAsProcessed(normalizedProviderName, 'connect', processedKey);
 
         const { data } = await request<{ accessToken?: string }>({
-          url: `/oauth/${normalizedProviderName}/callback/connect?code=${code}`,
+          url: ref
+            ? `/oauth/${normalizedProviderName}/redeem/connect?ref=${encodeURIComponent(ref)}`
+            : `/oauth/${normalizedProviderName}/callback/connect?code=${code}`,
         });
 
         if (data.accessToken) {
@@ -66,13 +69,13 @@ function CallbackConnect() {
       }
     }
 
-    if (code && processedCodeRef.current !== code) {
-      processedCodeRef.current = code;
+    const key = ref || code;
+    if (key && processedKeyRef.current !== key) {
+      processedKeyRef.current = key;
       void createOAuthConnect();
     }
-  }, [code, request, normalizedProviderName, setAccessToken, router, t]);
+  }, [code, ref, request, normalizedProviderName, setAccessToken, router, t]);
 
-  /* v8 ignore next 3 -- unreachable: Page() wrapper already returns null when !providerName */
   if (!providerName) {
     return null;
   }
@@ -156,11 +159,8 @@ function CallbackConnect() {
                 >
                   {t('buttonRetry')}
                 </Button>
-              {/* v8 ignore next 5 -- unreachable: error is always truthy here since !error was false */}
               </>
-            ) : (
-              null
-            )}
+            ) : null}
           </CardContent>
         </Card>
       </div>

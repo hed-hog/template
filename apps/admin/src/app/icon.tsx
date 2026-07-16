@@ -7,7 +7,7 @@ export const size = {
   width: 32,
   height: 32,
 };
-export const revalidate = 3600; // 1 hour, but can be revalidated manually
+export const revalidate = 3600; // 1 hora, mas pode ser revalidado manualmente
 
 type IconSettingsResponse = {
   setting?: {
@@ -51,7 +51,7 @@ export default async function Icon({}: {
     const iconUrl = data?.setting?.['icon-url'];
 
     if (iconUrl) {
-      // If the URL is absolute (http/https), fetch the image
+      // Se a URL for absoluta (http/https), busca a imagem
       if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
         const imageResponse = await fetch(iconUrl, {
           cache: 'no-store',
@@ -75,7 +75,7 @@ export default async function Icon({}: {
         });
       }
 
-      // If it's a relative path, fetch from the API
+      // Se for um caminho relativo, busca da API
       if (iconUrl.startsWith('/')) {
         const fullUrl = buildAdminApiUrl(iconUrl);
         const imageResponse = await fetch(fullUrl, {
@@ -105,6 +105,6 @@ export default async function Icon({}: {
     console.error('Error loading dynamic icon:', error);
   }
 
-  // Fallback: generates a simple icon with the initials HH
+  // Fallback: gera um ícone simples com as iniciais HH
   return renderFallbackIcon();
 }

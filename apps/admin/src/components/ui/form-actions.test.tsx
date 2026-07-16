@@ -73,5 +73,6 @@ describe('FormActions', () => {
     expect(footer).toBeInTheDocument();
     expect(footer).toHaveClass('custom-sheet-class');
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeInTheDocument();
+    expect(screen.getByTestId('sheet-submit')).toBeInTheDocument();
   });
 });

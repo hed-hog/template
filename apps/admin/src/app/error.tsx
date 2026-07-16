@@ -60,7 +60,7 @@ export default function Error({ error, reset }: ErrorProps) {
             <span style={{ fontSize: 13, color: '#b71c1c', display: 'block', marginTop: 6 }}>
             {
               (() => {
-                // Looks for the file.ts(x):line:column name in the stack trace
+                // Procura por nome do arquivo.ts(x):linha:coluna na stack trace
                 const match = error.stack?.match(/([\\/]?[^\\/\s]+\.(ts|tsx):\d+:\d+)/);
                 return match?.[1] || 'Arquivo desconhecido';
               })()

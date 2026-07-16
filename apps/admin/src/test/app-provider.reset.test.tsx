@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { http, HttpResponse, server } from '@hed-hog/vitest-config';
 
-// The provider imports Next deps that don't exist in the test environment; we mock them.
+// O provider importa deps de Next inexistentes no ambiente de teste; mockamos.
 const push = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -27,7 +27,7 @@ const toastStub = Object.assign(() => {}, {
   info: () => {},
 });
 
-// JWT valid enough for parseToken() (3 segments, base64url JSON payload).
+// JWT válido o suficiente para parseToken() (3 segmentos, payload JSON base64url).
 function makeJwt(payload: Record<string, unknown>) {
   const seg = (obj: Record<string, unknown>) =>
     Buffer.from(JSON.stringify(obj)).toString('base64url');
@@ -57,7 +57,7 @@ const token = makeJwt({ sub: 1, exp: Math.floor(Date.now() / 1000) + 3600 });
 beforeEach(() => {
   push.mockClear();
   localStorage.clear();
-  // setAccessToken fires /auth/verify in the mount effect.
+  // setAccessToken dispara /auth/verify no efeito de montagem.
   server.use(
     http.get(`${API}/auth/verify`, () =>
       HttpResponse.json({ id: 1, name: 'Root' })

@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
-// `apiBaseUrl` is resolved at module load time from
-// NEXT_PUBLIC_API_BASE_URL; that's why we set the env BEFORE the dynamic
-// import and reset modules between cases.
+// `apiBaseUrl` é resolvido na carga do módulo a partir de
+// NEXT_PUBLIC_API_BASE_URL; por isso configuramos o env ANTES do import
+// dinâmico e resetamos os módulos entre os casos.
 async function loadWithBase(base: string) {
   vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', base);
   vi.resetModules();

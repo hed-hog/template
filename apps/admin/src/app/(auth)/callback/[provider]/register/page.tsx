@@ -18,7 +18,6 @@ import {
 } from '../../_shared/oauth-callback-guard';
 
 function CallbackOAuthRegister() {
-  /* v8 ignore next -- unreachable: Page() only renders CallbackOAuthRegister when providerName (same source) is already truthy, so the ?? '' fallback here is never exercised */
   const providerName = String(useParams().provider ?? '');
   const normalizedProviderName = normalizeOAuthProviderName(providerName);
   const router = useRouter();
@@ -27,12 +26,14 @@ function CallbackOAuthRegister() {
   const providerTheme = getOAuthProviderTheme(normalizedProviderName);
   const searchParams = useSearchParams();
   const code = searchParams.get('code') ?? '';
+  // Microsoft Entra ID exchanges its large code server-side and forwards only a
+  // short single-use `ref`; other providers still forward the raw `code`.
+  const ref = searchParams.get('ref') ?? '';
   const [error, setError] = useState('');
-  const processedCodeRef = useRef<string | null>(null);
+  const processedKeyRef = useRef<string | null>(null);
   const { request, setAccessToken, getUrlAfterLogin } = useApp();
 
   useEffect(() => {
-    /* v8 ignore next 3 -- unreachable: Page() wrapper already returns null when !providerName */
     if (!providerName) {
       router.replace('/');
     }
@@ -45,15 +46,18 @@ function CallbackOAuthRegister() {
           window.history.replaceState({}, '', window.location.pathname);
         }
 
-        if (hasProcessedOAuthCallback(normalizedProviderName, 'register', code)) {
+        const processedKey = ref || code;
+        if (hasProcessedOAuthCallback(normalizedProviderName, 'register', processedKey)) {
           setError(t('alreadyProcessed'));
           return;
         }
 
-        markOAuthCallbackAsProcessed(normalizedProviderName, 'register', code);
+        markOAuthCallbackAsProcessed(normalizedProviderName, 'register', processedKey);
 
         const { data } = await request<{ accessToken?: string }>({
-          url: `/oauth/${normalizedProviderName}/callback/register?code=${code}`,
+          url: ref
+            ? `/oauth/${normalizedProviderName}/redeem?ref=${encodeURIComponent(ref)}`
+            : `/oauth/${normalizedProviderName}/callback/register?code=${code}`,
         });
 
         if (data.accessToken) {
@@ -66,12 +70,14 @@ function CallbackOAuthRegister() {
       }
     }
 
-    if (code && processedCodeRef.current !== code) {
-      processedCodeRef.current = code;
+    const key = ref || code;
+    if (key && processedKeyRef.current !== key) {
+      processedKeyRef.current = key;
       void createOAuthRegister();
     }
   }, [
     code,
+    ref,
     request,
     normalizedProviderName,
     setAccessToken,
@@ -80,7 +86,6 @@ function CallbackOAuthRegister() {
     t,
   ]);
 
-  /* v8 ignore next 3 -- unreachable: Page() wrapper already returns null when !providerName */
   if (!providerName) {
     return null;
   }
@@ -164,11 +169,8 @@ function CallbackOAuthRegister() {
                 >
                   {t('buttonRetry')}
                 </Button>
-              {/* v8 ignore next 5 -- unreachable: error is always truthy here since !error was false */}
               </>
-            ) : (
-              null
-            )}
+            ) : null}
           </CardContent>
         </Card>
       </div>

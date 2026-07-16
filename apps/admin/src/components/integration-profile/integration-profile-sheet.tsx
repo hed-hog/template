@@ -65,11 +65,29 @@ type ProfileForm = {
 type FieldDef = {
   key: string;
   labelKey: string;
-  type: 'text' | 'password' | 'number' | 'boolean' | 'email' | 'url' | 'select';
+  /**
+   * `file` reads the picked file and stores it base64-encoded in `config`. It is
+   * treated as a secret (same masking as `password`) because its only use today
+   * is the A1 certificate — whoever holds the PFX can issue invoices as the
+   * company. Any `file` key MUST also be listed in INTEGRATION_SECRET_KEYS
+   * (libraries/core/src/integration-profile/integration-profile.secrets.ts) or
+   * it will be stored unencrypted.
+   */
+  type:
+    | 'text'
+    | 'password'
+    | 'number'
+    | 'boolean'
+    | 'email'
+    | 'url'
+    | 'select'
+    | 'file';
   required: boolean;
   placeholder?: string;
   colSpan?: boolean;
   options?: Array<{ value: string; labelKey: string }>;
+  /** `accept` attribute for `file` fields. */
+  accept?: string;
 };
 
 export type IntegrationProfileSheetSavedProfile = {
@@ -209,6 +227,42 @@ const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
       labelKey: 'fieldFromEmail',
       type: 'email',
       required: true,
+    },
+    {
+      key: 'from_name',
+      labelKey: 'fieldFromName',
+      type: 'text',
+      required: false,
+    },
+  ],
+  resend: [
+    {
+      key: 'domain',
+      labelKey: 'fieldDomain',
+      type: 'text',
+      required: true,
+      placeholder: 'mail.suaempresa.com',
+      colSpan: true,
+    },
+    {
+      key: 'api_token',
+      labelKey: 'fieldApiToken',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    {
+      key: 'webhook_secret',
+      labelKey: 'fieldWebhookSecret',
+      type: 'password',
+      required: false,
+      colSpan: true,
+    },
+    {
+      key: 'region',
+      labelKey: 'fieldRegion',
+      type: 'text',
+      required: false,
     },
     {
       key: 'from_name',
@@ -627,6 +681,75 @@ const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
       required: true,
       colSpan: true,
     },
+  ],
+  // Fiscal — NFS-e Nacional.
+  //
+  // This profile carries BOTH the issuer's identity (CNPJ, municipal registration,
+  // address, IBGE code) and its A1 certificate. That is deliberate: the `fiscal`
+  // module has no company entity, and the repo has no multi-tenant discriminator,
+  // so the profile IS the company for invoicing purposes.
+  //
+  // Nothing here is hardcoded to a city: `ibge_city_code` defaults to São Bernardo
+  // do Campo (3548708) as a placeholder only.
+  //
+  // `certificate_pfx_base64` and `certificate_password` are listed in
+  // INTEGRATION_SECRET_KEYS — without that, they would be stored in plaintext.
+  'nfse-national': [
+    {
+      key: 'environment',
+      labelKey: 'fieldEnvironment',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'homologation', labelKey: 'optionHomologation' },
+        { value: 'production', labelKey: 'optionProduction' },
+      ],
+    },
+    { key: 'tax_id', labelKey: 'fieldTaxId', type: 'text', required: true, placeholder: '00000000000000' },
+    { key: 'legal_name', labelKey: 'fieldLegalName', type: 'text', required: true, colSpan: true },
+    { key: 'trade_name', labelKey: 'fieldTradeName', type: 'text', required: false, colSpan: true },
+    { key: 'municipal_registration', labelKey: 'fieldMunicipalRegistration', type: 'text', required: true },
+    { key: 'ibge_city_code', labelKey: 'fieldIbgeCityCode', type: 'text', required: true, placeholder: '3548708' },
+    { key: 'address_street', labelKey: 'fieldAddressStreet', type: 'text', required: true, colSpan: true },
+    { key: 'address_number', labelKey: 'fieldAddressNumber', type: 'text', required: true },
+    { key: 'address_complement', labelKey: 'fieldAddressComplement', type: 'text', required: false },
+    { key: 'address_district', labelKey: 'fieldAddressDistrict', type: 'text', required: true },
+    { key: 'address_zip', labelKey: 'fieldAddressZip', type: 'text', required: true, placeholder: '00000000' },
+    { key: 'address_state', labelKey: 'fieldAddressState', type: 'text', required: true, placeholder: 'SP' },
+    { key: 'email', labelKey: 'fieldEmail', type: 'email', required: false },
+    { key: 'phone', labelKey: 'fieldPhone', type: 'text', required: false },
+    {
+      key: 'tax_regime',
+      labelKey: 'fieldTaxRegime',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'simples_nacional', labelKey: 'optionSimplesNacional' },
+        { value: 'simples_nacional_excesso', labelKey: 'optionSimplesNacionalExcesso' },
+        { value: 'normal', labelKey: 'optionRegimeNormal' },
+        { value: 'mei', labelKey: 'optionMei' },
+      ],
+    },
+    { key: 'special_tax_regime', labelKey: 'fieldSpecialTaxRegime', type: 'text', required: false },
+    { key: 'cultural_incentive', labelKey: 'fieldCulturalIncentive', type: 'boolean', required: false },
+    {
+      key: 'certificate_pfx_base64',
+      labelKey: 'fieldCertificatePfx',
+      type: 'file',
+      required: true,
+      colSpan: true,
+      accept: '.pfx,.p12',
+    },
+    {
+      key: 'certificate_password',
+      labelKey: 'fieldCertificatePassword',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    { key: 'adn_base_url', labelKey: 'fieldBaseUrl', type: 'url', required: false, colSpan: true },
+    { key: 'timeout_ms', labelKey: 'fieldTimeoutMs', type: 'number', required: false, placeholder: '30000' },
+    { key: 'max_retries', labelKey: 'fieldMaxRetries', type: 'number', required: false, placeholder: '3' },
   ],
   // The video node pool is chosen by name via DoNodePoolPicker (not a text field).
   digitalocean: [
@@ -1356,6 +1479,72 @@ export function IntegrationProfileSheet({
                             ))}
                           </SelectContent>
                         </Select>
+                      </div>
+                    );
+                  }
+
+                  if (field.type === 'file') {
+                    const storedValue = String(formData.config[field.key] ?? '');
+                    // Backend never returns the stored file, only the mask.
+                    const hasStored = storedValue === SECRET_MASK;
+
+                    return (
+                      <div key={field.key} className="col-span-full space-y-2">
+                        <Label htmlFor={`ip-cfg-${field.key}`}>
+                          {t(field.labelKey as any)}
+                          {field.required && !isEditing && (
+                            <span className="text-destructive"> *</span>
+                          )}
+                        </Label>
+                        {hasStored ? (
+                          <div className="flex items-center justify-between rounded-md border px-4 py-3">
+                            <p className="text-sm text-muted-foreground">
+                              {t('fileStored')}
+                            </p>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => updateConfig(field.key, '')}
+                              aria-label={t('changeSecret')}
+                              title={t('changeSecret')}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Input
+                            id={`ip-cfg-${field.key}`}
+                            type="file"
+                            accept={field.accept}
+                            // Uploading through the profile config (not the `file`
+                            // module) is intentional: the `file` module's `local`
+                            // provider writes to disk in plaintext, while the
+                            // profile config is encrypted at rest.
+                            onChange={async (e) => {
+                              const picked = e.target.files?.[0];
+                              if (!picked) {
+                                updateConfig(field.key, '');
+                                return;
+                              }
+                              const buffer = await picked.arrayBuffer();
+                              let binary = '';
+                              const bytes = new Uint8Array(buffer);
+                              for (let i = 0; i < bytes.byteLength; i += 1) {
+                                binary += String.fromCharCode(bytes[i]);
+                              }
+                              updateConfig(field.key, window.btoa(binary));
+                            }}
+                            required={field.required && !isEditing}
+                            disabled={isLoadingProfile}
+                          />
+                        )}
+                        {storedValue && !hasStored && (
+                          <p className="text-xs text-muted-foreground">
+                            {t('fileSelected')}
+                          </p>
+                        )}
                       </div>
                     );
                   }

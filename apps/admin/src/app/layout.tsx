@@ -319,7 +319,7 @@ export default async function RootLayout({
             <InstallationProvider apiBaseUrl={apiBaseUrl} installed={installed}>
               <Toaster />
               <TooltipProvider>
-                <AppProvider toast={toast} settings={setting} locales={locales}>
+                <AppProvider toast={toast} settings={setting} locales={locales} appName="admin">
                   <ForbiddenDialog />
                   {children}
                 </AppProvider>

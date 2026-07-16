@@ -18,13 +18,11 @@ export function parseOS(ua?: string) {
   if (/Windows NT 6\.2/.test(u)) return 'Windows 8';
   if (/Windows NT 6\.1/.test(u)) return 'Windows 7';
   const mac = u.match(/Mac OS X (\d+[._]\d+([._]\d+)?)/);
-  /* v8 ignore next */
   if (mac) return `macOS ${(mac[1] ?? '').replace(/_/g, '.')}`;
   const android = u.match(/Android\s+([\d.]+)/);
   if (android) return `Android ${android[1]}`;
   if (/\biPhone\b|\biPad\b|\biPod\b/.test(u)) {
     const ios = u.match(/OS (\d+[_\d]*)/);
-    /* v8 ignore next */
     return ios ? `iOS ${(ios[1] ?? '').replace(/_/g, '.')}` : 'iOS';
   }
   if (/Linux/.test(u)) return 'Linux';

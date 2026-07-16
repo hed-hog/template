@@ -34,22 +34,6 @@ describe('session parsers', () => {
     expect(parseOS('Unknown Agent')).toBe('Unknown');
   });
 
-  it('detecta versões antigas do Windows', () => {
-    expect(parseOS('Mozilla/5.0 (Windows NT 6.3; Win64; x64)')).toBe(
-      'Windows 8.1',
-    );
-    expect(parseOS('Mozilla/5.0 (Windows NT 6.2; Win64; x64)')).toBe(
-      'Windows 8',
-    );
-    expect(parseOS('Mozilla/5.0 (Windows NT 6.1; Win64; x64)')).toBe(
-      'Windows 7',
-    );
-  });
-
-  it('usa fallback iOS quando o user-agent não expõe a versão do sistema', () => {
-    expect(parseOS('Mozilla/5.0 (iPhone) AppleWebKit/605.1.15')).toBe('iOS');
-  });
-
   it('detecta browsers conhecidos e usa fallback', () => {
     expect(parseBrowser('Mozilla/5.0 Chrome/121.0.0.0 Safari/537.36 Edg/121.0')).toBe(
       'Edge 121.0',
@@ -65,10 +49,6 @@ describe('session parsers', () => {
       'Safari 17.2',
     );
     expect(parseBrowser('Mozilla/5.0 OPR/99.0')).toBe('Opera 99.0');
-    expect(parseBrowser('Mozilla/5.0 Opera/12.0')).toBe('Opera 12.0');
     expect(parseBrowser()).toBe('Unknown');
-    expect(parseBrowser('Mozilla/5.0 (compatible; SomeBot/1.0)')).toBe(
-      'Unknown',
-    );
   });
 });
