@@ -601,6 +601,9 @@ importers:
       ts-node-dev:
         specifier: ^2.0.0
         version: 2.0.0(@swc/core@1.15.18)(@types/node@22.19.15)(typescript@5.9.3)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@hed-hog/eslint-config':
         specifier: workspace:*
