@@ -424,8 +424,10 @@ try {
   # =========================================================================
   $ApiLog    = Join-Path $SandboxRoot 'api.log'
   $ApiErrLog = Join-Path $SandboxRoot 'api.err.log'
-  $PnpmPath  = (Get-Command pnpm).Source
-  $ApiProcess = Start-Process -FilePath $PnpmPath -ArgumentList @('run', 'start:prod') `
+  # Via cmd.exe: `pnpm` no PATH resolve para pnpm.ps1, que o Start-Process nao
+  # consegue executar ("nao e um aplicativo Win32 valido"). O cmd resolve
+  # pnpm.CMD pelo PATHEXT, e o taskkill /T abaixo derruba a arvore inteira.
+  $ApiProcess = Start-Process -FilePath $env:ComSpec -ArgumentList @('/c', 'pnpm', 'run', 'start:prod') `
     -WorkingDirectory $ApiPath `
     -RedirectStandardOutput $ApiLog -RedirectStandardError $ApiErrLog `
     -PassThru -NoNewWindow
