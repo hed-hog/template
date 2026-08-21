@@ -223,7 +223,8 @@ That gap is covered locally, on demand, by `pnpm test:bootstrap`
 ([`test/smoke-bootstrap.ps1`](../test/smoke-bootstrap.ps1)) — run it before
 pushing. See [TESTING.md](../TESTING.md#testing-the-bootstrap-before-pushing)
 for how it redirects the CLI's hardcoded clone URL to your local tree and why it
-cannot dirty the repo.
+cannot dirty the repo, and [bootstrap-sync.md](bootstrap-sync.md) for where it
+sits in the loop that carries a change from the working project into this one.
 
 ---
 

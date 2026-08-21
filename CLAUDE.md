@@ -35,6 +35,22 @@ pnpm install
 
 Run `pnpm install` at the repository root after creating a new library.
 
+### Bootstrap Sync
+
+This repository is the seed `hedhog new` clones, so a change made in the working
+project (hub) has to be carried here deliberately. Full loop:
+[docs/bootstrap-sync.md](docs/bootstrap-sync.md).
+
+- `pnpm sync:bootstrap:check` — review the plan; triage every addition, since
+  `include` covers `apps/api/**`, `scripts/**` and `docs/**` wholesale.
+- `pnpm sync:bootstrap` — apply it.
+- `pnpm test:bootstrap` — creates a real project from the committed `HEAD` and
+  runs it end to end. Commit first; it refuses a dirty tree. Green before push.
+
+CI never runs `hedhog new`, so defects that only exist in a generated project —
+an undeclared dependency, a module that needs `ConfigService`, a stale
+`packages/*` copy — pass CI and are caught only here.
+
 ### Admin Asset Sync
 
 After touching `apps/admin/src/app/(app)/(libraries)` or `apps/admin/messages`, run:
@@ -44,12 +60,14 @@ hedhog dev assets-to-library <library...>
 ```
 
 Infer affected libraries from:
+
 - `apps/admin/src/app/(app)/(libraries)/<library>/...`
 - `apps/admin/messages/<library>/...`
 
 ### Endpoint Permission Sync
 
 When backend endpoints change (URL, method, auth/roles, or removal), keep these files synchronized:
+
 - `libraries/*/hedhog/data/route.yaml`
 - `libraries/*/hedhog/data/role.yaml`
 
@@ -71,12 +89,14 @@ Always include `admin` and the library-specific admin role, for example `admin-f
 Use a subagent only when the task is non-trivial and clearly owned by one domain, or when a mandatory handoff is needed.
 
 Do not use subagents for:
+
 - one-file fixes;
 - simple mechanical edits;
 - read-only audits;
 - local analysis already covered by these rules and nearby code patterns.
 
 Use one subagent for medium tasks with a clear owner:
+
 - `Backend`: NestJS runtime in `libraries/*/src` or `apps/api/src`.
 - `Dashboard`: dashboard-specific work in dashboard paths or dashboard backend/widget flows.
 - `Frontend`: admin/web UI, forms, lists, data fetching, and i18n.

@@ -226,6 +226,18 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 npx turbo link
 ```
 
+## Maintaining this template
+
+This repository is the seed `hedhog new` clones. Before pushing, verify that a
+new project still builds from it:
+
+```powershell
+pnpm test:bootstrap
+```
+
+To carry a change from a working project into this one, see
+[docs/bootstrap-sync.md](docs/bootstrap-sync.md).
+
 ## Contributing
 
 This is a project under active development. Contributions are welcome!
