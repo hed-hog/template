@@ -108,9 +108,26 @@ project. This is the class of problem the loop exists for:
 - A `packages/*` copy older than what a published library expects.
 - A route granted to a role its library does not own, which aborts the
   migration.
+- An admin file the sync brought over that imports a package living only in the
+  hub (`@hed-hog/next-build-skew`, `@sentry/nestjs`) or a directory this
+  manifest deliberately excludes (`apps/api/src/observability/`).
+- Half a pair: a test whose implementation stayed behind, an `index.ts`
+  re-exporting modules the manifest excludes, a component the published library
+  expects to export something it does not.
+- A pnpm override that suits the hub and breaks a generated project —
+  `@smithy/core` pinned below 3.29.0 boots the API and then kills it on
+  `makeBuilder is not a function`.
+- A script `ci.yml` or the Dockerfile calls that `apps/api` never defined
+  (`copy:core-assets`, `build:docker`).
 
 CI checks out this repository and never runs `hedhog new`, so none of them are
-covered there.
+covered there. The admin is the blind spot worth naming: nothing else compiles
+the Next app — `turbo run test` only runs vitest — so the smoke test's
+`next build` step is the only gate that resolves its imports. It caught four of
+the defects above the first time it ran.
+
+The rules a hub change must respect to avoid producing these is written down on
+the other side, in `docs/contrato-do-bootstrap.md` of the working project.
 
 ## Keeping the manifest honest
 
