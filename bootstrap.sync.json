@@ -73,6 +73,7 @@
     ".easignore",
     "apps/api/src/observability/**",
     "apps/api/src/instrument.ts",
+    "apps/admin/src/instrumentation-client.ts",
     "apps/api/src/filters/*.sentry.spec.ts",
     "docs/sentry.md",
     "apps/api/src/legacy/**",
