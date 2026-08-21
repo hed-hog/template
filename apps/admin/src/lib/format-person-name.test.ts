@@ -63,7 +63,7 @@ describe('formatPersonName', () => {
   });
 
   it('não recaixa e-mail gravado no campo nome', () => {
-    expect(formatPersonName('joao@hcode.com.br')).toBe('joao@hcode.com.br');
+    expect(formatPersonName('joao@example.com')).toBe('joao@example.com');
   });
 
   it('normaliza espaços mesmo sem recaixar', () => {

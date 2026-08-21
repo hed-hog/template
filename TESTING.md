@@ -13,7 +13,7 @@ docker compose up -d postgres redis
 
 ### 2. Configurar .env (apps/api/.env)
 ```env
-DATABASE_URL=postgresql://hub:changeme@localhost:5444/hub
+DATABASE_URL=postgresql://hedhog:changeme@localhost:5432/hedhog
 JWT_SECRET=ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
 JWT_EXPIRES_IN=7d
 PEPPER=QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==
@@ -21,7 +21,8 @@ ENCRYPTION_SECRET=RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
 CORS_ALLOWED_ORIGINS=http://localhost:3200
 ```
 
-(Usuário/porta/banco vêm do `docker-compose.yaml`: `hub` / `5444` / `hub`.)
+(Usuário/porta/banco são os que você informou ao `hedhog new` — o CLI gera o
+`docker-compose.yaml` do projeto com esses valores.)
 
 ### 3. Gerar Prisma Client e aplicar migrations
 ```powershell

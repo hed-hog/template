@@ -83,7 +83,7 @@ jest.config.d.ts.map
 infra/digitalocean/do-k8s/Temp/
 
 # Manifests do cluster que carregam credencial real no corpo. Ficam só no disco;
-# o valor vivo está no cluster (`kubectl get secret <nome> -n hcode -o yaml`).
+# o valor vivo está no cluster (`kubectl get secret <nome> -n <namespace> -o yaml`).
 infra/digitalocean/do-k8s/helm/postgresql/secret.yaml
 infra/digitalocean/do-k8s/k8s/secret-authelia.yaml
 infra/digitalocean/do-k8s/k8s/secret-hedhog-new-auth.yaml

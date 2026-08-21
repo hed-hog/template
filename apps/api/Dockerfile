@@ -72,7 +72,7 @@ RUN NODE_ENV=production \
 # .js; e ele que casa o stack trace de producao com o mapa guardado no Sentry,
 # sem embarcar nenhum .map no runtime.
 ARG SENTRY_RELEASE
-ARG SENTRY_ORG=hcode-3o
+ARG SENTRY_ORG=
 ARG SENTRY_PROJECT=api
 # O token entra por mount, nunca por ARG/ENV: ARG fica visivel no `docker
 # history` e ENV fica gravado na camada exportada para o cache do GitHub

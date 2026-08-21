@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import { isPublicAssetUrl, resolveBrandAssetUrl } from './brand-asset';
 
 const BASES = {
-  appBaseUrl: 'https://hub.hcode.com.br',
+  appBaseUrl: 'https://admin.example.com',
   apiBaseUrl: 'https://hub-api.hcode.com.br',
 };
 
@@ -11,7 +11,7 @@ describe('resolveBrandAssetUrl', () => {
     // Este e o bug original: `/logo.svg` e servido pelo Next do admin, mas era
     // resolvido contra a base da API - que nem serve estaticos.
     expect(resolveBrandAssetUrl('/logo.svg', BASES)).toBe(
-      'https://hub.hcode.com.br/logo.svg',
+      'https://admin.example.com/logo.svg',
     );
   });
 
@@ -29,23 +29,23 @@ describe('resolveBrandAssetUrl', () => {
 
   it('nao confunde `/api` com um nome que apenas comeca com "api"', () => {
     expect(resolveBrandAssetUrl('/apifoo.png', BASES)).toBe(
-      'https://hub.hcode.com.br/apifoo.png',
+      'https://admin.example.com/apifoo.png',
     );
   });
 
   it('normaliza caminho sem barra inicial', () => {
     expect(resolveBrandAssetUrl('logo.svg', BASES)).toBe(
-      'https://hub.hcode.com.br/logo.svg',
+      'https://admin.example.com/logo.svg',
     );
   });
 
   it('remove barras finais da base', () => {
     expect(
       resolveBrandAssetUrl('/logo.svg', {
-        appBaseUrl: 'https://hub.hcode.com.br///',
+        appBaseUrl: 'https://admin.example.com///',
         apiBaseUrl: '',
       }),
-    ).toBe('https://hub.hcode.com.br/logo.svg');
+    ).toBe('https://admin.example.com/logo.svg');
   });
 
   it('cai na outra base quando a preferencial esta vazia', () => {
@@ -104,13 +104,13 @@ describe('isPublicAssetUrl', () => {
   });
 
   it('aceita host publico e data URI de imagem', () => {
-    expect(isPublicAssetUrl('https://hub.hcode.com.br/logo.svg')).toBe(true);
-    expect(isPublicAssetUrl('http://hub.hcode.com.br/logo.svg')).toBe(true);
+    expect(isPublicAssetUrl('https://admin.example.com/logo.svg')).toBe(true);
+    expect(isPublicAssetUrl('http://admin.example.com/logo.svg')).toBe(true);
     expect(isPublicAssetUrl('data:image/png;base64,abc')).toBe(true);
   });
 
   it('nao se confunde com credenciais na URL', () => {
     expect(isPublicAssetUrl('https://user@localhost/x.png')).toBe(false);
-    expect(isPublicAssetUrl('https://user@hub.hcode.com.br/x.png')).toBe(true);
+    expect(isPublicAssetUrl('https://user@admin.example.com/x.png')).toBe(true);
   });
 });

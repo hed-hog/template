@@ -1247,7 +1247,7 @@ const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
       labelKey: 'fieldNamespace',
       type: 'text',
       required: false,
-      placeholder: 'hcode',
+      placeholder: 'my-namespace',
     },
   ],
 };
@@ -1520,7 +1520,7 @@ export function IntegrationProfileSheet({
    * Provisiona (idempotente) o webhook que recebe os eventos de entrega do SES e
    * traz a URL pública para o admin assinar no tópico SNS.
    *
-   * Sem essa assinatura o Hub só sabe que o provedor aceitou a mensagem — foi
+   * Sem essa assinatura a aplicação só sabe que o provedor aceitou a mensagem — foi
    * exatamente essa cegueira que deixou três e-mails "enviados com sucesso" sem
    * nunca chegarem a caixa nenhuma.
    */

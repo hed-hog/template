@@ -44,7 +44,7 @@ When you run `hedhog add <library-name>`, the CLI:
 
 The **table YAML** defines the DDL (`CREATE TABLE`, indexes, FK constraints, triggers). The **data YAML** defines the seed DML (`INSERT` statements). Both file types are matched to each other by their file name (without extension).
 
-Repository policy for `hub`: do not run `hedhog dev apply` or commands that reset/recreate the project, database, schema, or existing migrations. When YAML structure or seed data changes in this repository, add a new SQL migration under `apps/api/prisma/migrations/` that mirrors the YAML change and preserves existing migration history for production updates.
+Repository policy: do not run `hedhog dev apply` or commands that reset/recreate the project, database, schema, or existing migrations. When YAML structure or seed data changes in this repository, add a new SQL migration under `apps/api/prisma/migrations/` that mirrors the YAML change and preserves existing migration history for production updates.
 
 ---
 

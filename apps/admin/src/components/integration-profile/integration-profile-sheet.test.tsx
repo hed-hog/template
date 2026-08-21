@@ -1427,7 +1427,7 @@ describe('IntegrationProfileSheet — providers de vídeo e pagamento', () => {
       target: { value: 'Play' },
     });
     fireEvent.change(screen.getByLabelText(/fieldPackageName/), {
-      target: { value: 'com.hcode.classapp' },
+      target: { value: 'com.example.app' },
     });
     fireEvent.change(screen.getByLabelText(/fieldClientEmail/), {
       target: { value: 'sa@projeto.iam.gserviceaccount.com' },
@@ -1443,7 +1443,7 @@ describe('IntegrationProfileSheet — providers de vídeo e pagamento', () => {
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('createSuccess'));
     expect(receivedBody.config).toMatchObject({
-      package_name: 'com.hcode.classapp',
+      package_name: 'com.example.app',
       client_email: 'sa@projeto.iam.gserviceaccount.com',
       private_key: '-----BEGIN PRIVATE KEY-----',
     });

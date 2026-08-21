@@ -25,9 +25,9 @@ Out of scope:
 
 ---
 
-## Hub migration policy
+## Migration policy
 
-- Never run `hedhog dev apply` in this `hub` repository.
+- Never run `hedhog dev apply` in this repository.
 - Never run commands that reset/recreate the project, database, schema, or existing migrations.
 - Do not delete, overwrite, or regenerate existing migrations; they must remain intact for production database updates.
 - Any change to `libraries/*/hedhog/table/*.yaml` or `libraries/*/hedhog/data/*.yaml` must be paired with a new SQL migration under `apps/api/prisma/migrations` that mirrors the YAML change.

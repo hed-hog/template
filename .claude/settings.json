@@ -12,25 +12,6 @@
             "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));const p=d.tool_input&&(d.tool_input.file_path||'');if(/apps[\\\\/]admin[\\\\/]src[\\\\/]app[\\\\/]\\(app\\)[\\\\/]\\(libraries\\)|apps[\\\\/]admin[\\\\/]messages/.test(p)){process.stderr.write('REMINDER: You edited a file under apps/admin/(libraries) or apps/admin/messages. Run hedhog dev assets-to-library <library> before finishing.\\n');}\""
           }
         ]
-      },
-      {
-        "matcher": "mcp__hub__operations_tasks_(create|update|delete)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/hub-task-state.mjs\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/hub-task-guard.mjs\""
-          }
-        ]
       }
     ]
   }

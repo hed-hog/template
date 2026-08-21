@@ -27,13 +27,13 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: hub
+          POSTGRES_USER: hedhog
           POSTGRES_PASSWORD: changeme
-          POSTGRES_DB: hub
+          POSTGRES_DB: hedhog
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U hub"
+          --health-cmd "pg_isready -U hedhog"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -49,7 +49,7 @@ jobs:
 
     env:
       # Segredos de teste (não-produção) — espelham ci.yml/TESTING.md.
-      DATABASE_URL: postgresql://hub:changeme@localhost:5432/hub
+      DATABASE_URL: postgresql://hedhog:changeme@localhost:5432/hedhog
       JWT_SECRET: ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
       JWT_EXPIRES_IN: 7d
       PEPPER: QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==

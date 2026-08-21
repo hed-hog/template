@@ -179,7 +179,7 @@ See [DOCKER-QUICKSTART.md](./DOCKER-QUICKSTART.md) for complete guide.
 
 ### Kubernetes
 
-Helm charts available in `helm/hub/`.
+Helm charts live under `helm/`.
 
 ### Cloud Platforms
 

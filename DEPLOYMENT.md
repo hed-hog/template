@@ -28,7 +28,7 @@ doctl kubernetes cluster kubeconfig save 05c7d4fa-4bc2-4dbf-80b6-757ecec43bff
 
 ```bash
 # Verify the namespace exists
-kubectl get namespace hcode
+kubectl get namespace <namespace>
 ```
 
 ### 3. Configure GitHub Secrets
@@ -76,9 +76,9 @@ The GitHub Actions workflow will automatically:
 #### Option 1: Apply cluster config manually (same as workflow)
 
 ```bash
-kubectl create namespace hcode --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply -f k8s/api/ -n hcode
-kubectl apply -f k8s/admin/ -n hcode
+kubectl create namespace <namespace> --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f k8s/api/ -n <namespace>
+kubectl apply -f k8s/admin/ -n <namespace>
 ```
 
 #### Additional infrastructure services
@@ -87,7 +87,7 @@ The production database is **not** deployed by the workflow. Its source of truth
 `infra/digitalocean/do-k8s/helm/postgresql/stateful-hub.yaml`, applied by hand:
 
 ```bash
-kubectl --context do-nyc3-hcode apply -f infra/digitalocean/do-k8s/helm/postgresql/stateful-hub.yaml
+kubectl --context <kube-context> apply -f infra/digitalocean/do-k8s/helm/postgresql/stateful.yaml
 ```
 
 > Editing the StatefulSet template recreates `postgresql-hub-0` — expect ~30-60s of
@@ -102,23 +102,23 @@ kubectl --context do-nyc3-hcode apply -f infra/digitalocean/do-k8s/helm/postgres
 #### Option 2: Build and deploy application images
 
 ```bash
-docker build -t hcode/hub-api:latest -f apps/api/Dockerfile .
-docker push hcode/hub-api:latest
-kubectl set image deployment/hub-api hub-api=hcode/hub-api:latest -n hcode
-kubectl rollout status deployment/hub-api -n hcode
+docker build -t <registry>/<app>-api:latest -f apps/api/Dockerfile .
+docker push <registry>/<app>-api:latest
+kubectl set image deployment/<app>-api <app>-api=<registry>/<app>-api:latest -n <namespace>
+kubectl rollout status deployment/<app>-api -n <namespace>
 
-docker build -t hcode/hub-admin:latest \
-  --build-arg NEXT_PUBLIC_API_BASE_URL=https://hub-api.hcode.com.br \
-  --build-arg INTERNAL_API_URL=http://hub-api:3100 \
+docker build -t <registry>/<app>-admin:latest \
+  --build-arg NEXT_PUBLIC_API_BASE_URL=https://api.<your-domain> \
+  --build-arg INTERNAL_API_URL=http://<app>-api:3100 \
   -f apps/admin/Dockerfile .
-docker push hcode/hub-admin:latest
-kubectl create configmap hub-admin-config \
-  -n hcode \
-  --from-literal=NEXT_PUBLIC_API_BASE_URL='https://hub-api.hcode.com.br' \
-  --from-literal=INTERNAL_API_URL='http://hub-api:3100' \
+docker push <registry>/<app>-admin:latest
+kubectl create configmap <app>-admin-config \
+  -n <namespace> \
+  --from-literal=NEXT_PUBLIC_API_BASE_URL='https://api.<your-domain>' \
+  --from-literal=INTERNAL_API_URL='http://<app>-api:3100' \
   --dry-run=client -o yaml | kubectl apply -f -
-kubectl set image deployment/hub-admin hub-admin=hcode/hub-admin:latest -n hcode
-kubectl rollout status deployment/hub-admin -n hcode
+kubectl set image deployment/<app>-admin <app>-admin=<registry>/<app>-admin:latest -n <namespace>
+kubectl rollout status deployment/<app>-admin -n <namespace>
 ```
 
 ## Monitoring
@@ -127,37 +127,37 @@ kubectl rollout status deployment/hub-admin -n hcode
 
 ```bash
 # Check pods
-kubectl get pods -n hcode
+kubectl get pods -n <namespace>
 
 # Check deployments
-kubectl get deployments -n hcode
+kubectl get deployments -n <namespace>
 
 # Check services
-kubectl get services -n hcode
+kubectl get services -n <namespace>
 
 # View logs
-kubectl logs -f deployment/hub-api -n hcode
-kubectl logs -f deployment/hub-admin -n hcode
+kubectl logs -f deployment/<app>-api -n <namespace>
+kubectl logs -f deployment/<app>-admin -n <namespace>
 ```
 
 ### Scaling
 
 ```bash
 # Scale a deployment
-kubectl scale deployment/hub-api --replicas=3 -n hcode
-kubectl scale deployment/hub-admin --replicas=3 -n hcode
+kubectl scale deployment/<app>-api --replicas=3 -n <namespace>
+kubectl scale deployment/<app>-admin --replicas=3 -n <namespace>
 ```
 
 ## Rollback
 
 ```bash
 # View rollout history
-kubectl rollout history deployment/hub-api -n hcode
-kubectl rollout history deployment/hub-admin -n hcode
+kubectl rollout history deployment/<app>-api -n <namespace>
+kubectl rollout history deployment/<app>-admin -n <namespace>
 
 # Rollback to previous version
-kubectl rollout undo deployment/hub-api -n hcode
-kubectl rollout undo deployment/hub-admin -n hcode
+kubectl rollout undo deployment/<app>-api -n <namespace>
+kubectl rollout undo deployment/<app>-admin -n <namespace>
 ```
 
 ## Troubleshooting
@@ -165,26 +165,26 @@ kubectl rollout undo deployment/hub-admin -n hcode
 ### View Pod Events
 
 ```bash
-kubectl describe pod <pod-name> -n hcode
+kubectl describe pod <pod-name> -n <namespace>
 ```
 
 ### View Cluster Events
 
 ```bash
-kubectl get events -n hcode --sort-by='.lastTimestamp'
+kubectl get events -n <namespace> --sort-by='.lastTimestamp'
 ```
 
 ### Access Pod Shell
 
 ```bash
-kubectl exec -it deployment/hub-api -n hcode -- /bin/sh
-kubectl exec -it deployment/hub-admin -n hcode -- /bin/sh
+kubectl exec -it deployment/<app>-api -n <namespace> -- /bin/sh
+kubectl exec -it deployment/<app>-admin -n <namespace> -- /bin/sh
 ```
 
 ## URLs
 
-- **Admin Panel:** https://hub.hcode.com.br
-- **API:** https://api.hub.hcode.com.br
+- **Admin Panel:** https://admin.<your-domain>
+- **API:** https://api.<your-domain>
 
 
 ## Further Reading

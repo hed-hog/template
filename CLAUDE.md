@@ -17,7 +17,7 @@ Package manager: **pnpm**. Build tool: **Turborepo**. Database: **PostgreSQL via
 ### Database and Prisma
 
 - Never manually edit `apps/api/prisma/schema.prisma`.
-- Never run `hedhog dev apply` in this `hub` repository.
+- Never run `hedhog dev apply` in this repository.
 - Never run commands that reset/recreate the project, database, schema, or existing migrations.
 - Do not delete, overwrite, or regenerate existing migrations; they must remain intact for production database updates.
 - For changes in `libraries/*/hedhog/table/*.yaml` or `libraries/*/hedhog/data/*.yaml`, create a new SQL migration under `apps/api/prisma/migrations` that mirrors the YAML change.
@@ -54,32 +54,6 @@ When backend endpoints change (URL, method, auth/roles, or removal), keep these 
 - `libraries/*/hedhog/data/role.yaml`
 
 Always include `admin` and the library-specific admin role, for example `admin-finance`.
-
-### Hub Task Tracking
-
-Code changes made through Claude Code are registered as tasks in Operations on the production Hub.
-The `hub-task` skill (`.claude/skills/hub-task/`) opens the task before the work starts and closes it
-after the commit; a `Stop` hook keeps the session from ending with an open task.
-
-One-time setup per developer (the token is personal and never committed):
-
-1. Create an **MCP** token at `https://hub.hcode.com.br/core/account/tokens`.
-2. Put it in `.claude/settings.local.json` (git-ignored):
-
-   ```json
-   {
-     "env": { "HUB_MCP_TOKEN": "hedhog_mcp_..." },
-     "enabledMcpjsonServers": ["hub"]
-   }
-   ```
-
-3. Restart Claude Code — MCP servers, skills, and hooks are all read at session start, so already
-   running sessions only pick this up after a restart (`claude --continue` resumes the same
-   conversation, `claude --resume` picks an older one).
-
-Check it with `claude mcp list` (`hub: ... ✔ Connected`). The API host is `hub-api.hcode.com.br`;
-`hub.hcode.com.br` serves the admin UI only. Without `HUB_MCP_TOKEN` the server just fails to connect
-and everything else keeps working — the skill reports it once and does not block the requested change.
 
 ## Admin Frontend Standards
 

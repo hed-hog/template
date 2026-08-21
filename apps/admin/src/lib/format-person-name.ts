@@ -65,7 +65,7 @@ export function formatPersonName(value: unknown): string {
   if (collapsed === '') return collapsed;
 
   // Fallbacks do backend gravam e-mail no campo nome; recaixar transformaria
-  // "joao@hcode.com.br" em "Joao@hcode.com.br", pior que o problema original.
+  // "joao@example.com" em "Joao@example.com", pior que o problema original.
   if (collapsed.includes('@')) return collapsed;
   if (!LETTER.test(collapsed)) return collapsed;
 

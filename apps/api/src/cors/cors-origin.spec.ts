@@ -12,11 +12,11 @@ import {
 describe('cors-origin', () => {
   describe('normalizeOrigin', () => {
     it('lowercases and strips trailing slashes/quotes', () => {
-      expect(normalizeOrigin('https://Class.HCODE.com.br/')).toBe(
-        'https://class.hcode.com.br'
+      expect(normalizeOrigin('https://App.EXAMPLE.com/')).toBe(
+        'https://app.example.com'
       );
-      expect(normalizeOrigin('"https://hub.hcode.com.br"')).toBe(
-        'https://hub.hcode.com.br'
+      expect(normalizeOrigin('"https://admin.example.com"')).toBe(
+        'https://admin.example.com'
       );
     });
 
@@ -28,19 +28,19 @@ describe('cors-origin', () => {
 
   describe('normalizeDomain', () => {
     it('strips scheme, path and trailing dots', () => {
-      expect(normalizeDomain('https://hcode.com.br/')).toBe('hcode.com.br');
-      expect(normalizeDomain('HCODE.TRAINING.')).toBe('hcode.training');
+      expect(normalizeDomain('https://example.com/')).toBe('example.com');
+      expect(normalizeDomain('APP.EXAMPLE.COM.')).toBe('app.example.com');
     });
   });
 
   describe('getCorsOrigins / getCorsDomains', () => {
     it('parses comma/semicolon/newline separated lists', () => {
       expect(
-        getCorsOrigins('https://hub.hcode.com.br, https://hcode.training')
-      ).toEqual(['https://hub.hcode.com.br', 'https://hcode.training']);
-      expect(getCorsDomains('hcode.com.br;hcode.training')).toEqual([
+        getCorsOrigins('https://admin.example.com, https://app.example.com')
+      ).toEqual(['https://admin.example.com', 'https://app.example.com']);
+      expect(getCorsDomains('hcode.com.br;app.example.com')).toEqual([
         'hcode.com.br',
-        'hcode.training',
+        'app.example.com',
       ]);
     });
 
@@ -73,7 +73,7 @@ describe('cors-origin', () => {
   describe('isCorsOriginAllowed', () => {
     const allowed = {
       origins: ['http://localhost:3200'],
-      domains: ['hcode.com.br', 'hcode.training'],
+      domains: ['hcode.com.br', 'app.example.com'],
     };
 
     it('allows an exact configured origin', () => {
@@ -82,7 +82,7 @@ describe('cors-origin', () => {
 
     it('allows any subdomain of a trusted base domain', () => {
       expect(
-        isCorsOriginAllowed('https://class.hcode.com.br', allowed)
+        isCorsOriginAllowed('https://app.example.com', allowed)
       ).toBe(true);
       expect(
         isCorsOriginAllowed('https://partners.hcode.com.br', allowed)
@@ -90,7 +90,7 @@ describe('cors-origin', () => {
       expect(isCorsOriginAllowed('https://hedhog.hcode.com.br', allowed)).toBe(
         true
       );
-      expect(isCorsOriginAllowed('https://hcode.training', allowed)).toBe(true);
+      expect(isCorsOriginAllowed('https://app.example.com', allowed)).toBe(true);
     });
 
     it('rejects untrusted and lookalike origins', () => {
@@ -109,12 +109,12 @@ describe('cors-origin', () => {
     });
 
     it('falls back to exact origins when no domains are configured', () => {
-      const onlyOrigins = { origins: ['https://hub.hcode.com.br'] };
+      const onlyOrigins = { origins: ['https://admin.example.com'] };
       expect(
-        isCorsOriginAllowed('https://hub.hcode.com.br', onlyOrigins)
+        isCorsOriginAllowed('https://admin.example.com', onlyOrigins)
       ).toBe(true);
       expect(
-        isCorsOriginAllowed('https://class.hcode.com.br', onlyOrigins)
+        isCorsOriginAllowed('https://app.example.com', onlyOrigins)
       ).toBe(false);
     });
 
