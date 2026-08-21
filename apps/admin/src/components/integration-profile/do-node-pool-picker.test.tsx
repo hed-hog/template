@@ -142,7 +142,7 @@ describe('DoNodePoolPicker', () => {
     );
     await waitFor(() => expect(resolveRequest).not.toBeNull());
 
-    resolveRequest?.();
+    (resolveRequest as (() => void) | null)?.();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'nodePoolLoad' })).toBeInTheDocument(),
     );

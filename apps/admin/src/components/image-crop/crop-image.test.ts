@@ -29,7 +29,6 @@ class FakeImageBase {
 function mockImageSuccess() {
   class FakeImage extends FakeImageBase {
     set src(value: string) {
-      // @ts-expect-error accessing base setter via super is awkward with class fields
       super.src = value;
       setTimeout(() => this.emit('load'), 0);
     }
@@ -44,7 +43,6 @@ function mockImageSuccess() {
 function mockImageError() {
   class FakeImage extends FakeImageBase {
     set src(value: string) {
-      // @ts-expect-error accessing base setter via super is awkward with class fields
       super.src = value;
       setTimeout(() => this.emit('error', new Error('load failed')), 0);
     }

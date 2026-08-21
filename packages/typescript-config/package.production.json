@@ -12,7 +12,6 @@
     "noFallthroughCasesInSwitch": false,
     "removeComments": true,
     "strictBindCallApply": false,
-    "baseUrl": ".",
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
@@ -46,9 +45,7 @@
       "@hed-hog/api-prisma": ["../../packages/api-prisma/dist"],
       "@hed-hog/api-prisma/*": ["../../packages/api-prisma/dist/*"],
       "@hed-hog/api-healthy": ["../../packages/api-healthy/dist"],
-      "@hed-hog/api-healthy/*": ["../../packages/api-healthy/dist/*"],
-      "@hed-hog/core": ["../../libraries/core/dist"],
-      "@hed-hog/core/*": ["../../libraries/core/dist/*"]
+      "@hed-hog/api-healthy/*": ["../../packages/api-healthy/dist/*"]
     }
   }
 }

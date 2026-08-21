@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import {
   BrowserIcon,
@@ -65,10 +65,18 @@ describe('OsIcon', () => {
   });
 });
 
+// The flag subset is loaded with a dynamic `import()`, so the first paint is
+// always the emoji span and the `<svg>` only replaces it on a later tick.
 describe('CountryFlag', () => {
-  it('renderiza o ícone colorido para um código válido conhecido', () => {
-    const { container } = render(<CountryFlag code="br" />);
-    expect(container.querySelector('svg')).toBeInTheDocument();
+  it('mostra o emoji de imediato e troca pelo ícone colorido quando o chunk chega', async () => {
+    const { container } = render(<CountryFlag code="br" className="flag" />);
+    expect(container.querySelector('span.flag')).toBeInTheDocument();
+    // O chunk dinâmico tem 1,9 MB; sob carga da suíte completa, o import()
+    // demora mais que o timeout padrão de 1s do waitFor.
+    await waitFor(
+      () => expect(container.querySelector('svg.flag')).toBeInTheDocument(),
+      { timeout: 5000 }
+    );
   });
 
   it('retorna nulo para código nulo', () => {
@@ -81,22 +89,31 @@ describe('CountryFlag', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('usa altura customizada e width padrão calculado', () => {
+  it('usa altura customizada e width padrão calculado', async () => {
     const { container } = render(<CountryFlag code="us" width={40} className="flag" />);
-    const svg = container.querySelector('svg.flag');
-    expect(svg).toBeInTheDocument();
+    await waitFor(
+      () => expect(container.querySelector('svg.flag')).toBeInTheDocument(),
+      { timeout: 5000 }
+    );
+    expect(container.querySelector('svg.flag')).toHaveAttribute('height', '30');
   });
 
-  it('usa height explícito quando fornecido', () => {
+  it('usa height explícito quando fornecido', async () => {
     const { container } = render(<CountryFlag code="us" width={40} height={50} />);
-    expect(container.querySelector('svg')).toBeInTheDocument();
+    await waitFor(
+      () => expect(container.querySelector('svg')).toBeInTheDocument(),
+      { timeout: 5000 }
+    );
+    expect(container.querySelector('svg')).toHaveAttribute('height', '50');
   });
 
-  it('cai no emoji quando o código não está no set de ícones', () => {
-    const { container } = render(<CountryFlag code="zz" className="emoji-flag" />);
-    // "zz" is not a valid ISO country in the flag icon set → falls back to emoji span
-    const span = container.querySelector('span.emoji-flag');
+  it('permanece no emoji quando o código não está no set de ícones', async () => {
+    render(<CountryFlag code="zz" className="emoji-flag" />);
+    // "zz" não é um ISO válido no set de bandeiras: o upgrade nunca acontece.
+    const span = document.querySelector('span.emoji-flag');
     expect(span).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('img')).not.toBeInTheDocument());
+    expect(document.querySelector('svg')).not.toBeInTheDocument();
   });
 });
 

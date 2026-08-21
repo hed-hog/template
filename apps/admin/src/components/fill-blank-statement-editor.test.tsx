@@ -34,7 +34,7 @@ describe('FillBlankStatementEditor', () => {
     // position (0) marked, so the first word becomes the new blank marker.
     fireEvent.change(textarea, { target: { value: 'novo texto' } });
     expect(onChange).toHaveBeenCalled();
-    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.statement).toBe('[[1]] texto');
     expect(lastCall.blanks).toEqual([{ answer: 'novo', alternatives: [] }]);
   });
@@ -51,13 +51,13 @@ describe('FillBlankStatementEditor', () => {
     );
     // Mark the 3rd word ("tres", index 2) as a blank.
     fireEvent.click(screen.getByText('tres'));
-    let lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    let lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.blanks).toEqual([{ answer: 'tres', alternatives: [] }]);
 
     // Shrinking to a single word drops word index 2 — the blank is discarded.
     const textarea = screen.getByPlaceholderText('Digite a frase completa…');
     fireEvent.change(textarea, { target: { value: 'oi' } });
-    lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.statement).toBe('oi');
     expect(lastCall.blanks).toEqual([]);
   });
@@ -75,14 +75,14 @@ describe('FillBlankStatementEditor', () => {
     const wordButton = screen.getByText('gato');
     fireEvent.click(wordButton);
     expect(onChange).toHaveBeenCalled();
-    let lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    let lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.statement).toContain('[[1]]');
     expect(lastCall.blanks).toEqual([{ answer: 'gato', alternatives: [] }]);
 
     expect(screen.getByText('Lacuna 1')).toBeInTheDocument();
     // Remove the blank via the X button in the blanks list.
     fireEvent.click(screen.getByLabelText('Remover lacuna'));
-    lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.blanks).toEqual([]);
   });
 
@@ -101,7 +101,7 @@ describe('FillBlankStatementEditor', () => {
       'Outras respostas aceitas (separadas por vírgula)',
     );
     fireEvent.change(altInput, { target: { value: 'felino, bichano' } });
-    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.blanks[0].alternatives).toEqual(['felino', 'bichano']);
   });
 
@@ -139,8 +139,8 @@ describe('FillBlankStatementEditor', () => {
     fireEvent.keyDown(input, { key: 'a' });
 
     const removeButtons = screen.getAllByLabelText('Remover palavra');
-    fireEvent.click(removeButtons[0]);
-    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    fireEvent.click(removeButtons[0]!);
+    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(lastCall.extraWords).not.toContain('mundo');
   });
 

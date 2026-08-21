@@ -2,13 +2,13 @@ import { describe, expect, it, beforeAll } from '@jest/globals';
 import request from 'supertest';
 
 /**
- * E2E security tests against a live server (API_URL). Validate the real
- * hardening wiring (helmet, role-based authz). Part of the E2E suite
- * (ci-e2e.yml) — require a server + seeded database.
+ * Testes E2E de segurança contra um servidor vivo (API_URL). Validam o wiring
+ * real do hardening (helmet, authz por role). Fazem parte da suíte E2E
+ * (ci-e2e.yml) — precisam de servidor + banco semeado.
  *
- * Future coverage (requires a multi-role/multi-tenant fixture): full role-based
- * authorization matrix driven by route.yaml and tenant isolation / IDOR
- * (resolveEnterpriseId). See docs/testing.md §Roadmap.
+ * Cobertura futura (requer fixture multi-role/multi-tenant): matriz completa de
+ * autorização por role dirigida pelo route.yaml e isolamento de tenant / IDOR
+ * (resolveEnterpriseId). Ver docs/testing.md §Roadmap.
  */
 const BASE_URL = process.env.API_URL || 'http://localhost:3100';
 
@@ -31,7 +31,7 @@ describe('Security (e2e)', () => {
     }
   });
 
-  it('applies helmet security headers to responses', async () => {
+  it('aplica headers de segurança do helmet nas respostas', async () => {
     const res = await request(BASE_URL).get('/health').timeout({ deadline: 8000 });
 
     expect(res.headers['x-content-type-options']).toBe('nosniff');
@@ -39,9 +39,9 @@ describe('Security (e2e)', () => {
     expect(res.headers['x-powered-by']).toBeUndefined();
   });
 
-  it('allows the admin (root) to access a protected admin endpoint', async () => {
+  it('permite ao admin (root) acessar um endpoint protegido de admin', async () => {
     if (!rootToken) {
-      console.warn('\n  [security] no root token — skipping positive authz.');
+      console.warn('\n  [security] sem token root — pulando authz positivo.');
       return;
     }
 
@@ -50,17 +50,17 @@ describe('Security (e2e)', () => {
       .set('Authorization', `Bearer ${rootToken}`)
       .timeout({ deadline: 8000 });
 
-    // 404 → route not active in this API version; not an authz failure.
+    // 404 → rota não ativa nesta versão da API; não é falha de authz.
     if (res.status === 404) {
-      console.warn('\n  [security] GET /user inactive — skipping positive authz.');
+      console.warn('\n  [security] GET /user inativo — pulando authz positivo.');
       return;
     }
     expect(res.status).toBe(200);
   });
 
-  it('denies a user without admin role access to an admin endpoint (403)', async () => {
-    // Creates a regular user via signup; if the flow requires verification and
-    // does not return a token, the test is skipped (full coverage requires a fixture).
+  it('nega a um usuário sem role de admin um endpoint de admin (403)', async () => {
+    // Cria um usuário comum via signup; se o fluxo exigir verificação e não
+    // devolver token, o teste é pulado (a cobertura completa exige fixture).
     const email = `e2e-authz-${Date.now()}@example.com`;
     let userToken: string | null = null;
     try {
@@ -76,7 +76,7 @@ describe('Security (e2e)', () => {
 
     if (!userToken) {
       console.warn(
-        '\n  [security] signup did not return a token (verification required?) — skipping negative authz.',
+        '\n  [security] signup não retornou token (verificação exigida?) — pulando authz negativo.',
       );
       return;
     }

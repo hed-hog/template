@@ -7,6 +7,7 @@ import {
   buildAdminApiUrl,
   fetchAdminApiJson,
   getAdminApiBaseUrl,
+  getPublicApiBaseUrl,
   isRetryableAdminApiError,
 } from './admin-api';
 
@@ -37,6 +38,20 @@ describe('admin-api', () => {
     process.env.NEXT_PUBLIC_API_BASE_URL = '/api';
 
     expect(getAdminApiBaseUrl()).toBe('http://localhost:3100');
+  });
+
+  it('getPublicApiBaseUrl prefere a URL pública sobre o Service interno', () => {
+    process.env.INTERNAL_API_URL = 'http://hub-api:3100';
+    process.env.NEXT_PUBLIC_API_BASE_URL = 'https://public.example.com/api';
+
+    expect(getPublicApiBaseUrl()).toBe('https://public.example.com');
+  });
+
+  it('getPublicApiBaseUrl cai no interno quando a pública é relativa', () => {
+    process.env.INTERNAL_API_URL = 'http://hub-api:3100';
+    process.env.NEXT_PUBLIC_API_BASE_URL = '/api';
+
+    expect(getPublicApiBaseUrl()).toBe('http://hub-api:3100');
   });
 
   it('monta URL absoluta a partir do path informado', () => {

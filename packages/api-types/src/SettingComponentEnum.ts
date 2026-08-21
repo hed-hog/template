@@ -12,4 +12,6 @@ export enum SettingComponentEnum {
   SWITCH = 'switch',
   CHECKBOX = 'checkbox',
   ENTITY_PICKER = 'entity-picker',
+  /** Read-only navigation shortcut. The value is an internal href. */
+  LINK = 'link',
 }

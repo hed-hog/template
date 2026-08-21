@@ -1,4 +1,5 @@
 'use client';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -279,19 +280,23 @@ export function LoginPage() {
 
     try {
       const { startAuthentication } = await import('@simplewebauthn/browser');
-      const optionsResponse = await request<
-        Parameters<typeof startAuthentication>[0]
-      >({
-        url: '/auth/webauthn/generate',
-        method: 'POST',
-        data: { mfaToken: pendingMfa.mfaToken },
-      });
+      // O endpoint devolve as options cruas; quem embrulha em `optionsJSON` é a
+      // chamada abaixo, conforme a API do @simplewebauthn/browser v13.
+      const optionsResponse = await request<PublicKeyCredentialRequestOptionsJSON>(
+        {
+          url: '/auth/webauthn/generate',
+          method: 'POST',
+          data: { mfaToken: pendingMfa.mfaToken },
+        }
+      );
 
       if (!optionsResponse.data) {
         throw new Error(t('securityKeyUnavailable'));
       }
 
-      const assertion = await startAuthentication(optionsResponse.data);
+      const assertion = await startAuthentication({
+        optionsJSON: optionsResponse.data,
+      });
       const verifyResponse = await request<{
         accessToken: string;
         refreshToken?: string;
@@ -412,6 +417,28 @@ export function LoginPage() {
     setLoading(true);
     // OAuth redirect is handled by the <Link href> wrapping the button
   };
+
+  // Auto-start a social provider when the URL carries `?provider=<id>` (e.g. a
+  // mobile app opened /auth/authorize with a provider hint, which forwarded it
+  // here). Only fires for an enabled provider, once, and mirrors what clicking
+  // that provider's button does. Reads the query directly to avoid needing a
+  // Suspense boundary around useSearchParams.
+  const autoProviderStartedRef = useRef(false);
+  useEffect(() => {
+    if (!isHydrated || autoProviderStartedRef.current) return;
+    if (typeof window === 'undefined') return;
+
+    const providerHint = new URLSearchParams(window.location.search).get('provider');
+    if (!providerHint) return;
+
+    const match = providers.find((p) => String(p.id) === providerHint);
+    if (!match) return;
+
+    autoProviderStartedRef.current = true;
+    setLoadingProviderId(String(match.id));
+    setLoading(true);
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth/${normalizeIntegrationProvider(String(match.id))}/login`;
+  }, [isHydrated, providers]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background transition-colors">

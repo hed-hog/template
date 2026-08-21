@@ -20,15 +20,15 @@ Make sure you have the following tools installed:
 doctl auth init
 
 # Get your cluster kubeconfig
-# Tip: use your cluster UUID as K8S_CLUSTER_ID
-doctl kubernetes cluster kubeconfig save <your-cluster-uuid>
+# Tip: use your cluster UUID as K8S_CLUSTER_ID (example: 05c7d4fa-4bc2-4dbf-80b6-757ecec43bff)
+doctl kubernetes cluster kubeconfig save 05c7d4fa-4bc2-4dbf-80b6-757ecec43bff
 ```
 
 ### 2. Verify Namespace
 
 ```bash
 # Verify the namespace exists
-kubectl get namespace <your-namespace>
+kubectl get namespace hcode
 ```
 
 ### 3. Configure GitHub Secrets
@@ -76,42 +76,49 @@ The GitHub Actions workflow will automatically:
 #### Option 1: Apply cluster config manually (same as workflow)
 
 ```bash
-kubectl create namespace <your-namespace> --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply -f k8s/api/ -n <your-namespace>
-kubectl apply -f k8s/admin/ -n <your-namespace>
+kubectl create namespace hcode --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f k8s/api/ -n hcode
+kubectl apply -f k8s/admin/ -n hcode
 ```
 
-#### Additional infrastructure services (generated from docker-compose.yaml)
+#### Additional infrastructure services
 
-The CLI generated Helm charts for the selected services under `helm/services` using the same image names and versions from compose.
-
-Run the following commands to create these services in your cluster:
+The production database is **not** deployed by the workflow. Its source of truth is
+`infra/digitalocean/do-k8s/helm/postgresql/stateful-hub.yaml`, applied by hand:
 
 ```bash
-helm upgrade --install <project>-postgres ./helm/services/postgres --namespace <your-namespace> --create-namespace
+kubectl --context do-nyc3-hcode apply -f infra/digitalocean/do-k8s/helm/postgresql/stateful-hub.yaml
 ```
+
+> Editing the StatefulSet template recreates `postgresql-hub-0` — expect ~30-60s of
+> downtime, and every API/worker pod loses its Prisma connections in the process.
+>
+> The probes there declare `timeoutSeconds` explicitly. Omitting the field means the
+> Kubernetes default of **1s**, not "no limit": on 2026-08-14 `pg_isready` went over
+> it, the liveness probe killed the database and it entered a kill → recovery → kill
+> loop (Sentry issue `API-E`). Do not remove those values.
 
 
 #### Option 2: Build and deploy application images
 
 ```bash
-docker build -t <your-registry>/<project>-api:latest -f apps/api/Dockerfile .
-docker push <your-registry>/<project>-api:latest
-kubectl set image deployment/<project>-api <project>-api=<your-registry>/<project>-api:latest -n <your-namespace>
-kubectl rollout status deployment/<project>-api -n <your-namespace>
+docker build -t hcode/hub-api:latest -f apps/api/Dockerfile .
+docker push hcode/hub-api:latest
+kubectl set image deployment/hub-api hub-api=hcode/hub-api:latest -n hcode
+kubectl rollout status deployment/hub-api -n hcode
 
-docker build -t <your-registry>/<project>-admin:latest \
-  --build-arg NEXT_PUBLIC_API_BASE_URL=https://<your-api-domain> \
-  --build-arg INTERNAL_API_URL=http://<project>-api:3100 \
+docker build -t hcode/hub-admin:latest \
+  --build-arg NEXT_PUBLIC_API_BASE_URL=https://hub-api.hcode.com.br \
+  --build-arg INTERNAL_API_URL=http://hub-api:3100 \
   -f apps/admin/Dockerfile .
-docker push <your-registry>/<project>-admin:latest
-kubectl create configmap <project>-admin-config \
-  -n <your-namespace> \
-  --from-literal=NEXT_PUBLIC_API_BASE_URL='https://<your-api-domain>' \
-  --from-literal=INTERNAL_API_URL='http://<project>-api:3100' \
+docker push hcode/hub-admin:latest
+kubectl create configmap hub-admin-config \
+  -n hcode \
+  --from-literal=NEXT_PUBLIC_API_BASE_URL='https://hub-api.hcode.com.br' \
+  --from-literal=INTERNAL_API_URL='http://hub-api:3100' \
   --dry-run=client -o yaml | kubectl apply -f -
-kubectl set image deployment/<project>-admin <project>-admin=<your-registry>/<project>-admin:latest -n <your-namespace>
-kubectl rollout status deployment/<project>-admin -n <your-namespace>
+kubectl set image deployment/hub-admin hub-admin=hcode/hub-admin:latest -n hcode
+kubectl rollout status deployment/hub-admin -n hcode
 ```
 
 ## Monitoring
@@ -120,37 +127,37 @@ kubectl rollout status deployment/<project>-admin -n <your-namespace>
 
 ```bash
 # Check pods
-kubectl get pods -n <your-namespace>
+kubectl get pods -n hcode
 
 # Check deployments
-kubectl get deployments -n <your-namespace>
+kubectl get deployments -n hcode
 
 # Check services
-kubectl get services -n <your-namespace>
+kubectl get services -n hcode
 
 # View logs
-kubectl logs -f deployment/<project>-api -n <your-namespace>
-kubectl logs -f deployment/<project>-admin -n <your-namespace>
+kubectl logs -f deployment/hub-api -n hcode
+kubectl logs -f deployment/hub-admin -n hcode
 ```
 
 ### Scaling
 
 ```bash
 # Scale a deployment
-kubectl scale deployment/<project>-api --replicas=3 -n <your-namespace>
-kubectl scale deployment/<project>-admin --replicas=3 -n <your-namespace>
+kubectl scale deployment/hub-api --replicas=3 -n hcode
+kubectl scale deployment/hub-admin --replicas=3 -n hcode
 ```
 
 ## Rollback
 
 ```bash
 # View rollout history
-kubectl rollout history deployment/<project>-api -n <your-namespace>
-kubectl rollout history deployment/<project>-admin -n <your-namespace>
+kubectl rollout history deployment/hub-api -n hcode
+kubectl rollout history deployment/hub-admin -n hcode
 
 # Rollback to previous version
-kubectl rollout undo deployment/<project>-api -n <your-namespace>
-kubectl rollout undo deployment/<project>-admin -n <your-namespace>
+kubectl rollout undo deployment/hub-api -n hcode
+kubectl rollout undo deployment/hub-admin -n hcode
 ```
 
 ## Troubleshooting
@@ -158,26 +165,26 @@ kubectl rollout undo deployment/<project>-admin -n <your-namespace>
 ### View Pod Events
 
 ```bash
-kubectl describe pod <pod-name> -n <your-namespace>
+kubectl describe pod <pod-name> -n hcode
 ```
 
 ### View Cluster Events
 
 ```bash
-kubectl get events -n <your-namespace> --sort-by='.lastTimestamp'
+kubectl get events -n hcode --sort-by='.lastTimestamp'
 ```
 
 ### Access Pod Shell
 
 ```bash
-kubectl exec -it deployment/<project>-api -n <your-namespace> -- /bin/sh
-kubectl exec -it deployment/<project>-admin -n <your-namespace> -- /bin/sh
+kubectl exec -it deployment/hub-api -n hcode -- /bin/sh
+kubectl exec -it deployment/hub-admin -n hcode -- /bin/sh
 ```
 
 ## URLs
 
-- **Admin Panel:** https://\<your-admin-domain\>
-- **API:** https://\<your-api-domain\>
+- **Admin Panel:** https://hub.hcode.com.br
+- **API:** https://api.hub.hcode.com.br
 
 
 ## Further Reading

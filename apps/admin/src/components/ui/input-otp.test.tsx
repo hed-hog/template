@@ -36,9 +36,11 @@ describe('InputOTP', () => {
   it('renderiza o input repassando classes do container e do input', () => {
     render(
       <InputOTP
-        maxLength={6}
-        containerClassName="my-container"
-        className="my-input"
+        {...({
+          maxLength: 6,
+          containerClassName: 'my-container',
+          className: 'my-input',
+        } as any)}
       />,
     )
     const input = screen.getByTestId('otp-input')

@@ -20,7 +20,7 @@ function getReactProps(el: Element): Record<string, unknown> {
   if (!key) {
     throw new Error('React internal props key not found on element');
   }
-  return (el as unknown as Record<string, Record<string, unknown>>)[key];
+  return (el as unknown as Record<string, Record<string, unknown>>)[key]!;
 }
 
 function fireBeforeInput(
@@ -204,7 +204,7 @@ describe('InputMoney - onChange / onValueChange', () => {
 describe('InputMoney - refs', () => {
   it('aceita ref de callback', () => {
     let node: HTMLInputElement | null = null;
-    render(<InputMoney ref={(el) => (node = el)} />);
+    render(<InputMoney ref={((el: HTMLInputElement | null) => (node = el)) as any} />);
     expect(node).toBeInstanceOf(HTMLInputElement);
   });
 

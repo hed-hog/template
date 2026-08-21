@@ -3,16 +3,127 @@ packages:
   - packages/*
   - libraries/*
 
+# Migrado do campo "pnpm" do package.json: a partir do pnpm 11 esse campo deixou
+# de ser lido e as pins de seguranca eram silenciosamente ignoradas.
+overrides:
+  react-native-draggable-flatlist>react: 19.1.0
+  validator: '>=13.15.22'
+  glob: '>=11.1.0'
+  '@jest/reporters>glob': ^8.1.0
+  jws: '>=4.0.1'
+  js-yaml: '>=4.1.1'
+  body-parser: '>=2.2.1'
+  tmp: '>=0.2.4'
+  jsonwebtoken: '>=9.0.2'
+  '@smithy/core': 3.24.6
+  '@smithy/types': 4.14.3
+  '@types/react': ^19.2.14
+  '@types/react-dom': ^19.2.3
+  handlebars@>=4.0.0 <4.7.9: '>=4.7.9'
+  shell-quote@>=1.1.0 <=1.8.3: '>=1.8.4'
+  multer@>=2.0.0-alpha.1 <2.2.0: '>=2.2.0'
+  tar@<=7.5.10: '>=7.5.11'
+  minimatch@>=9.0.0 <9.0.7: '>=9.0.7'
+  brace-expansion@<1.1.13: '>=1.1.13 <2'
+  brace-expansion@>=4.0.0 <5.0.5: '>=5.0.5 <6'
+  brace-expansion@>=5.0.0 <5.0.6: '>=5.0.6 <6'
+  picomatch@<2.3.2: '>=2.3.2 <3'
+  picomatch@>=4.0.0 <4.0.4: '>=4.0.4 <5'
+  form-data@>=4.0.0 <4.0.6: '>=4.0.6'
+  ws@>=8.0.0 <8.21.0: '>=8.21.0'
+  fast-uri@<=3.1.1: '>=3.1.2'
+  path-to-regexp@<0.1.13: '>=0.1.13'
+  path-to-regexp@>=8.0.0 <8.4.0: '>=8.4.0'
+  follow-redirects@<=1.15.11: '>=1.16.0'
+  qs@>=6.11.1 <=6.15.1: '>=6.15.2'
+  undici@<6.27.0: '>=6.27.0'
+  postcss@<8.5.10: '>=8.5.10'
+  '@nestjs/core@<=11.1.17': '>=11.1.18 <12'
+  next-intl@<=4.9.1: '>=4.9.2 <5'
+  fast-xml-parser@<5.7.0: '>=5.7.0 <6'
+  uuid@<11.1.1: '>=11.1.1 <12'
+  ajv@<6.14.0: '>=6.14.0 <7'
+  ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
+  defu@<=6.1.4: '>=6.1.5'
+  hono@<4.12.25: '>=4.12.25'
+  '@tootallnate/once@<2.0.1': '>=2.0.1'
+  dompurify@<=3.4.10: '>=3.4.11'
+  axios@>=1.0.0 <1.16.0: '>=1.16.0 <2'
+  sanitize-html>htmlparser2: 10.1.0
+
+# O config plugin do @sentry/react-native faz require('@expo/config-plugins') sem
+# declarar a dependência — com npm/yarn o node_modules achatado disfarça, com o
+# pnpm o `expo config` quebra em qualquer app que use o plugin. Não dá para
+# resolver por hoisting porque o monorepo tem duas SDKs do Expo ao mesmo tempo
+# (54.x no inbox/operations, 57.x no class-app/vaults) e as versões do
+# @expo/config-plugins conflitam. Como peer dependency, cada app resolve a versão
+# que combina com a sua SDK.
+packageExtensions:
+  '@sentry/react-native':
+    peerDependencies:
+      '@expo/config-plugins': '*'
+
+# O pnpm 11 promoveu "Ignored build scripts" de aviso a erro fatal
+# (ERR_PNPM_IGNORED_BUILDS). As imagens Docker dos apps instalam com
+# `--ignore-scripts` de proposito — front-end nao precisa de binario nativo, e
+# pular os scripts corta minutos do build —, entao o `pnpm deploy` seguinte
+# encontrava ate os pacotes desta allowlist marcados como ignorados e abortava.
+# Todo build de imagem do repositorio quebrou junto com a subida para o pnpm 11.
+#
+# Voltar para aviso nao afrouxa nada: quem pode rodar script continua sendo
+# decidido por onlyBuiltDependencies/ignoredBuiltDependencies abaixo, e a imagem
+# da API instala sem `--ignore-scripts`, entao prisma e sharp seguem compilados.
+strictDepBuilds: false
+
 ignoredBuiltDependencies:
   - argon2
+  - bcrypt
 
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@prisma/client'
   - '@prisma/engines'
+  # Baixa o binário do sentry-cli no postinstall; sem ele o upload de source maps
+  # do apps/hedhog-vaults falha e o stack trace chega minificado.
+  - '@sentry/cli'
+  # Binario nativo do profiler usado pelo @sentry/profiling-node (o pacote em si
+  # nao tem install script). O tarball ja traz o prebuild linux-x64-musl para o
+  # Node 24, mas sem a allowlist o pnpm bloqueia o script de verificacao/rebuild.
+  - '@sentry/node-cpu-profiler'
   - core-js-pure
   - ffmpeg-static
   - ffprobe-static
+  - msw
   - prisma
   - sharp
   - unrs-resolver
+
+# Escrito pelo `pnpm approve-builds` do pnpm 11, que substitui o par
+# onlyBuiltDependencies/ignoredBuiltDependencies acima e VENCE deles quando
+# discordam: argon2 e bcrypt aparecem nas duas listas com respostas opostas, e
+# no install os scripts dos dois rodaram. Ficam aqui como estao porque a imagem
+# builder da API traz python3/make/g++ (ver apps/api/Dockerfile), entao compilar
+# o modulo nativo para a plataforma exata e melhor que depender do prebuild.
+# As listas antigas seguem no arquivo por compatibilidade com quem ainda usa
+# pnpm 10 — nao apague uma sem conferir a outra.
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@sentry/cli': true
+  '@sentry/node-cpu-profiler': true
+  '@swc/core': true
+  argon2: true
+  bcrypt: true
+  canvas: true
+  core-js: true
+  core-js-pure: true
+  dtrace-provider: true
+  electron: true
+  esbuild: true
+  ffmpeg-static: true
+  msw: true
+  prisma: true
+  sharp: true
+  swiper: true
+  unrs-resolver: true

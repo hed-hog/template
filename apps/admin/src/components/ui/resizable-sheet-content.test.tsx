@@ -12,7 +12,7 @@ import type { ComponentProps } from 'react';
 function firePointer(type: 'pointerdown' | 'pointermove' | 'pointerup', target: EventTarget, clientX: number) {
   const event = new Event(type, { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'clientX', { value: clientX, configurable: true });
-  fireEvent(target, event);
+  fireEvent(target as Node, event);
 }
 
 vi.mock('next-intl', () => ({

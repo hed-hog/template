@@ -23,9 +23,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { html } from '@codemirror/lang-html';
 import { EditorView } from '@codemirror/view';
+import { useApp } from '@hed-hog/next-app-provider';
 import Color from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
 import Highlight from '@tiptap/extension-highlight';
@@ -55,8 +57,10 @@ import {
   Link as LinkIcon,
   List,
   ListOrdered,
+  LoaderCircle,
   Palette,
   Redo,
+  Sparkles,
   Type,
   Underline as UnderlineIcon,
   Undo,
@@ -209,6 +213,14 @@ interface RichTextEditorProps {
   onCtrlEnter?: () => void;
   showHtmlModeButton?: boolean;
   htmlModeButtonLabel?: string;
+  /** Sobrescreve o texto exibido com o editor vazio. */
+  placeholder?: string;
+  /**
+   * Faz a área de edição ocupar toda a altura do container em vez do teto
+   * padrão de 40vh. Só use quando o pai define a altura, senão o editor colapsa
+   * na altura mínima do ProseMirror.
+   */
+  fill?: boolean;
 }
 
 export function RichTextEditor({
@@ -220,6 +232,8 @@ export function RichTextEditor({
   onCtrlEnter,
   showHtmlModeButton = false,
   htmlModeButtonLabel,
+  placeholder,
+  fill = false,
 }: RichTextEditorProps) {
   const t = useTranslations('core.RichTextEditor');
   const mounted = useSyncExternalStore(
@@ -227,10 +241,25 @@ export function RichTextEditor({
     () => true,
     () => false
   );
+  const { request, getSettingValue, showToastHandler } = useApp();
   const [advancedMode, setAdvancedMode] = useState(false);
   const [tempHtmlValue, setTempHtmlValue] = useState('');
   const [editorZoom, setEditorZoom] = useState(100);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isAiSubmitting, setIsAiSubmitting] = useState(false);
+  const [aiPopoverOpen, setAiPopoverOpen] = useState(false);
+  /**
+   * `editor.isEmpty` lido direto no render fica velho: o `useEditor` do Tiptap v3
+   * não re-renderiza a cada transação, e o sync de `value` roda com
+   * `emitUpdate: false`. Sem este estado o placeholder continua desenhado por
+   * cima de um texto colocado de fora (o rascunho da IA, por exemplo) e some
+   * quando o editor é esvaziado de fora.
+   */
+  const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  const showAiButton =
+    getSettingValue('richtext-ai-enabled') === true &&
+    String(getSettingValue('richtext-ai-profile-id') ?? '').trim().length > 0;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const suppressOnUpdateRef = useRef(false);
   const onCtrlEnterRef = useRef(onCtrlEnter);
@@ -468,6 +497,7 @@ export function RichTextEditor({
       preserveWhitespace: 'full',
     },
     onUpdate: ({ editor }) => {
+      setIsEditorEmpty(editor.isEmpty);
       if (suppressOnUpdateRef.current) {
         suppressOnUpdateRef.current = false;
         return;
@@ -477,9 +507,13 @@ export function RichTextEditor({
   });
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
+    if (!editor) return;
+    if (value !== editor.getHTML()) {
       editor.commands.setContent(value, { emitUpdate: false });
     }
+    // Fora do `if`: cobre também a montagem, quando o conteúdo inicial já veio
+    // por `content: value` e nenhuma transação chegou a acontecer.
+    setIsEditorEmpty(editor.isEmpty);
   }, [value, editor]);
 
   const handleCodeMirrorChange = (newValue: string) => {
@@ -517,6 +551,34 @@ export function RichTextEditor({
 
   const handleImageUpload = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleAiEditSubmit = async () => {
+    if (!editor) return;
+    const instruction = aiPrompt.trim();
+    if (!instruction) return;
+
+    setIsAiSubmitting(true);
+    try {
+      const response = await request<{ html: string }>({
+        url: '/ai/richtext/edit-html',
+        method: 'POST',
+        data: { html: editor.getHTML(), instruction },
+      });
+      const html = String(response?.data?.html ?? '').trim();
+      if (!html) throw new Error('empty-ai-html');
+
+      onChange(html);
+      suppressOnUpdateRef.current = true;
+      editor.commands.setContent(html);
+      setAiPrompt('');
+      setAiPopoverOpen(false);
+      showToastHandler('success', t('aiEditSuccess'));
+    } catch {
+      showToastHandler('error', t('aiEditError'));
+    } finally {
+      setIsAiSubmitting(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -558,15 +620,16 @@ export function RichTextEditor({
       }}
       className={cn(
         'min-w-0 w-full max-w-full overflow-hidden rounded-md border bg-background transition-shadow',
+        fill && 'flex min-h-0 flex-col',
         isExpanded && 'shadow-sm',
         className
       )}
     >
       <div
         className={cn(
-          'flex w-full min-w-0 flex-nowrap items-center gap-0.5 overflow-x-auto border-b bg-muted/50 px-0.5 py-0.5 transition-all duration-200',
+          'flex w-full min-w-0 flex-wrap items-center gap-0.5 border-b bg-muted/50 px-1 py-1 transition-all duration-200',
           isExpanded
-            ? 'max-h-16 opacity-100'
+            ? 'max-h-24 overflow-y-auto opacity-100'
             : 'max-h-0 overflow-hidden border-b-0 py-0 opacity-0 pointer-events-none'
         )}
       >
@@ -1027,11 +1090,57 @@ export function RichTextEditor({
             {htmlModeButtonLabel ?? t('advancedMode')}
           </Button>
         )}
+
+        {showAiButton && (
+          <Popover open={aiPopoverOpen} onOpenChange={setAiPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="ghost" size="sm" title={t('aiEdit')}>
+                <Sparkles className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="ai-edit-prompt">{t('aiEditPromptLabel')}</Label>
+                  <Textarea
+                    id="ai-edit-prompt"
+                    rows={4}
+                    placeholder={t('aiEditPromptPlaceholder')}
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    disabled={isAiSubmitting}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={isAiSubmitting || !aiPrompt.trim()}
+                    onClick={() => void handleAiEditSubmit()}
+                  >
+                    {isAiSubmitting ? (
+                      <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    {t('aiEditSubmit')}
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
-      <div className={cn('relative min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto max-h-[40vh]', editorClassName)}>
-        {!isExpanded && editor.isEmpty && (
+      <div
+        className={cn(
+          'relative min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto',
+          fill ? 'min-h-0 flex-1' : 'max-h-[40vh]',
+          editorClassName
+        )}
+      >
+        {!isExpanded && isEditorEmpty && (
           <div className="pointer-events-none absolute left-4 top-3 text-sm text-muted-foreground">
-            {t('emptyPlaceholder')}
+            {placeholder ?? t('emptyPlaceholder')}
           </div>
         )}
         <EditorContent
@@ -1040,7 +1149,10 @@ export function RichTextEditor({
             '[&_.ProseMirror]:min-w-0 [&_.ProseMirror]:w-full [&_.ProseMirror]:max-w-full [&_.ProseMirror]:overflow-x-hidden [&_.ProseMirror]:wrap-anywhere [&_.ProseMirror_*]:max-w-full [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:ml-0',
             isExpanded
               ? '[&_.ProseMirror]:min-h-75'
-              : '[&_.ProseMirror]:min-h-11 [&_.ProseMirror]:cursor-text'
+              : '[&_.ProseMirror]:min-h-11 [&_.ProseMirror]:cursor-text',
+            // Sem isto a área clicável para na última linha e o resto da caixa
+            // fica morto quando o editor recebe altura do pai.
+            fill && 'h-full [&_.ProseMirror]:min-h-full'
           )}
         />
       </div>

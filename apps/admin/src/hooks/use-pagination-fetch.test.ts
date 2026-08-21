@@ -148,7 +148,7 @@ describe('usePaginationFetch — contrato de paginação', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const params = requestMock.mock.calls[0][0].params;
+    const params = requestMock.mock.calls[0]![0].params;
     expect(params).not.toHaveProperty('fields');
     expect(params).not.toHaveProperty('search');
     expect(params).not.toHaveProperty('sortField');

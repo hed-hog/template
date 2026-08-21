@@ -6,7 +6,7 @@ import * as path from 'node:path';
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 
-// ANSI colors and styles
+// Cores e estilos ANSI
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -62,7 +62,7 @@ function parseGitStatusPorcelain(repoRoot: string) {
     const status = line.slice(0, 2);
     const rawPath = line.slice(3);
 
-    // Renamed: "R  old -> new", "RM old -> new", etc.
+    // Renomeado: "R  old -> new", "RM old -> new", etc.
     if (rawPath.includes(' -> ')) {
       const parts = rawPath.split(' -> ').map((p) => p.trim());
       if (parts.length !== 2 || !parts[0] || !parts[1]) {
@@ -87,7 +87,7 @@ function parseGitStatusPorcelain(repoRoot: string) {
 
     const filePath = normalizeGitPath(rawPath);
 
-    // If there's a D in either column, the file was deleted
+    // Se houver D em qualquer uma das colunas, o arquivo foi deletado
     if (status.includes('D')) {
       ops.push({
         type: 'delete',
@@ -96,7 +96,7 @@ function parseGitStatusPorcelain(repoRoot: string) {
       continue;
     }
 
-    // Changed/added/untracked/modified/copied/etc. files
+    // Arquivos alterados/adicionados/não rastreados/modificados/copied/etc.
     ops.push({
       type: 'copy',
       sourceRelative: filePath,

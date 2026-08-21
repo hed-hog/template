@@ -6,9 +6,9 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import request from 'supertest';
 
-// Reproduces the same protection applied to the /auth credential endpoints
-// (@UseGuards(ThrottlerGuard) + @Throttle) and verifies that exceeding the
-// per-IP limit results in 429 — a regression check for the rate-limit config shape.
+// Reproduz a mesma proteção aplicada aos endpoints de credencial do /auth
+// (@UseGuards(ThrottlerGuard) + @Throttle) e verifica que estourar o limite por
+// IP resulta em 429 — regressão para o formato da config do rate-limit.
 @Controller('login-like')
 class LoginLikeController {
   @UseGuards(ThrottlerGuard)
@@ -19,7 +19,7 @@ class LoginLikeController {
   }
 }
 
-describe('Rate-limit (ThrottlerGuard) on credential endpoints', () => {
+describe('Rate-limit (ThrottlerGuard) nos endpoints de credencial', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
@@ -36,12 +36,12 @@ describe('Rate-limit (ThrottlerGuard) on credential endpoints', () => {
     await app.close();
   });
 
-  it('blocks with 429 after exceeding the per-IP limit', async () => {
+  it('bloqueia com 429 após exceder o limite por IP', async () => {
     const server = app.getHttpServer();
 
     expect((await request(server).post('/login-like')).status).toBe(201);
     expect((await request(server).post('/login-like')).status).toBe(201);
-    // 3rd attempt within the window → limit (2) exceeded.
+    // 3ª tentativa dentro da janela → limite (2) excedido.
     expect((await request(server).post('/login-like')).status).toBe(429);
   });
 });

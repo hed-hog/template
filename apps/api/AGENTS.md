@@ -1,21 +1,21 @@
 # API App
 
-These instructions apply to `apps/api`.
+Estas instrucoes se aplicam a `apps/api`.
 
-## App role
-- `apps/api` is a thin backend entrypoint; business logic must live in `libraries/*`.
-- Integrate library modules via workspace packages `@hed-hog/*`.
+## Papel do app
+- `apps/api` e um entrypoint fino do backend; a logica de negocio deve ficar em `libraries/*`.
+- Integrar modulos das libraries via workspace packages `@hed-hog/*`.
 
 ## Prisma
-- Never manually edit `prisma/schema.prisma`.
-- Never run `hedhog dev apply` in this repository.
-- Never run commands that reset/recreate the project, database, schema, or existing migrations.
-- Do not delete, overwrite, or regenerate existing migrations; they must remain intact to update the production database.
-- When changing structure or data YAML in `libraries/*/hedhog/table/*.yaml` or `libraries/*/hedhog/data/*.yaml`, create a new SQL migration in `apps/api/prisma/migrations` reflecting the same change.
-- After creating a new migration file, apply it by running `pnpm prisma:deploy` in the `apps/api` path.
-- To refresh the schema and client, use `pnpm db:update` only when applicable and after the database is in the expected structure.
-- Do not introduce a `prisma migrate dev`-based workflow in this project, unless an explicit future policy states otherwise.
+- Nunca editar manualmente `prisma/schema.prisma`.
+- Nunca executar `hedhog dev apply` neste repositorio `hub`.
+- Nunca executar comandos que resetem/recriem projeto, banco, schema ou migrations existentes.
+- Nao apagar, sobrescrever ou regenerar migrations existentes; elas precisam continuar intactas para atualizar o banco de producao.
+- Quando alterar YAML de estrutura ou dados em `libraries/*/hedhog/table/*.yaml` ou `libraries/*/hedhog/data/*.yaml`, criar uma nova migration SQL em `apps/api/prisma/migrations` refletindo a mesma alteracao.
+- Apos criar um novo arquivo de migration, aplicar executando `pnpm prisma:deploy` no path `apps/api`.
+- Para refresh do schema e client, usar `pnpm db:update` apenas quando aplicavel e depois de o banco estar na estrutura esperada.
+- Nao introduzir fluxo baseado em `prisma migrate dev` neste projeto, salvo politica futura explicita.
 
-## Backend integration
-- When adding or wiring up a new module, keep `app.module.ts` and the imports consistent with the existing pattern.
-- Do not duplicate business rules in the entrypoint that should live in library services.
+## Integracao backend
+- Ao adicionar ou conectar um modulo novo, manter `app.module.ts` e os imports consistentes com o padrao existente.
+- Nao duplicar regras de negocio no entrypoint que deveriam estar em services das libraries.

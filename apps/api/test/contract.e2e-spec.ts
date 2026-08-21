@@ -6,13 +6,13 @@ import request from 'supertest';
 import { anyPaginationEnvelope, apiErrorSchema } from '@hed-hog/api-types';
 
 /**
- * CONTRACT tests: ensure the API responds in the shape the apps assume.
- * They use the zod schemas shared in @hed-hog/api-types/contracts as the single
- * source of truth — the same schemas the frontend hooks consume
- * (e.g., apps/admin/src/hooks/use-pagination-fetch.ts). If the API changes the
- * pagination envelope or the error format, these tests break BEFORE the frontend breaks.
+ * Testes de CONTRATO: garantem que a API responde no shape que os apps assumem.
+ * Usam os schemas zod compartilhados em @hed-hog/api-types/contracts como fonte
+ * única de verdade — os mesmos schemas que os hooks do frontend passam a consumir
+ * (ex.: apps/admin/src/hooks/use-pagination-fetch.ts). Se a API mudar o envelope
+ * de paginação ou o formato de erro, estes testes quebram ANTES de o front quebrar.
  *
- * Runs against a live server (API_URL); part of the E2E suite (ci-e2e.yml).
+ * Roda contra um servidor vivo (API_URL); faz parte da suíte E2E (ci-e2e.yml).
  */
 const BASE_URL = process.env.API_URL || 'http://localhost:3100';
 
@@ -22,8 +22,8 @@ interface RouteEntry {
   type?: string;
 }
 
-// Discovers list routes (GET without path param) declared in the route.yaml of
-// all libraries — the surface that typically returns the paginated envelope.
+// Descobre rotas de listagem (GET sem path param) declaradas nos route.yaml de
+// todas as libraries — a superfície que tipicamente retorna o envelope paginado.
 function loadListRoutes(): string[] {
   const libsDir = path.resolve(__dirname, '../../../libraries');
   const urls = new Set<string>();
@@ -65,14 +65,14 @@ describe('Contract — API response shapes', () => {
   });
 
   it('error responses match the shared apiErrorSchema', async () => {
-    // Protected route without a token → error in the standard HttpExceptionFilter format.
+    // Rota protegida sem token → erro no formato padrão do HttpExceptionFilter.
     const res = await request(BASE_URL).get('/user').timeout({ deadline: 8000 });
     expect([401, 403]).toContain(res.status);
 
     const parsed = apiErrorSchema.safeParse(res.body);
     if (!parsed.success) {
       throw new Error(
-        `Error response outside the apiErrorSchema contract:\n${JSON.stringify(res.body)}\n` +
+        `Resposta de erro fora do contrato apiErrorSchema:\n${JSON.stringify(res.body)}\n` +
           parsed.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n'),
       );
     }
@@ -81,7 +81,7 @@ describe('Contract — API response shapes', () => {
   it('list endpoints that return data respect the pagination envelope', async () => {
     if (!token) {
       console.warn(
-        '\n  [contract] no auth token (server not installed?) — skipping envelope validation.',
+        '\n  [contract] sem token de auth (servidor não instalado?) — pulando validação de envelope.',
       );
       return;
     }
@@ -102,10 +102,10 @@ describe('Contract — API response shapes', () => {
         continue;
       }
 
-      // We only validate when the route responded 200 with a PAGINATED envelope —
-      // `data` as an array AND at least one pagination field (total/page/lastPage).
-      // Simple `{ data }` lists (non-paginated) and other shapes are ignored: the
-      // goal is to validate the contract WHERE it applies, not to force pagination on every route.
+      // Só validamos quando a rota respondeu 200 com um envelope PAGINADO — `data`
+      // como array E ao menos um campo de paginação (total/page/lastPage). Listas
+      // simples `{ data }` (não paginadas) e outros shapes são ignorados: o objetivo
+      // é validar o contrato ONDE ele se aplica, não impor paginação a toda rota.
       if (res.status !== 200 || !res.body || !Array.isArray(res.body.data)) {
         skipped++;
         continue;
@@ -131,14 +131,14 @@ describe('Contract — API response shapes', () => {
     }
 
     console.log(
-      `\n  [contract] ${validated} endpoint(s) validated against the pagination envelope` +
-        ` | ${skipped} skipped (non-list/inactive)` +
-        (failures.length ? ` | ${failures.length} violate the contract` : ''),
+      `\n  [contract] ${validated} endpoint(s) validados contra o envelope de paginação` +
+        ` | ${skipped} ignorados (não-lista/inativos)` +
+        (failures.length ? ` | ${failures.length} violam o contrato` : ''),
     );
 
     if (failures.length > 0) {
       throw new Error(
-        `${failures.length} endpoint(s) violate the pagination envelope:\n${failures.join('\n')}`,
+        `${failures.length} endpoint(s) violam o envelope de paginação:\n${failures.join('\n')}`,
       );
     }
   }, 120000);

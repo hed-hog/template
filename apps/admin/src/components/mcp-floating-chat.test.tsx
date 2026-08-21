@@ -201,13 +201,13 @@ function stubMatchMedia(matches = false) {
   } = {
     matches,
     media: '(max-width: 639px)',
-    addEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) => {
+    addEventListener: ((_type: string, cb: (e: MediaQueryListEvent) => void) => {
       listeners.push(cb);
-    },
-    removeEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) => {
+    }) as MediaQueryList['addEventListener'],
+    removeEventListener: ((_type: string, cb: (e: MediaQueryListEvent) => void) => {
       const idx = listeners.indexOf(cb);
       if (idx >= 0) listeners.splice(idx, 1);
-    },
+    }) as MediaQueryList['removeEventListener'],
     _emit: (next: boolean) => {
       listeners.forEach((cb) => cb({ matches: next } as MediaQueryListEvent));
     },
@@ -925,7 +925,7 @@ describe('McpFloatingChat', () => {
       fireEvent.click(screen.getByText('send'));
 
       await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-      const [, init] = fetchMock.mock.calls[0];
+      const [, init] = fetchMock.mock.calls[0]!;
       expect((init.headers as Record<string, string>).Authorization).toBe('Bearer tok-abc');
     });
 

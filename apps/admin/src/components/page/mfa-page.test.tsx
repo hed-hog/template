@@ -135,6 +135,11 @@ describe('MfaPage', () => {
     });
     expect(push).toHaveBeenCalledWith('/after');
     expect(appState.showToastHandler).toHaveBeenCalledWith('success', 'successAuth');
+    // @simplewebauthn/browser v13 recebe as options embrulhadas em optionsJSON;
+    // passar o payload cru faz o prompt do navegador falhar em runtime.
+    expect(startAuthentication).toHaveBeenCalledWith({
+      optionsJSON: { challenge: 'c' },
+    });
   });
 
   it('não dispara a autenticação webauthn automaticamente sem interação (o timer de auto-start se auto-cancela)', async () => {

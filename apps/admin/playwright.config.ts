@@ -1,19 +1,22 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Admin E2E. Requires the API to be running (Next's dev proxies /api → :3100) and a
-// seeded user. Run `pnpm exec playwright install chromium` once to
-// download the browser. Config designed to run against the admin's `pnpm dev`.
+// E2E do admin. Requer a API viva (o dev do Next faz proxy /api → :3100) e um
+// usuário semeado. Rode `pnpm exec playwright install chromium` uma vez para
+// baixar o browser. Config pensada para rodar contra o `pnpm dev` do admin.
 const PORT = 3200;
 const baseURL = process.env.E2E_BASE_URL || `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './e2e',
+  // Regenera e2e/generated/*.spec.ts a partir de libraries/*/hedhog/frontend/e2e
+  // antes de cada run, para refletir quais libraries estão presentes no projeto.
+  globalSetup: require.resolve('./e2e/generate-specs.mjs'),
   fullyParallel: true,
-  // 130+ specs covering distinct menu.yaml routes — under `pnpm dev` (Next
-  // compiles each route on demand, on the first visit), the default parallelism
-  // (1 worker per core) causes several first-compilations to run concurrently and some
-  // to exceed the navigation timeout under load. A lower cap gives the dev
-  // server some breathing room; it still runs much faster than serial.
+  // 130+ specs cobrindo rotas distintas do menu.yaml — sob o `pnpm dev` (Next
+  // compila cada rota sob demanda, na primeira visita), o paralelismo padrão
+  // (1 worker por core) faz várias primeiras-compilações concorrerem e algumas
+  // estourarem o timeout de navegação sob carga. Cap menor dá folga ao dev
+  // server; ainda assim roda bem mais rápido que serial.
   workers: 6,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -23,7 +26,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    // 1) authenticates once and saves the storageState reused by the others.
+    // 1) autentica uma vez e salva o storageState reutilizado pelos demais.
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
     {
       name: 'chromium',
@@ -34,8 +37,8 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
-  // Starts the admin automatically (unless E2E_BASE_URL points to a server that's
-  // already running). The API needs to be running separately (docker-compose + pnpm dev).
+  // Sobe o admin automaticamente (a menos que E2E_BASE_URL aponte para um server
+  // já em pé). A API precisa estar rodando à parte (docker-compose + pnpm dev).
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {

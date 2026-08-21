@@ -13,11 +13,13 @@ import { validateEnv } from './config/env.validation';
 
 @Module({
   imports: [
-    EventEmitterModule.forRoot({ wildcard: false, maxListeners: 20 }),
-    // isGlobal: sem isso o ConfigService nao chega aos modulos das bibliotecas
-    // (ex.: BrandAssetService, do SettingModule do core), e o boot falha com
-    // UnknownDependenciesException.
+    // isGlobal: without it ConfigService never reaches the library modules
+    // (e.g. BrandAssetService, from core's SettingModule) and the app fails to
+    // boot with UnknownDependenciesException.
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
+    // forRoot() is what actually registers the emitter; the bare module is a
+    // no-op and every @OnEvent handler stays silent.
+    EventEmitterModule.forRoot({ wildcard: false, maxListeners: 20 }),
     HealthyModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
     PrismaModule,

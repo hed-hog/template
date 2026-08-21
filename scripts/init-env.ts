@@ -1,25 +1,5 @@
-import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-
-function generateSecret(): string {
-  return randomBytes(32).toString('base64');
-}
-
-/**
- * Replaces `KEY="generate"` / `KEY=generate` with a fresh random value.
- *
- * Secrets are generated per checkout rather than shipped in .env.example:
- * a real value committed there would hand every user of this template the
- * same encryption key, JWT secret and password pepper.
- */
-function materializeSecrets(contents: string): string {
-  return contents.replace(
-    /^([A-Z0-9_]+)=(["']?)generate\2\s*$/gm,
-    (_match, key: string, quote: string) =>
-      `${key}=${quote}${generateSecret()}${quote}`
-  );
-}
 
 async function copyEnvExampleToEnv(appsDir: string) {
   try {
@@ -31,13 +11,12 @@ async function copyEnvExampleToEnv(appsDir: string) {
         const envPath = path.join(appPath, '.env');
         try {
           await fs.access(envExamplePath);
-          // Only create if .env does not exist
+          // Only copy if .env does not exist
           try {
             await fs.access(envPath);
             console.log(`.env already exists in ${appPath}, skipping.`);
           } catch {
-            const example = await fs.readFile(envExamplePath, 'utf8');
-            await fs.writeFile(envPath, materializeSecrets(example), 'utf8');
+            await fs.copyFile(envExamplePath, envPath);
             console.log(`Created .env in ${appPath}`);
           }
         } catch {

@@ -15,4 +15,12 @@ export type UserSession = {
   created_at?: string;
   updated_at?: string;
   user?: User;
+  /**
+   * Preenchido quando a sessao e um acesso simulado. Nao ha relacao Prisma para
+   * `impersonator` (a coluna e INT puro, sem FK, para nao renomear
+   * `user.user_session`), entao o backend anexa o nome por consulta separada.
+   */
+  impersonator_user_id?: number | null;
+  impersonation_reason?: string | null;
+  impersonator?: { id: number; name: string } | null;
 }

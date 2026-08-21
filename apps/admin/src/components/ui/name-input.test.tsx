@@ -28,10 +28,10 @@ describe('NameInput', () => {
     render(<NameInput isCompany />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
 
-    fireEvent.change(input, { target: { value: 'ACME TECNOLOGIA LTDA' } });
+    fireEvent.change(input, { target: { value: 'HCODE TECNOLOGIA LTDA' } });
     fireEvent.blur(input);
 
-    expect(input.value).toBe('ACME TECNOLOGIA LTDA');
+    expect(input.value).toBe('HCODE TECNOLOGIA LTDA');
   });
 
   it('não muda o valor quando já está formatado', () => {

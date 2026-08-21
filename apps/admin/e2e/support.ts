@@ -1,17 +1,17 @@
 import { expect, type Page } from '@playwright/test';
 
-// Generic smoke test: confirms that the page loads for the admin profile
-// (root@hedhog.com, the only login used in the admin e2e — almost every route in
-// the libraries' menu.yaml grants access to the "admin" role, see auth.setup.ts),
-// without falling back to /login and without a blank screen. It doesn't assert
-// anything about the specific content of each screen: most routes use the same
-// `entity-list` listing component (see apps/admin/src/components/entity-list/),
-// so the heading varies by each module's config, not by page.
+// Smoke genérico: confirma que a página carrega para o perfil admin
+// (root@hedhog.com, único login usado no e2e do admin — quase toda rota do
+// menu.yaml das libraries libera o role "admin", ver auth.setup.ts), sem cair
+// no /login e sem tela em branco. Não afirma nada sobre o conteúdo específico
+// de cada tela: a maioria das rotas usa o mesmo componente de listagem
+// `entity-list` (ver apps/admin/src/components/entity-list/), então o
+// heading varia por config de cada módulo, não por página.
 export async function expectPageLoads(page: Page, url: string) {
   await page.goto(url);
   await expect(page).not.toHaveURL(/\/login(?:[/?]|$)/);
-  // .first(): some screens (home with unavailable dashboard, inbox, mcp_chat)
-  // nest their own <main> inside the shell's <main data-slot="sidebar-inset"> —
-  // pre-existing landmark duplication, doesn't affect the test.
+  // .first(): algumas telas (home com dashboard indisponível, inbox, mcp_chat)
+  // aninham um <main> próprio dentro do <main data-slot="sidebar-inset"> do
+  // shell — duplicidade pré-existente de landmark, não afeta o teste.
   await expect(page.getByRole('main').first()).toBeVisible();
 }

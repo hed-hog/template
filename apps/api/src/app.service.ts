@@ -4,6 +4,13 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
+/**
+ * Teto de espera pelo banco na readiness. Bem abaixo do `pool_timeout` de 20s do
+ * Prisma (ver packages/api-prisma/datasource-url.ts) e do `timeoutSeconds: 5` da
+ * probe: banco lento a este ponto já não serve request nenhuma.
+ */
+const READINESS_TIMEOUT_MS = 2000;
+
 function getPackageVersion() {
   const packagePaths = [
     join(__dirname, '../package.json'),
@@ -38,6 +45,56 @@ export class AppService implements OnModuleInit {
       version: this.version,
       queue: this.getQueueHealth(),
     };
+  }
+
+  /**
+   * Readiness: diferente de `getHealth`, ESTA consulta o banco. O pod só é útil
+   * se alcança o Postgres — sem isso ele seguia `Ready` durante uma queda do banco,
+   * recebia 100% do tráfego e devolvia 500 em toda request autenticada.
+   *
+   * Só a readinessProbe usa esta rota. Liveness e startup continuam em `/health`,
+   * senão o kubelet reiniciaria a API inteira junto com o banco.
+   */
+  async getReadiness() {
+    try {
+      await this.checkDatabase();
+      return { status: 'ok', database: 'up', version: this.version };
+    } catch (error) {
+      this.logger.error(
+        `Readiness degradada: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return { status: 'degraded', database: 'down', version: this.version };
+    }
+  }
+
+  private async checkDatabase(): Promise<void> {
+    const query = this.prismaService.$queryRaw`SELECT 1`;
+
+    // Promise.race NÃO cancela a query perdedora: sem este catch, a rejeição que
+    // chega depois do timeout vira unhandled rejection — e o SDK do Sentry roda
+    // com onUnhandledRejectionIntegration em mode:'strict', que derruba o processo.
+    query.catch(() => undefined);
+
+    let timer: NodeJS.Timeout | undefined;
+
+    try {
+      await Promise.race([
+        query,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () =>
+              reject(
+                new Error(
+                  `database check timed out after ${READINESS_TIMEOUT_MS}ms`,
+                ),
+              ),
+            READINESS_TIMEOUT_MS,
+          );
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
   async getHello() {

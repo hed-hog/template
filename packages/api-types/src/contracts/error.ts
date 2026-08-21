@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 /**
- * Standard API error format, emitted by the global HttpExceptionFilter
- * (apps/api/src/filters/http-exception.filter.ts). `message` can be:
- *   - a plain string (HttpException with a message)
- *   - an array of strings (non-400 validation errors)
- *   - an object { field: string[] } (normalized 400 validation errors)
- * that's why the field is permissive.
+ * Formato de erro padrão da API, emitido pelo HttpExceptionFilter global
+ * (apps/api/src/filters/http-exception.filter.ts). `message` pode ser:
+ *   - string simples (HttpException com mensagem)
+ *   - array de strings (erros de validação não-400)
+ *   - objeto { campo: string[] } (erros de validação 400 normalizados)
+ * por isso o campo é permissivo.
  */
 export const apiErrorSchema = z.object({
   statusCode: z.number().int(),
@@ -16,5 +16,5 @@ export const apiErrorSchema = z.object({
   path: z.string(),
 });
 
-/** Type inferred from the API's error envelope. */
+/** Tipo inferido do envelope de erro da API. */
 export type ApiError = z.infer<typeof apiErrorSchema>;

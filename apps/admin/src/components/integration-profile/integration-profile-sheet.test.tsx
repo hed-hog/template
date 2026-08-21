@@ -129,6 +129,20 @@ const PROVIDERS = [
     integration_provider_locale: [{ name: 'Local', locale: { code: 'en' } }],
   },
   {
+    id: 17,
+    slug: 'luma',
+    type_id: 3,
+    integration_provider_locale: [{ name: 'Luma', locale: { code: 'en' } }],
+  },
+  {
+    id: 18,
+    slug: 'google_play',
+    type_id: 4,
+    integration_provider_locale: [
+      { name: 'Google Play Billing', locale: { code: 'en' } },
+    ],
+  },
+  {
     // A second provider under the same type_id as smtp (1), used to exercise
     // the lock-sync effect's "previous.provider_id truthy and different"
     // branch by locking to a sibling provider after a profile with a
@@ -200,19 +214,12 @@ async function chooseProvider(name: string) {
 }
 
 /**
- * Edit mode sets `type_id` and `provider_id` together in one state update, the
- * very first time the provider Select's item list becomes non-empty for that
- * type. Radix Select's hidden native `<select>` mirror (used for native form
- * participation) can't yet accept a value for an `<option>` that is being
- * inserted in that same commit, so the browser clamps it back to `''` and
- * Radix's own change listener on that hidden select echoes the clamped value
- * back through `onValueChange('')` — silently clearing `provider_id`/`config`
- * right after they were set (see also handleProviderChange in the component).
- * This resync fires a native `change` event on that hidden select with the
- * real value, exactly like Radix's own bubbling mechanism does once the
- * option is actually present, to work around the timing gap in tests.
+ * Dispara no `<select>` nativo espelho do Radix o mesmo `change` que ele emite
+ * sozinho quando a `<option>` do provider entra no DOM depois do valor — o eco
+ * que handleProviderChange precisa ignorar para não descartar o config
+ * carregado. Mantido para provar que o eco é inofensivo.
  */
-function resyncEditModeProviderSelection(providerId: number) {
+function echoProviderSelection(providerId: number) {
   const providerNativeSelect = document.querySelectorAll('form select')[1] as
     | HTMLSelectElement
     | undefined;
@@ -418,7 +425,7 @@ describe('IntegrationProfileSheet — campos de configuração (smtp)', () => {
     // There are two switches on this form (config "secure" + "is_active"); the
     // "secure" one renders first since it's part of the smtp config field list.
     const switches = screen.getAllByRole('switch');
-    fireEvent.click(switches[0]);
+    fireEvent.click(switches[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'createProfile' }));
 
@@ -489,7 +496,7 @@ describe('IntegrationProfileSheet — campos de configuração (smtp)', () => {
     const switches = screen.getAllByRole('switch');
     const isActiveSwitch = switches[switches.length - 1];
     expect(isActiveSwitch).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(isActiveSwitch);
+    fireEvent.click(isActiveSwitch!);
     expect(isActiveSwitch).toHaveAttribute('aria-checked', 'false');
   });
 
@@ -591,7 +598,7 @@ describe('IntegrationProfileSheet — DigitalOcean (node pool picker)', () => {
         'Meu DigitalOcean',
       );
     });
-    resyncEditModeProviderSelection(11);
+    echoProviderSelection(11);
 
     await waitFor(() => {
       expect(screen.getByText('nodePoolSectionTitle')).toBeInTheDocument();
@@ -629,7 +636,7 @@ describe('IntegrationProfileSheet — OAuth (google-oauth)', () => {
     const removeButtons = screen.getAllByRole('button').filter((btn) =>
       btn.querySelector('svg.lucide-x'),
     );
-    fireEvent.click(removeButtons[0]);
+    fireEvent.click(removeButtons[0]!);
 
     expect(screen.getByText('noCallbackUrls')).toBeInTheDocument();
 
@@ -651,7 +658,7 @@ describe('IntegrationProfileSheet — OAuth (google-oauth)', () => {
       const copyButtons = screen.getAllByRole('button').filter((btn) =>
         btn.querySelector('svg.lucide-copy'),
       );
-      fireEvent.click(copyButtons[0]);
+      fireEvent.click(copyButtons[0]!);
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
         `${window.location.origin}/callback/google`,
@@ -759,6 +766,41 @@ describe('IntegrationProfileSheet — tipo/provider travados e initialTypeSlug',
     expect(screen.getByLabelText(/providerLabel/)).toHaveTextContent('providerPlaceholder');
   });
 
+  it('com excludeProviderSlugs, some do select o provider que o campo de origem esconde', async () => {
+    renderSheet({ initialTypeSlug: 'email', excludeProviderSlugs: ['gmail'] });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/typeLabel/)).toHaveTextContent('Email');
+    });
+
+    openSelectByLabel(/providerLabel/);
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).getByText('SMTP')).toBeInTheDocument();
+    expect(within(listbox).queryByText('Gmail')).not.toBeInTheDocument();
+  });
+
+  it('excludeProviderSlugs não esconde o provider do perfil sendo editado', async () => {
+    server.use(
+      http.get(`${API}/integration-profile/42`, () =>
+        HttpResponse.json({
+          id: 42,
+          slug: 'gmail-legado',
+          name: 'Gmail legado',
+          type_id: 1,
+          provider_id: 16,
+          config: {},
+          is_active: true,
+        }),
+      ),
+    );
+
+    renderSheet({ profileId: 42, excludeProviderSlugs: ['gmail'] });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/providerLabel/)).toHaveTextContent('Gmail');
+    });
+  });
+
   it('aceita types/providers envolvidos em { data: [...] } (não apenas arrays puros)', async () => {
     mockCatalog({
       typesBody: { data: TYPES },
@@ -811,20 +853,21 @@ describe('IntegrationProfileSheet — modo edição', () => {
     expect(screen.getByLabelText(/typeLabel/)).toBeDisabled();
     expect(screen.getByLabelText(/providerLabel/)).toBeDisabled();
 
-    // See resyncEditModeProviderSelection: provider_id gets clobbered back to ''
-    // in the same commit it's populated, so the config fields never appear
-    // without this resync. The resync goes through the same onValueChange the
-    // component uses for a user picking a provider, which also resets `config`
-    // to {} (by design, for the "user changes provider" flow) — so we
-    // reconstruct the masked-secret scenario by typing the mask back in,
-    // exercising the same isLockedSecret/isEditing branch either way.
-    resyncEditModeProviderSelection(10);
+    // O eco do select nativo não pode descartar nada: os campos seguem
+    // preenchidos com o que veio do perfil, inclusive a senha mascarada.
+    echoProviderSelection(10);
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/fieldPassword/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/fieldHost/)).toBeInTheDocument();
     });
+    expect((screen.getByLabelText(/fieldHost/) as HTMLInputElement).value).toBe(
+      'smtp.old.com',
+    );
+    expect(
+      (screen.getByLabelText(/fieldUsername/) as HTMLInputElement).value,
+    ).toBe('olduser');
+
     const passwordInput = screen.getByLabelText(/fieldPassword/) as HTMLInputElement;
-    fireEvent.change(passwordInput, { target: { value: '********' } });
     expect(passwordInput.value).toBe('********');
     expect(passwordInput).toBeDisabled();
     expect(passwordInput).not.toBeRequired();
@@ -897,7 +940,7 @@ describe('IntegrationProfileSheet — modo edição', () => {
         'Meu SMTP',
       );
     });
-    resyncEditModeProviderSelection(10);
+    echoProviderSelection(10);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'saveChanges' })).toBeEnabled();
     });
@@ -941,7 +984,7 @@ describe('IntegrationProfileSheet — modo edição', () => {
         'Meu SMTP',
       );
     });
-    resyncEditModeProviderSelection(10);
+    echoProviderSelection(10);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'saveChanges' })).toBeEnabled();
     });
@@ -974,7 +1017,7 @@ describe('IntegrationProfileSheet — modo edição', () => {
         'Meu Google',
       );
     });
-    resyncEditModeProviderSelection(13);
+    echoProviderSelection(13);
 
     const urlInput = (await screen.findByPlaceholderText(
       'callbackUrlPlaceholder',
@@ -1031,7 +1074,7 @@ describe('IntegrationProfileSheet — modo edição', () => {
         'Sem Config',
       );
     });
-    resyncEditModeProviderSelection(10);
+    echoProviderSelection(10);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/fieldHost/)).toBeInTheDocument();
@@ -1063,7 +1106,7 @@ describe('IntegrationProfileSheet — modo edição', () => {
     await waitFor(() => {
       expect((screen.getByLabelText(/nameLabel/) as HTMLInputElement).value).toBe('X');
     });
-    resyncEditModeProviderSelection(13);
+    echoProviderSelection(13);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/providerLabel/)).toHaveTextContent('Google');
@@ -1235,7 +1278,7 @@ describe('IntegrationProfileSheet — provider travado trocado manualmente (tern
         'Meu SMTP',
       );
     });
-    resyncEditModeProviderSelection(10);
+    echoProviderSelection(10);
     await waitFor(() => {
       expect(screen.getByLabelText(/fieldHost/)).toBeInTheDocument();
     });
@@ -1292,5 +1335,429 @@ describe('IntegrationProfileSheet — handleTypeChange com tipo travado (guarda 
 
     expect(screen.getByLabelText(/typeLabel/)).toHaveTextContent('Payment');
     expect(screen.getByLabelText(/providerLabel/)).toHaveTextContent('Stripe');
+  });
+});
+
+describe('IntegrationProfileSheet — edição preenche os campos de config', () => {
+  beforeEach(() => mockCatalog());
+
+  it('mostra os valores salvos do perfil sem depender de qualquer resync do select', async () => {
+    server.use(
+      http.get(`${API}/integration-profile/77`, () =>
+        HttpResponse.json({
+          id: 77,
+          slug: 'hub-upload',
+          name: 'Hub Upload',
+          type_id: 2,
+          provider_id: 15,
+          config: { base_path: '/var/uploads' },
+          is_active: true,
+          integration_provider: {
+            slug: 'local',
+            integration_provider_locale: [
+              { name: 'Local', locale: { code: 'en' } },
+            ],
+          },
+        }),
+      ),
+    );
+
+    renderSheet({ profileId: 77 });
+
+    // O onValueChange do Radix ecoa a seleção assim que a <option> do provider
+    // entra no DOM; se handleProviderChange tratasse esse eco como troca de
+    // provider, o config carregado seria descartado e o campo viria vazio.
+    await waitFor(() => {
+      expect(screen.getByLabelText(/fieldBasePath/)).toBeInTheDocument();
+    });
+    expect((screen.getByLabelText(/fieldBasePath/) as HTMLInputElement).value).toBe(
+      '/var/uploads',
+    );
+  });
+});
+
+describe('IntegrationProfileSheet — providers de vídeo e pagamento', () => {
+  beforeEach(() => mockCatalog());
+
+  it('renderiza e envia os campos do provider luma (tipo vídeo)', async () => {
+    let receivedBody: any = null;
+    server.use(
+      http.post(`${API}/integration-profile`, async ({ request }) => {
+        receivedBody = await request.json();
+        return HttpResponse.json({ id: 71, ...receivedBody });
+      }),
+    );
+
+    renderSheet();
+    await waitForTypesLoaded();
+    await chooseType('Video');
+    await chooseProvider('Luma');
+
+    fireEvent.change(screen.getByLabelText(/nameLabel/), {
+      target: { value: 'Luma' },
+    });
+    fireEvent.change(screen.getByLabelText(/fieldApiKey/), {
+      target: { value: 'luma-key' },
+    });
+    fireEvent.change(screen.getByLabelText(/fieldModel/), {
+      target: { value: 'ray-2' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'createProfile' }));
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('createSuccess'));
+    expect(receivedBody.config).toEqual({ api_key: 'luma-key', model: 'ray-2' });
+  });
+
+  it('renderiza e envia os campos do provider google_play (service account)', async () => {
+    let receivedBody: any = null;
+    server.use(
+      http.post(`${API}/integration-profile`, async ({ request }) => {
+        receivedBody = await request.json();
+        return HttpResponse.json({ id: 72, ...receivedBody });
+      }),
+    );
+
+    renderSheet();
+    await waitForTypesLoaded();
+    await chooseType('Payment');
+    await chooseProvider('Google Play Billing');
+
+    fireEvent.change(screen.getByLabelText(/nameLabel/), {
+      target: { value: 'Play' },
+    });
+    fireEvent.change(screen.getByLabelText(/fieldPackageName/), {
+      target: { value: 'com.hcode.classapp' },
+    });
+    fireEvent.change(screen.getByLabelText(/fieldClientEmail/), {
+      target: { value: 'sa@projeto.iam.gserviceaccount.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/fieldServiceAccountPrivateKey/), {
+      target: { value: '-----BEGIN PRIVATE KEY-----' },
+    });
+    // As credenciais são alternativas (JSON completo OU e-mail + chave), então
+    // nenhuma delas pode bloquear o submit por `required`.
+    expect(screen.getByLabelText(/fieldServiceAccountJson/)).not.toBeRequired();
+
+    fireEvent.click(screen.getByRole('button', { name: 'createProfile' }));
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('createSuccess'));
+    expect(receivedBody.config).toMatchObject({
+      package_name: 'com.hcode.classapp',
+      client_email: 'sa@projeto.iam.gserviceaccount.com',
+      private_key: '-----BEGIN PRIVATE KEY-----',
+    });
+  });
+});
+
+/** Corpo enviado a POST /integration-profile/test e ao salvamento. */
+type TestRequestBody = {
+  slug: string;
+  profile_id?: number;
+  config: Record<string, unknown>;
+};
+
+describe('IntegrationProfileSheet — skeleton de carregamento', () => {
+  it('mostra o skeleton (e esconde o formulário) enquanto o perfil carrega, na etapa "profile"', async () => {
+    mockCatalog();
+    let releaseProfile: (() => void) | null = null;
+    server.use(
+      http.get(`${API}/integration-profile/42`, async () => {
+        await new Promise<void>((resolve) => {
+          releaseProfile = resolve;
+        });
+        return HttpResponse.json({
+          id: 42,
+          slug: 'meu-smtp',
+          name: 'Meu SMTP',
+          type_id: 1,
+          provider_id: 10,
+          config: { host: 'smtp.acme.com', from_email: 'a@b.com' },
+          is_active: true,
+        });
+      }),
+    );
+
+    renderSheet({ profileId: 42 });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('integration-profile-form-skeleton')).toHaveAttribute(
+        'data-stage',
+        'profile',
+      );
+    });
+    // O formulário continua montado (o Radix Select depende disso), mas invisível.
+    expect(screen.getByLabelText(/nameLabel/)).not.toBeVisible();
+
+    await act(async () => {
+      releaseProfile?.();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('integration-profile-form-skeleton'),
+      ).not.toBeInTheDocument();
+    });
+    expect((screen.getByLabelText(/nameLabel/) as HTMLInputElement).value).toBe(
+      'Meu SMTP',
+    );
+    expect(screen.getByLabelText(/nameLabel/)).toBeVisible();
+  });
+
+  it('mostra o skeleton na etapa "catalog" também na criação', async () => {
+    let releaseTypes: (() => void) | null = null;
+    server.use(
+      http.get(`${API}/integration-profile/types`, async () => {
+        await new Promise<void>((resolve) => {
+          releaseTypes = resolve;
+        });
+        return HttpResponse.json(TYPES);
+      }),
+      http.get(`${API}/integration-profile/providers`, () =>
+        HttpResponse.json(PROVIDERS),
+      ),
+    );
+
+    renderSheet();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('integration-profile-form-skeleton')).toHaveAttribute(
+        'data-stage',
+        'catalog',
+      );
+    });
+
+    await act(async () => {
+      releaseTypes?.();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('integration-profile-form-skeleton'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it('falha no catálogo não deixa o skeleton preso', async () => {
+    server.use(
+      http.get(`${API}/integration-profile/types`, () =>
+        HttpResponse.json({ message: 'boom' }, { status: 500 }),
+      ),
+      http.get(`${API}/integration-profile/providers`, () =>
+        HttpResponse.json(PROVIDERS),
+      ),
+    );
+
+    renderSheet();
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('loadError'));
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('integration-profile-form-skeleton'),
+      ).not.toBeInTheDocument();
+    });
+    expect(screen.getByLabelText(/nameLabel/)).toBeVisible();
+  });
+});
+
+describe('IntegrationProfileSheet — testar conexão', () => {
+  beforeEach(() => mockCatalog());
+
+  async function fillSmtpForm() {
+    renderSheet();
+    await waitForTypesLoaded();
+    fireEvent.change(screen.getByLabelText(/nameLabel/), {
+      target: { value: 'Meu SMTP' },
+    });
+    await chooseType('Email');
+    await chooseProvider('SMTP');
+  }
+
+  it('exibe o resultado e mantém Salvar habilitado quando o teste passa', async () => {
+    server.use(
+      http.post(`${API}/integration-profile/test`, () =>
+        HttpResponse.json({
+          success: true,
+          destination: 'a@b.com',
+          ok: true,
+          provider: 'smtp',
+          info: 'smtp.acme.com:587',
+          tested_at: '2026-07-30T12:00:00.000Z',
+          persisted: false,
+        }),
+      ),
+    );
+
+    await fillSmtpForm();
+
+    const submit = screen.getByTestId('integration-profile-submit');
+    expect(submit).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('testConnectionSuccess'),
+    );
+    expect(screen.getByText('testConnectionOkWithInfo')).toBeInTheDocument();
+    // Perfil ainda não salvo: o backend não tem onde registrar o resultado.
+    expect(screen.getByText('testConnectionNotPersisted')).toBeInTheDocument();
+    // Sem gate: o teste nunca desabilita o salvamento.
+    expect(submit).toBeEnabled();
+  });
+
+  it('exibe a mensagem do backend quando o teste falha, sem duplicar o toast e sem bloquear Salvar', async () => {
+    server.use(
+      http.post(`${API}/integration-profile/test`, () =>
+        HttpResponse.json(
+          { statusCode: 400, message: 'Invalid access key ID.', error: 'Bad Request' },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    await fillSmtpForm();
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+
+    await waitFor(() =>
+      expect(screen.getByText('Invalid access key ID.')).toBeInTheDocument(),
+    );
+    // `showErrors: false` suprime o toast global do AppProvider: só o nosso aparece.
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith('testConnectionError');
+    expect(screen.getByTestId('integration-profile-submit')).toBeEnabled();
+  });
+
+  it('envia o mesmo config que o salvamento (incluindo callback_urls do oauth) e omite profile_id na criação', async () => {
+    let testBody: TestRequestBody | null = null;
+    let saveBody: TestRequestBody | null = null;
+    server.use(
+      http.post(`${API}/integration-profile/test`, async ({ request }) => {
+        testBody = (await request.json()) as TestRequestBody;
+        return HttpResponse.json({ success: true, ok: true, persisted: false });
+      }),
+      http.post(`${API}/integration-profile`, async ({ request }) => {
+        saveBody = (await request.json()) as TestRequestBody;
+        return HttpResponse.json({ id: 1, ...saveBody });
+      }),
+    );
+
+    renderSheet();
+    await waitForTypesLoaded();
+    fireEvent.change(screen.getByLabelText(/nameLabel/), {
+      target: { value: 'Google Login' },
+    });
+    await chooseType('Auth');
+    await chooseProvider('Google');
+    fireEvent.change(screen.getByLabelText(/fieldClientId/), {
+      target: { value: 'client-123' },
+    });
+    fireEvent.change(screen.getByLabelText(/fieldClientSecret/), {
+      target: { value: 'secret-456' },
+    });
+
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+    await waitFor(() => expect(testBody).not.toBeNull());
+
+    fireEvent.click(screen.getByTestId('integration-profile-submit'));
+    await waitFor(() => expect(saveBody).not.toBeNull());
+
+    expect(testBody!.config).toEqual(saveBody!.config);
+    expect(testBody!.config.callback_urls).toEqual([
+      `${window.location.origin}/callback/google`,
+    ]);
+    expect(testBody).not.toHaveProperty('profile_id');
+  });
+
+  it('envia profile_id na edição, para herdar os segredos mesmo com o slug renomeado', async () => {
+    let testBody: TestRequestBody | null = null;
+    server.use(
+      http.get(`${API}/integration-profile/42`, () =>
+        HttpResponse.json({
+          id: 42,
+          slug: 'meu-smtp',
+          name: 'Meu SMTP',
+          type_id: 1,
+          provider_id: 10,
+          config: { host: 'h', from_email: 'a@b.com', password: '********' },
+          is_active: true,
+        }),
+      ),
+      http.post(`${API}/integration-profile/test`, async ({ request }) => {
+        testBody = (await request.json()) as TestRequestBody;
+        return HttpResponse.json({ success: true, ok: true, persisted: true });
+      }),
+    );
+
+    renderSheet({ profileId: 42 });
+    await waitFor(() => {
+      expect((screen.getByLabelText(/nameLabel/) as HTMLInputElement).value).toBe(
+        'Meu SMTP',
+      );
+    });
+
+    fireEvent.change(screen.getByLabelText(/slugLabel/), {
+      target: { value: 'meu-smtp-renomeado' },
+    });
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+
+    await waitFor(() => expect(testBody).not.toBeNull());
+    expect(testBody!.profile_id).toBe(42);
+    expect(testBody!.slug).toBe('meu-smtp-renomeado');
+  });
+
+  it('mostra o aviso quando as credenciais valem mas algo secundário não pôde ser provado', async () => {
+    server.use(
+      http.post(`${API}/integration-profile/test`, () =>
+        HttpResponse.json({
+          success: true,
+          ok: true,
+          info: 'Resend token is valid',
+          warning: 'The domain is not verified yet.',
+          persisted: true,
+        }),
+      ),
+    );
+
+    await fillSmtpForm();
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+
+    await waitFor(() =>
+      expect(screen.getByText('testConnectionWarning')).toBeInTheDocument(),
+    );
+    expect(screen.queryByText('testConnectionNotPersisted')).not.toBeInTheDocument();
+  });
+
+  it('limpa o resultado ao trocar de provedor', async () => {
+    server.use(
+      http.post(`${API}/integration-profile/test`, () =>
+        HttpResponse.json({ success: true, ok: true, info: 'ok', persisted: true }),
+      ),
+    );
+
+    await fillSmtpForm();
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+    await waitFor(() =>
+      expect(screen.getByText('testConnectionOkWithInfo')).toBeInTheDocument(),
+    );
+
+    await chooseProvider('Gmail');
+
+    await waitFor(() => {
+      expect(screen.queryByText('testConnectionOkWithInfo')).not.toBeInTheDocument();
+    });
+  });
+
+  it('mantém o botão desabilitado enquanto faltam nome, slug, tipo ou provedor', async () => {
+    renderSheet();
+    await waitForTypesLoaded();
+    expect(screen.getByTestId('integration-profile-test')).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText(/nameLabel/), {
+      target: { value: 'Meu SMTP' },
+    });
+    await chooseType('Email');
+    await chooseProvider('SMTP');
+
+    expect(screen.getByTestId('integration-profile-test')).toBeEnabled();
   });
 });

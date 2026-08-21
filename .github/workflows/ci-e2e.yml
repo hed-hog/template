@@ -1,14 +1,13 @@
 name: E2E (Playwright)
 
-# Roda os testes e2e Playwright dos apps front-end (matrix abaixo) contra o
-# stack vivo (infra + API compilada + Chromium real, um dev server Next.js por
-# leg da matrix). Bem mais pesado que o ci.yml (que só cobre a API via
-# supertest) — por isso fica de fora do gate obrigatório de PR e roda só
+# Roda os testes e2e Playwright dos 3 apps front-end (admin, class, training)
+# contra o stack vivo (infra + API compilada + Chromium real, um dev server
+# Next.js por leg da matrix). Bem mais pesado que o ci.yml (que só cobre a API
+# via supertest) — por isso fica de fora do gate obrigatório de PR e roda só
 # agendado + sob demanda. Ver docs/testing.md §5b para rodar isso localmente.
-# Adicione novas apps front-end à matrix conforme forem criadas no projeto.
 on:
   schedule:
-    - cron: '0 6 * * *' # 03:00 America/Sao_Paulo
+    - cron: '0 6 * * 1' # segunda-feira, 03:00 America/Sao_Paulo
   workflow_dispatch:
 
 concurrency:
@@ -22,19 +21,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [admin]
+        app: [admin, class, training]
 
     services:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: hedhog
+          POSTGRES_USER: hub
           POSTGRES_PASSWORD: changeme
-          POSTGRES_DB: hedhog
+          POSTGRES_DB: hub
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U hedhog"
+          --health-cmd "pg_isready -U hub"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -49,22 +48,24 @@ jobs:
           --health-retries 5
 
     env:
-      # Valores descartáveis, exclusivos do CI: o banco é um service container
-      # efêmero. Nunca reutilize estes valores fora do CI.
-      DATABASE_URL: postgresql://hedhog:changeme@localhost:5432/hedhog
-      JWT_SECRET: ci-only-jwt-secret-not-for-production
+      # Segredos de teste (não-produção) — espelham ci.yml/TESTING.md.
+      DATABASE_URL: postgresql://hub:changeme@localhost:5432/hub
+      JWT_SECRET: ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
       JWT_EXPIRES_IN: 7d
-      PEPPER: ci-only-pepper-not-for-production
-      ENCRYPTION_SECRET: ci-only-encryption-secret-not-for-production
-      CORS_ALLOWED_ORIGINS: http://localhost:3200
+      PEPPER: QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==
+      ENCRYPTION_SECRET: RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
+      # Cobre os 3 apps de uma vez (só o da leg ativa importa em cada run).
+      CORS_ALLOWED_ORIGINS: http://localhost:3200,https://localhost:3002,http://localhost:3001
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       API_URL: http://localhost:3100
       # Cada setup provisiona/loga várias vezes seguidas — mesmo motivo do ci.yml.
       DISABLE_RATE_LIMIT: 'true'
-      # Env do proxy /api do admin (ver next.config.*: rewrites()).
+      # Env do proxy /api do admin/class (ver next.config.*: rewrites()).
       NEXT_PUBLIC_API_BASE_URL: /api
       INTERNAL_API_URL: http://localhost:3100
+      # Env do training, que chama a API direto do browser (sem proxy).
+      API_BASE_URL: http://localhost:3100
 
     steps:
       - name: Checkout code
@@ -81,17 +82,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Install HedHog CLI
-        run: npm i -g @hed-hog/cli
-
-      - name: Add core library
-        # See ci.yml for details — required at runtime by
-        # apps/api/src/main.ts (SettingService) and copy:core-assets.
-        run: hedhog add core
-
-      - name: Install core library dependencies
-        run: pnpm install --no-frozen-lockfile
 
       - name: Build libraries & packages
         run: pnpm run build:libs

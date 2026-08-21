@@ -1,17 +1,16 @@
 /**
- * Idempotent backfill: encrypts at rest the secrets that already exist in Integration
- * Profiles which are still stored in plain text (legacy, pre-encryption).
+ * Backfill idempotente: cifra em repouso os segredos já existentes nos Perfis de
+ * Integração que ainda estão em texto puro (legado pré-cifra).
  *
- * Must run AFTER the code deploy (with the decryption middleware active). Uses a raw
- * PrismaClient (without the middleware) to read/write the actual value. Idempotent:
- * skips values that are already encrypted (enc.v1. prefix) and empty values — safe to
- * rerun with no effect.
+ * Deve rodar DEPOIS do deploy do código (com o middleware de decifra ativo). Usa um
+ * PrismaClient CRU (sem o middleware) para ler/gravar o valor real. Idempotente: pula
+ * valores já cifrados (prefixo enc.v1.) e valores vazios — reexecutável sem efeito.
  *
- * Usage:
- *   pnpm exec ts-node scripts/encrypt-integration-secrets.ts            # applies
- *   pnpm exec ts-node scripts/encrypt-integration-secrets.ts --dry-run  # report only
+ * Uso:
+ *   pnpm exec ts-node scripts/encrypt-integration-secrets.ts            # aplica
+ *   pnpm exec ts-node scripts/encrypt-integration-secrets.ts --dry-run  # só relata
  *
- * Requires DATABASE_URL and ENCRYPTION_SECRET in the environment (loads apps/api/.env).
+ * Requer DATABASE_URL e ENCRYPTION_SECRET no ambiente (carrega apps/api/.env).
  */
 import { PrismaClient } from '@prisma/client';
 import { createCipheriv, randomBytes, scryptSync } from 'crypto';
@@ -19,7 +18,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { getSensitiveConfigKeys } from '../libraries/core/src/integration-profile/integration-profile.secrets';
 
-/** Loads apps/api/.env into process.env (without depending on dotenv), without overwriting what already exists. */
+/** Carrega apps/api/.env em process.env (sem depender de dotenv), sem sobrescrever o que já existe. */
 function loadEnvFile(path: string) {
   if (!existsSync(path)) return;
   for (const rawLine of readFileSync(path, 'utf8').split(/\r?\n/)) {
@@ -43,7 +42,7 @@ loadEnvFile(resolve(__dirname, '../apps/api/.env'));
 
 const ENC_ENVELOPE_PREFIX = 'enc.v1.';
 
-/** Exactly mirrors SecurityService.encrypt (aes-256-gcm, scrypt, salt:iv:tag:ct). */
+/** Espelha exatamente SecurityService.encrypt (aes-256-gcm, scrypt, salt:iv:tag:ct). */
 function encryptValue(value: string, secret: string): string {
   const salt = randomBytes(16);
   const key = scryptSync(secret, salt, 32);

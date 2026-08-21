@@ -12,13 +12,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    ".turbo",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/__tests__/**",
-    "jest.config.ts",
-    "vitest.config.ts"
+    ".turbo"
   ]
 }

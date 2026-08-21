@@ -1,4 +1,5 @@
 'use client';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -131,19 +132,23 @@ export function MfaPage() {
 
     try {
       const { startAuthentication } = await import('@simplewebauthn/browser');
-      const optionsResponse = await request<
-        Parameters<typeof startAuthentication>[0]
-      >({
-        url: '/auth/webauthn/generate',
-        method: 'POST',
-        data: { mfaToken },
-      });
+      // O endpoint devolve as options cruas; quem embrulha em `optionsJSON` é a
+      // chamada abaixo, conforme a API do @simplewebauthn/browser v13.
+      const optionsResponse = await request<PublicKeyCredentialRequestOptionsJSON>(
+        {
+          url: '/auth/webauthn/generate',
+          method: 'POST',
+          data: { mfaToken },
+        }
+      );
 
       if (!optionsResponse.data) {
         throw new Error('Failed to generate authentication options');
       }
 
-      const assertion = await startAuthentication(optionsResponse.data);
+      const assertion = await startAuthentication({
+        optionsJSON: optionsResponse.data,
+      });
       const verifyResponse = await request<{
         accessToken: string;
         refreshToken?: string;

@@ -3,11 +3,27 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { ResizableSheetContent } from '@/components/ui/resizable-sheet-content';
 import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -18,6 +34,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -35,24 +52,32 @@ import {
   ChevronRight,
   FileSpreadsheet,
   FileText,
+  Info,
   Loader2,
+  Plus,
+  Tag as TagIcon,
   Upload,
+  Wand2,
   X,
   XCircle,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  CUSTOM_OPTION,
+  CUSTOM_PREFIX,
+  IGNORE_VALUE,
+  customKeyOf,
+  detectMapping,
+  isCustomValue,
+  normalizeCustomKey,
+  type ColumnMapping,
+  type ImportField,
+} from './detect-mapping';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type ImportField = {
-  /** Value sent to the backend as the target field for a mapped column. */
-  value: string;
-  /** Already-resolved, human-readable label shown in the UI. */
-  label: string;
-  /** When false, mapping this field to more than one column raises a warning. */
-  allowMultiple?: boolean;
-};
+export type { ColumnMapping, ImportField } from './detect-mapping';
 
 export type ImportPreview = {
   fileName: string;
@@ -63,15 +88,50 @@ export type ImportPreview = {
 
 export type ImportResult = {
   imported: number;
+  /** Rows matched to a record the base already had, so nothing was duplicated. */
+  updated?: number;
+  /** How many of those had at least one empty field filled in. */
+  enriched?: number;
   skipped: number;
   errors: Array<{ row: number; message: string }>;
 };
 
-type ColumnMapping = Record<string, string>;
+/** A tag offered by the backend catalog for the batch picker. */
+export type ImportTagOption = {
+  id: number | string;
+  slug: string;
+  color?: string | null;
+};
+
+/** Axes the backend uses to recognise a row as an existing record. */
+export type ImportDedupeAxis = 'document' | 'email' | 'phone';
+
+export const IMPORT_DEDUPE_AXES: ImportDedupeAxis[] = [
+  'document',
+  'email',
+  'phone',
+];
+
+/** Marks applied to every row of the file, collected on the confirm step. */
+type BatchMarks = {
+  tags: string[];
+  fields: Array<{ key: string; value: string }>;
+  dedupeBy: ImportDedupeAxis[];
+  enrichExisting: boolean;
+  overwriteExisting: boolean;
+};
+
+const EMPTY_BATCH_MARKS: BatchMarks = {
+  tags: [],
+  fields: [],
+  dedupeBy: IMPORT_DEDUPE_AXES,
+  enrichExisting: true,
+  // Destructive, so it is always an explicit choice — never carried over.
+  overwriteExisting: false,
+};
 
 type WizardStep = 'upload' | 'preview' | 'mapping' | 'confirm' | 'result';
 
-const IGNORE_VALUE = '_ignore';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export function getImportErrorMessage(error: unknown, fallback: string) {
@@ -352,14 +412,30 @@ function PreviewStep({
 function MappingStep({
   fields,
   columns,
+  sampleRow,
   mapping,
   onMappingChange,
+  autoDetected,
+  customLabels,
+  onCustomLabelChange,
+  customErrors,
+  allowCustomFields,
+  onRedetect,
+  onClearAll,
   validationError,
 }: {
   fields: ImportField[];
   columns: string[];
+  sampleRow: Record<string, string> | undefined;
   mapping: ColumnMapping;
   onMappingChange: (mapping: ColumnMapping) => void;
+  autoDetected: Record<string, boolean>;
+  customLabels: Record<string, string>;
+  onCustomLabelChange: (csvCol: string, label: string) => void;
+  customErrors: Record<string, string>;
+  allowCustomFields: boolean;
+  onRedetect: () => void;
+  onClearAll: () => void;
   validationError: string | null;
 }) {
   const t = useTranslations('import-sheet');
@@ -388,8 +464,19 @@ function MappingStep({
       .map(([field]) => field);
   }, [mappedValues, uniqueFields]);
 
+  const autoCount = useMemo(
+    () =>
+      columns.filter(
+        (col) => autoDetected[col] && (mapping[col] ?? IGNORE_VALUE) !== IGNORE_VALUE
+      ).length,
+    [columns, autoDetected, mapping]
+  );
+
   const handleChange = (csvCol: string, field: string) => {
-    onMappingChange({ ...mapping, [csvCol]: field });
+    // Picking "custom field" starts with an empty key on purpose: it is
+    // invalid until the user names it, which is what blocks the Next button.
+    const next = field === CUSTOM_OPTION ? CUSTOM_PREFIX : field;
+    onMappingChange({ ...mapping, [csvCol]: next });
   };
 
   return (
@@ -402,6 +489,41 @@ function MappingStep({
           </AlertDescription>
         </Alert>
       )}
+
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/70 bg-muted/30 px-3 py-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Wand2 className="h-4 w-4 shrink-0 text-primary" />
+          <p className="text-xs text-muted-foreground">
+            {autoCount > 0
+              ? t('mappingAutoSummary', {
+                  detected: autoCount,
+                  total: columns.length,
+                })
+              : t('mappingAutoNone')}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={onRedetect}
+          >
+            <Wand2 className="mr-1 h-3 w-3" />
+            {t('mappingRedetect')}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-muted-foreground"
+            onClick={onClearAll}
+          >
+            {t('mappingClearAll')}
+          </Button>
+        </div>
+      </div>
 
       {duplicateFields.length > 0 && (
         <Alert className="border-amber-500/30 bg-amber-500/10 py-2">
@@ -426,60 +548,475 @@ function MappingStep({
         <div className="divide-y divide-border/50">
           {columns.map((col) => {
             const currentValue = mapping[col] ?? IGNORE_VALUE;
+            const isCustom = isCustomValue(currentValue);
             const isDuplicate =
               currentValue !== IGNORE_VALUE &&
               duplicateFields.includes(currentValue);
+            const isAuto = Boolean(autoDetected[col]) && currentValue !== IGNORE_VALUE;
+            const sample = sampleRow?.[col];
+            const customError = customErrors[col];
 
             return (
               <div
                 key={col}
                 className={cn(
-                  'grid grid-cols-2 items-center gap-3 px-3 py-2',
+                  'grid grid-cols-2 items-start gap-3 px-3 py-2',
                   isDuplicate && 'bg-amber-500/5'
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  {isDuplicate && (
-                    <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />
-                  )}
-                  <span className="truncate text-sm font-medium">{col}</span>
-                  {currentValue === IGNORE_VALUE && (
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 border-border/50 text-[10px] text-muted-foreground px-1.5 py-0"
+                <div className="flex min-w-0 flex-col gap-0.5 py-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {isDuplicate && (
+                      <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />
+                    )}
+                    <span className="truncate text-sm font-medium">{col}</span>
+                    {isAuto && (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 border-primary/30 bg-primary/5 text-[10px] text-primary px-1.5 py-0"
+                      >
+                        {t('mappingAutoBadge')}
+                      </Badge>
+                    )}
+                    {currentValue === IGNORE_VALUE && (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 border-border/50 text-[10px] text-muted-foreground px-1.5 py-0"
+                      >
+                        {t('mappingIgnore')}
+                      </Badge>
+                    )}
+                  </div>
+                  {sample ? (
+                    <span className="truncate text-[10px] text-muted-foreground/70">
+                      {t('mappingSample')}: {sample}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Select
+                    value={isCustom ? CUSTOM_OPTION : currentValue}
+                    onValueChange={(val) => handleChange(col, val)}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        'h-8 text-xs w-full',
+                        isDuplicate && 'border-amber-500/50 bg-amber-500/5',
+                        customError && 'border-destructive/60'
+                      )}
                     >
-                      {t('mappingIgnore')}
-                    </Badge>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fields.map((field) => (
+                        <SelectItem
+                          key={field.value}
+                          value={field.value}
+                          className="text-xs"
+                        >
+                          {field.label}
+                        </SelectItem>
+                      ))}
+                      {allowCustomFields && (
+                        <>
+                          <SelectSeparator />
+                          <SelectItem value={CUSTOM_OPTION} className="text-xs">
+                            {t('mappingCustomOption')}
+                          </SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+
+                  {isCustom && (
+                    <div className="space-y-1">
+                      <Input
+                        value={customLabels[col] ?? ''}
+                        onChange={(event) =>
+                          onCustomLabelChange(col, event.target.value)
+                        }
+                        placeholder={t('mappingCustomPlaceholder')}
+                        className={cn(
+                          'h-8 text-xs',
+                          customError && 'border-destructive/60'
+                        )}
+                      />
+                      {customError ? (
+                        <p className="text-[10px] text-destructive">
+                          {customError}
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground">
+                          {t('mappingCustomKeyHint', {
+                            key: customKeyOf(currentValue),
+                          })}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
-                <Select
-                  value={currentValue}
-                  onValueChange={(val) => handleChange(col, val)}
-                >
-                  <SelectTrigger
-                    className={cn(
-                      'h-8 text-xs w-full',
-                      isDuplicate && 'border-amber-500/50 bg-amber-500/5'
-                    )}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fields.map((field) => (
-                      <SelectItem
-                        key={field.value}
-                        value={field.value}
-                        className="text-xs"
-                      >
-                        {field.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Batch marks (confirm step) ──────────────────────────────────────────────
+
+/**
+ * Tag picker for the batch. Values travel as names, not ids: the backend
+ * resolves an existing tag by slug or creates it, so typing a tag nobody
+ * registered yet just works.
+ */
+function BatchTagPicker({
+  value,
+  options,
+  onChange,
+}: {
+  value: string[];
+  options: ImportTagOption[];
+  onChange: (next: string[]) => void;
+}) {
+  const t = useTranslations('import-sheet');
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const toggle = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onChange(
+      value.some((tag) => tag.toLowerCase() === trimmed.toLowerCase())
+        ? value.filter((tag) => tag.toLowerCase() !== trimmed.toLowerCase())
+        : [...value, trimmed]
+    );
+    setSearch('');
+  };
+
+  const term = search.trim();
+  const isNewTag =
+    term.length > 0 &&
+    !options.some((option) => option.slug.toLowerCase() === term.toLowerCase()) &&
+    !value.some((tag) => tag.toLowerCase() === term.toLowerCase());
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {value.map((tag) => (
+          <Badge
+            key={tag}
+            variant="secondary"
+            className="gap-1 pl-2 pr-1 text-[11px]"
+          >
+            {tag}
+            <button
+              type="button"
+              aria-label={t('batchTagRemove', { tag })}
+              className="rounded-full p-0.5 hover:bg-muted-foreground/20 cursor-pointer"
+              onClick={() => toggle(tag)}
+            >
+              <X className="size-3" />
+            </button>
+          </Badge>
+        ))}
+
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="outline" size="sm" className="gap-1.5">
+              <TagIcon className="size-3.5" />
+              {t('batchTagsAdd')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-0" align="start">
+            <Command shouldFilter>
+              <CommandInput
+                placeholder={t('batchTagsSearch')}
+                value={search}
+                onValueChange={setSearch}
+              />
+              <CommandList>
+                <CommandEmpty>{t('batchTagsEmpty')}</CommandEmpty>
+                {isNewTag ? (
+                  <CommandGroup forceMount>
+                    <CommandItem
+                      forceMount
+                      value={term}
+                      onSelect={() => toggle(term)}
+                    >
+                      <Plus className="mr-2 size-3.5 shrink-0" />
+                      <span className="truncate">
+                        {t('batchTagsCreate', { tag: term })}
+                      </span>
+                    </CommandItem>
+                  </CommandGroup>
+                ) : null}
+                <CommandGroup>
+                  {options.map((option) => {
+                    const checked = value.some(
+                      (tag) => tag.toLowerCase() === option.slug.toLowerCase()
+                    );
+                    return (
+                      <CommandItem
+                        key={String(option.id)}
+                        value={option.slug}
+                        onSelect={() => toggle(option.slug)}
+                      >
+                        <Checkbox checked={checked} className="mr-2 shrink-0" />
+                        {option.color ? (
+                          <span
+                            className="mr-1.5 inline-block size-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: option.color }}
+                          />
+                        ) : null}
+                        <span className="truncate">{option.slug}</span>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * "Apply to every record" block: the tags and fixed key/value pairs that mark a
+ * whole file, plus which axes count as a duplicate.
+ *
+ * Distinct from the `custom:` mapping of the previous step — that one reads a
+ * value per row from a column, this one is the same value for the entire file.
+ */
+function BatchMarksSection({
+  value,
+  onChange,
+  tagOptions,
+  enableTags,
+  enableFields,
+  enableDedupe,
+  reservedKeys,
+}: {
+  value: BatchMarks;
+  onChange: (next: BatchMarks) => void;
+  tagOptions: ImportTagOption[];
+  enableTags: boolean;
+  enableFields: boolean;
+  enableDedupe: boolean;
+  reservedKeys: Set<string>;
+}) {
+  const t = useTranslations('import-sheet');
+
+  const setFieldAt = (index: number, patch: Partial<{ key: string; value: string }>) => {
+    const fields = value.fields.map((field, i) =>
+      i === index ? { ...field, ...patch } : field
+    );
+    onChange({ ...value, fields });
+  };
+
+  const fieldError = (index: number) => {
+    const key = value.fields[index]?.key.trim() ?? '';
+    if (!key) return null;
+    if (!/^[a-z][a-z0-9_]{0,63}$/.test(key)) return t('batchFieldKeyInvalid');
+    if (reservedKeys.has(key)) return t('mappingCustomKeyReserved', { key });
+    if (
+      value.fields.some((field, i) => i !== index && field.key.trim() === key)
+    ) {
+      return t('mappingCustomKeyDuplicate', { key });
+    }
+    return null;
+  };
+
+  return (
+    <div className="rounded-xl border border-border/70 overflow-hidden">
+      <div className="bg-muted/40 px-3 py-2 border-b">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+          {t('batchTitle')}
+        </p>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          {t('batchDescription')}
+        </p>
+      </div>
+
+      <div className="space-y-4 px-3 py-3">
+        {enableTags ? (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-foreground">
+              {t('batchTagsLabel')}
+            </p>
+            <BatchTagPicker
+              value={value.tags}
+              options={tagOptions}
+              onChange={(tags) => onChange({ ...value, tags })}
+            />
+          </div>
+        ) : null}
+
+        {enableFields ? (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-foreground">
+              {t('batchFieldsLabel')}
+            </p>
+
+            {value.fields.map((field, index) => {
+              const error = fieldError(index);
+              return (
+                <div key={index} className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={field.key}
+                      placeholder={t('batchFieldKeyPlaceholder')}
+                      className={cn('h-8 text-xs', error && 'border-destructive')}
+                      onChange={(e) =>
+                        setFieldAt(index, {
+                          key: normalizeCustomKey(e.target.value),
+                        })
+                      }
+                    />
+                    <Input
+                      value={field.value}
+                      placeholder={t('batchFieldValuePlaceholder')}
+                      className="h-8 text-xs"
+                      onChange={(e) => setFieldAt(index, { value: e.target.value })}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 shrink-0 cursor-pointer"
+                      aria-label={t('batchFieldRemove')}
+                      onClick={() =>
+                        onChange({
+                          ...value,
+                          fields: value.fields.filter((_, i) => i !== index),
+                        })
+                      }
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </div>
+                  {error ? (
+                    <p className="text-[11px] text-destructive">{error}</p>
+                  ) : null}
+                </div>
+              );
+            })}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5 cursor-pointer"
+              onClick={() =>
+                onChange({
+                  ...value,
+                  fields: [...value.fields, { key: '', value: '' }],
+                })
+              }
+            >
+              <Plus className="size-3.5" />
+              {t('batchFieldAdd')}
+            </Button>
+          </div>
+        ) : null}
+
+        {enableDedupe ? (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-foreground">
+              {t('batchDedupeLabel')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {IMPORT_DEDUPE_AXES.map((axis) => (
+                <label
+                  key={axis}
+                  className="flex items-center gap-1.5 text-xs cursor-pointer"
+                >
+                  <Checkbox
+                    checked={value.dedupeBy.includes(axis)}
+                    onCheckedChange={(checked) =>
+                      onChange({
+                        ...value,
+                        dedupeBy: checked
+                          ? [...value.dedupeBy, axis]
+                          : value.dedupeBy.filter((item) => item !== axis),
+                      })
+                    }
+                  />
+                  {t(`batchDedupe_${axis}` as never)}
+                </label>
+              ))}
+            </div>
+
+            <label className="flex items-start gap-1.5 text-xs cursor-pointer pt-1">
+              <Checkbox
+                checked={value.enrichExisting}
+                className="mt-0.5"
+                onCheckedChange={(checked) =>
+                  onChange({
+                    ...value,
+                    enrichExisting: checked === true,
+                    // Overwriting without filling is not a state that means
+                    // anything, so the switch resets with the checkbox.
+                    overwriteExisting: checked === true && value.overwriteExisting,
+                  })
+                }
+              />
+              <span>{t('batchEnrichLabel')}</span>
+            </label>
+
+            {value.enrichExisting ? (
+              <div className="flex items-start gap-2 pl-6">
+                <Switch
+                  id="import-overwrite-existing"
+                  checked={value.overwriteExisting}
+                  className="mt-0.5"
+                  onCheckedChange={(checked) =>
+                    onChange({ ...value, overwriteExisting: checked })
+                  }
+                />
+                <label
+                  htmlFor="import-overwrite-existing"
+                  className="text-xs cursor-pointer"
+                >
+                  <span className="block">{t('batchOverwriteLabel')}</span>
+                  <span className="block text-[11px] text-muted-foreground">
+                    {t('batchOverwriteHint')}
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
+            {/* Spells out what happens to a record that already exists, before
+                the file is sent — the rules are not guessable from the UI. */}
+            <Alert
+              className="py-2"
+              variant={value.overwriteExisting ? 'destructive' : 'default'}
+            >
+              {value.overwriteExisting ? (
+                <AlertTriangle className="h-4 w-4" />
+              ) : (
+                <Info className="h-4 w-4" />
+              )}
+              <AlertDescription className="text-[11px] leading-relaxed">
+                <span className="block">{t('batchDedupeNoticeDuplicate')}</span>
+                <span className="block">
+                  {value.enrichExisting
+                    ? t('batchDedupeNoticeEnrichOn')
+                    : t('batchDedupeNoticeEnrichOff')}
+                </span>
+                <span className="block">
+                  {value.overwriteExisting
+                    ? t('batchDedupeNoticeOverwrite')
+                    : t('batchDedupeNoticeNeverOverwrite')}
+                </span>
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -492,11 +1029,13 @@ function ConfirmStep({
   preview,
   mapping,
   renderConfirmExtras,
+  batchMarks,
 }: {
   fields: ImportField[];
   preview: ImportPreview;
   mapping: ColumnMapping;
   renderConfirmExtras?: () => React.ReactNode;
+  batchMarks?: React.ReactNode;
 }) {
   const t = useTranslations('import-sheet');
   const mappedFields = Object.entries(mapping).filter(
@@ -540,7 +1079,11 @@ function ConfirmStep({
         </div>
         <div className="divide-y divide-border/50 max-h-36 overflow-y-auto">
           {mappedFields.map(([col, field]) => {
-            const fieldDef = fields.find((f) => f.value === field);
+            const isCustom = isCustomValue(field);
+            const label = isCustom
+              ? t('confirmCustomField', { key: customKeyOf(field) })
+              : (fields.find((f) => f.value === field)?.label ?? field);
+
             return (
               <div
                 key={col}
@@ -551,15 +1094,23 @@ function ConfirmStep({
                 </span>
                 <Badge
                   variant="outline"
-                  className="text-[10px] border-primary/30 bg-primary/5 text-primary px-1.5 py-0"
+                  className={cn(
+                    'text-[10px] px-1.5 py-0',
+                    isCustom
+                      ? 'border-violet-500/30 bg-violet-500/5 text-violet-600'
+                      : 'border-primary/30 bg-primary/5 text-primary'
+                  )}
                 >
-                  {fieldDef ? fieldDef.label : field}
+                  {label}
                 </Badge>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Marks applied to the whole file */}
+      {batchMarks}
 
       {/* Caller-provided extras (e.g. domain-specific pickers) */}
       {renderConfirmExtras?.()}
@@ -633,7 +1184,12 @@ function ResultStep({
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div
+        className={cn(
+          'grid gap-2',
+          result.updated === undefined ? 'grid-cols-3' : 'grid-cols-4'
+        )}
+      >
         <div className="flex flex-col items-center rounded-xl border border-green-500/20 bg-green-500/10 px-3 py-3 text-center">
           <span className="text-xl font-bold text-green-700">
             {result.imported}
@@ -642,6 +1198,21 @@ function ResultStep({
             {t('resultImported')}
           </span>
         </div>
+        {result.updated === undefined ? null : (
+          <div className="flex flex-col items-center rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-3 text-center">
+            <span className="text-xl font-bold text-blue-700">
+              {result.updated}
+            </span>
+            <span className="text-[11px] text-blue-600">
+              {t('resultUpdated')}
+            </span>
+            {result.enriched ? (
+              <span className="text-[10px] text-blue-500">
+                {t('resultEnriched', { count: result.enriched })}
+              </span>
+            ) : null}
+          </div>
+        )}
         <div className="flex flex-col items-center rounded-xl border border-slate-500/20 bg-slate-500/10 px-3 py-3 text-center">
           <span className="text-xl font-bold text-slate-600">
             {result.skipped}
@@ -704,6 +1275,39 @@ export type ImportSheetProps = {
   /** Optional extra content rendered at the bottom of the confirm step. */
   renderConfirmExtras?: () => React.ReactNode;
 
+  /**
+   * Lets the user map a column to a field of their own naming, sent to the
+   * backend as `custom:<key>`. Only enable it where the backend accepts them.
+   */
+  allowCustomFields?: boolean;
+
+  /** Custom-field keys the backend refuses because they carry their own meaning. */
+  reservedCustomKeys?: string[];
+
+  /**
+   * Lets the user tag every record of the file. Sent as `batch_tags`, a JSON
+   * array of tag names the backend resolves or creates.
+   */
+  enableBatchTags?: boolean;
+
+  /**
+   * Lets the user attach fixed key/value pairs to every record of the file.
+   * Sent as `batch_fields`, a JSON object.
+   */
+  enableBatchFields?: boolean;
+
+  /**
+   * Lets the user choose which axes make a row count as an existing record.
+   * Sent as `dedupe_by`, a JSON array. All three are on by default.
+   */
+  enableDedupe?: boolean;
+
+  /** Endpoint listing the tags already registered, for the batch picker. */
+  tagOptionsUrl?: string;
+
+  /** Escape hatch to start every column on "ignore" instead of suggesting. */
+  autoDetect?: boolean;
+
   /** Persistence key for the resizable sheet width. */
   sheetId?: string;
 
@@ -721,6 +1325,13 @@ export function ImportSheet({
   requiredField = 'name',
   extraFormData,
   renderConfirmExtras,
+  allowCustomFields = false,
+  reservedCustomKeys,
+  enableBatchTags = false,
+  enableBatchFields = false,
+  enableDedupe = false,
+  tagOptionsUrl,
+  autoDetect = true,
   sheetId = 'import-sheet',
   title,
   description,
@@ -743,16 +1354,80 @@ export function ImportSheet({
   // Step 2: Mapping
   const [mapping, setMapping] = useState<ColumnMapping>({});
   const [mappingError, setMappingError] = useState<string | null>(null);
+  /** Columns whose current value came from the suggestion, not from the user. */
+  const [autoDetected, setAutoDetected] = useState<Record<string, boolean>>({});
+  /** Raw text typed for each custom field, kept so the input does not jump. */
+  const [customLabels, setCustomLabels] = useState<Record<string, string>>({});
+
+  // Step 3: Marks applied to the whole file
+  const [batchMarks, setBatchMarks] = useState<BatchMarks>(EMPTY_BATCH_MARKS);
+  const [tagOptions, setTagOptions] = useState<ImportTagOption[]>([]);
 
   // Step 4: Result
   const [result, setResult] = useState<ImportResult | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
 
+  const showBatchMarks = enableBatchTags || enableBatchFields || enableDedupe;
+
   const requiredFieldLabel = useMemo(
     () => fields.find((f) => f.value === requiredField)?.label ?? requiredField,
     [fields, requiredField]
   );
+
+  const reservedKeys = useMemo(
+    () =>
+      new Set([
+        ...(reservedCustomKeys ?? []),
+        ...fields.map((field) => field.value),
+      ]),
+    [reservedCustomKeys, fields]
+  );
+
+  /** A batch key that is filled in but malformed, reserved or repeated. */
+  const hasInvalidBatchField = useMemo(() => {
+    if (!enableBatchFields) return false;
+
+    const keys = batchMarks.fields
+      .map((field) => field.key.trim())
+      .filter((key) => key.length > 0);
+
+    return (
+      keys.some(
+        (key) => !/^[a-z][a-z0-9_]{0,63}$/.test(key) || reservedKeys.has(key)
+      ) || new Set(keys).size !== keys.length
+    );
+  }, [enableBatchFields, batchMarks.fields, reservedKeys]);
+
+  /** Per-column validation of the user-named custom fields. */
+  const customErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    const keyOwners: Record<string, string[]> = {};
+
+    for (const [col, value] of Object.entries(mapping)) {
+      if (!isCustomValue(value)) continue;
+
+      const key = customKeyOf(value);
+      if (!key) {
+        errors[col] = t('mappingCustomKeyRequired');
+        continue;
+      }
+      if (reservedKeys.has(key)) {
+        errors[col] = t('mappingCustomKeyReserved', { key });
+        continue;
+      }
+      (keyOwners[key] ??= []).push(col);
+    }
+
+    for (const [key, cols] of Object.entries(keyOwners)) {
+      if (cols.length < 2) continue;
+      for (const col of cols) {
+        errors[col] = t('mappingCustomKeyDuplicate', { key });
+      }
+    }
+
+    return errors;
+  }, [mapping, reservedKeys, t]);
 
   // ── Reset on close ──
   const handleOpenChange = useCallback(
@@ -766,6 +1441,9 @@ export function ImportSheet({
         setPreviewLoading(false);
         setMapping({});
         setMappingError(null);
+        setAutoDetected({});
+        setCustomLabels({});
+        setBatchMarks(EMPTY_BATCH_MARKS);
         setResult(null);
         setImportError(null);
         setImportLoading(false);
@@ -775,21 +1453,105 @@ export function ImportSheet({
     [onOpenChange]
   );
 
-  // ── Auto-initialise mapping from columns ──
-  const initMapping = useCallback((columns: string[]) => {
-    const initial: ColumnMapping = {};
-    columns.forEach((col) => {
-      initial[col] = IGNORE_VALUE;
+  // Tag catalog for the batch picker. A base with no tag yet is normal — the
+  // user can still type new ones, so a failure here only costs the suggestions.
+  useEffect(() => {
+    if (!open || !enableBatchTags || !tagOptionsUrl) return;
+
+    let active = true;
+    void (async () => {
+      try {
+        const res = await request<{ data: ImportTagOption[] }>({
+          url: tagOptionsUrl,
+          method: 'GET',
+        });
+        if (active) setTagOptions(res.data?.data ?? []);
+      } catch {
+        if (active) setTagOptions([]);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [open, enableBatchTags, tagOptionsUrl, request]);
+
+  // ── Initialise mapping from columns, suggesting what we can recognise ──
+  const initMapping = useCallback(
+    (columns: string[]) => {
+      const initial = autoDetect
+        ? detectMapping(columns, fields)
+        : columns.reduce<ColumnMapping>((acc, col) => {
+            acc[col] = IGNORE_VALUE;
+            return acc;
+          }, {});
+
+      const detected: Record<string, boolean> = {};
+      for (const col of columns) {
+        detected[col] = initial[col] !== IGNORE_VALUE;
+      }
+
+      setMapping(initial);
+      setAutoDetected(detected);
+      setCustomLabels({});
+      setMappingError(null);
+    },
+    [autoDetect, fields]
+  );
+
+  const handleMappingChange = useCallback((next: ColumnMapping) => {
+    setMapping((previous) => {
+      // Any column the user touched loses its "Auto" badge, so what is left
+      // badged is exactly what still needs reviewing.
+      const touched = Object.keys(next).filter(
+        (col) => next[col] !== previous[col]
+      );
+      if (touched.length > 0) {
+        setAutoDetected((flags) => {
+          const updated = { ...flags };
+          for (const col of touched) updated[col] = false;
+          return updated;
+        });
+      }
+      return next;
     });
-    setMapping(initial);
+    setMappingError(null);
+  }, []);
+
+  const handleCustomLabelChange = useCallback(
+    (csvCol: string, label: string) => {
+      setCustomLabels((previous) => ({ ...previous, [csvCol]: label }));
+      setMapping((previous) => ({
+        ...previous,
+        [csvCol]: `${CUSTOM_PREFIX}${normalizeCustomKey(label)}`,
+      }));
+      setMappingError(null);
+    },
+    []
+  );
+
+  const handleClearAll = useCallback(() => {
+    setMapping((previous) => {
+      const cleared: ColumnMapping = {};
+      for (const col of Object.keys(previous)) cleared[col] = IGNORE_VALUE;
+      return cleared;
+    });
+    setAutoDetected({});
+    setCustomLabels({});
+    setMappingError(null);
   }, []);
 
   // ── Navigation ──
   const canGoNext = (): boolean => {
     if (step === 'upload') return !!file;
     if (step === 'preview') return !!preview && !previewError;
-    if (step === 'mapping') return Object.values(mapping).includes(requiredField);
-    if (step === 'confirm') return true;
+    if (step === 'mapping') {
+      if (!Object.values(mapping).includes(requiredField)) return false;
+      return Object.keys(customErrors).length === 0;
+    }
+    // A half-typed batch field would be rejected by the backend after the file
+    // is already uploaded, so it blocks the button instead.
+    if (step === 'confirm') return !hasInvalidBatchField;
     return false;
   };
 
@@ -812,6 +1574,11 @@ export function ImportSheet({
         setMappingError(
           t('mappingRequiredField', { field: requiredFieldLabel })
         );
+        return;
+      }
+      const firstCustomError = Object.values(customErrors)[0];
+      if (firstCustomError) {
+        setMappingError(firstCustomError);
         return;
       }
       setMappingError(null);
@@ -865,6 +1632,34 @@ export function ImportSheet({
       const formData = new FormData();
       formData.append('file', file);
       formData.append('mapping', JSON.stringify(mapping));
+
+      if (enableBatchTags && batchMarks.tags.length > 0) {
+        formData.append('batch_tags', JSON.stringify(batchMarks.tags));
+      }
+      if (enableBatchFields) {
+        const fields = Object.fromEntries(
+          batchMarks.fields
+            .map((field) => [field.key.trim(), field.value.trim()] as const)
+            .filter(([key, value]) => key && value)
+        );
+        if (Object.keys(fields).length > 0) {
+          formData.append('batch_fields', JSON.stringify(fields));
+        }
+      }
+      if (enableDedupe) {
+        formData.append('dedupe_by', JSON.stringify(batchMarks.dedupeBy));
+        formData.append(
+          'enrich_existing',
+          batchMarks.enrichExisting ? 'true' : 'false'
+        );
+        formData.append(
+          'overwrite_existing',
+          batchMarks.enrichExisting && batchMarks.overwriteExisting
+            ? 'true'
+            : 'false'
+        );
+      }
+
       if (extraFormData) {
         for (const [key, value] of Object.entries(extraFormData)) {
           formData.append(key, value);
@@ -944,11 +1739,16 @@ export function ImportSheet({
             <MappingStep
               fields={fields}
               columns={preview.columns}
+              sampleRow={preview.preview[0]}
               mapping={mapping}
-              onMappingChange={(m) => {
-                setMapping(m);
-                setMappingError(null);
-              }}
+              onMappingChange={handleMappingChange}
+              autoDetected={autoDetected}
+              customLabels={customLabels}
+              onCustomLabelChange={handleCustomLabelChange}
+              customErrors={customErrors}
+              allowCustomFields={allowCustomFields}
+              onRedetect={() => initMapping(preview.columns)}
+              onClearAll={handleClearAll}
               validationError={mappingError}
             />
           )}
@@ -959,6 +1759,19 @@ export function ImportSheet({
               preview={preview}
               mapping={mapping}
               renderConfirmExtras={renderConfirmExtras}
+              batchMarks={
+                showBatchMarks ? (
+                  <BatchMarksSection
+                    value={batchMarks}
+                    onChange={setBatchMarks}
+                    tagOptions={tagOptions}
+                    enableTags={enableBatchTags}
+                    enableFields={enableBatchFields}
+                    enableDedupe={enableDedupe}
+                    reservedKeys={reservedKeys}
+                  />
+                ) : null
+              }
             />
           )}
 

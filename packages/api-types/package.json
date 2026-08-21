@@ -1,14 +1,15 @@
 {
   "name": "@hed-hog/api-types",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.0.2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "dev": "tsc --project tsconfig.json --watch",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api-types",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
     "zod": "^3.24.1"
@@ -16,5 +17,21 @@
   "devDependencies": {
     "@types/node": "^24.9.1",
     "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
   }
 }

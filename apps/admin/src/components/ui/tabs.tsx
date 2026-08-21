@@ -49,7 +49,7 @@ function TabsTrigger({
         'data-[state=active]:border-b-0 data-[state=active]:-mb-px data-[state=active]:pb-px',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
         'disabled:pointer-events-none disabled:opacity-50',
-        'whitespace-normal break-words font-medium transition-colors',
+        'whitespace-normal wrap-break-word font-medium transition-colors',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         '-ml-px first:ml-0',
         className

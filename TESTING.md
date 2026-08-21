@@ -1,52 +1,45 @@
-# Testing the API Locally
+# Testando API Localmente
 
-> This file covers the **local setup for the API's E2E tests** (live server).
-> The full testing base guide (backend/frontend unit tests, coverage,
-> thresholds, Playwright, CI) is at [docs/testing.md](docs/testing.md).
+> Este arquivo cobre o **setup local dos testes E2E da API** (servidor vivo).
+> O guia completo da base de testes (unitários backend/frontend, cobertura,
+> thresholds, Playwright, CI) está em [docs/testing.md](docs/testing.md).
 
-## Quick Setup
+## Setup Rápido
 
-### 1. Make sure PostgreSQL is running
-
+### 1. Certificar que PostgreSQL está rodando
 ```powershell
 docker compose up -d postgres redis
 ```
 
-### 2. Configure .env (apps/api/.env)
-
+### 2. Configurar .env (apps/api/.env)
 ```env
-DATABASE_URL=postgresql://hedhog:changeme@localhost:5444/hedhog
-# `pnpm init:env` generates these on first run. To regenerate one by hand:
-#   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-JWT_SECRET=<generate-me>
+DATABASE_URL=postgresql://hub:changeme@localhost:5444/hub
+JWT_SECRET=ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
 JWT_EXPIRES_IN=7d
-PEPPER=<generate-me>
-ENCRYPTION_SECRET=<generate-me>
+PEPPER=QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==
+ENCRYPTION_SECRET=RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
 CORS_ALLOWED_ORIGINS=http://localhost:3200
 ```
 
-(User/port/database come from `docker-compose.yaml`: `hedhog` / `5444` / `hedhog`.)
+(Usuário/porta/banco vêm do `docker-compose.yaml`: `hub` / `5444` / `hub`.)
 
-### 3. Generate Prisma Client and apply migrations
-
+### 3. Gerar Prisma Client e aplicar migrations
 ```powershell
 cd apps/api
 pnpm prisma generate
 pnpm prisma:deploy
 ```
 
-### 4. Start the server (Terminal 1)
-
+### 4. Iniciar servidor (Terminal 1)
 ```powershell
-# DISABLE_RATE_LIMIT prevents 429s from the /auth rate limit during the E2E suite
-# (which performs many logins in a row). NEVER use in production.
+# DISABLE_RATE_LIMIT evita 429 do rate-limit do /auth durante a suíte E2E
+# (que faz muitos logins seguidos). NUNCA usar em produção.
 $env:DISABLE_RATE_LIMIT = "true"
 cd apps/api
 pnpm dev
 ```
 
-### 5. Call /install (Terminal 2 - after the server starts)
-
+### 5. Chamar /install (Terminal 2 - após servidor iniciar)
 ```powershell
 $body = @{
     appName = "HedHog"
@@ -62,152 +55,93 @@ Invoke-WebRequest -Uri "http://localhost:3100/install" `
     -ContentType "application/json"
 ```
 
-### 6. Run tests (Terminal 2)
-
+### 6. Rodar testes (Terminal 2)
 ```powershell
 cd apps/api
 $env:API_URL = "http://localhost:3100"
-pnpm test:e2e                                  # entire E2E suite
-pnpm test:e2e --testPathPattern=contract       # contract only (response shapes)
-pnpm test:e2e --testPathPattern=security       # security only (headers/authz)
-pnpm test:endpoints                            # all-endpoints only (401/public/drift)
+pnpm test:e2e                                  # toda a suíte E2E
+pnpm test:e2e --testPathPattern=contract       # só contrato (shapes de resposta)
+pnpm test:e2e --testPathPattern=security       # só segurança (headers/authz)
+pnpm test:e2e --testPathPattern=vaults-security  # matriz de authz/IDOR dos cofres
+pnpm test:endpoints                            # só all-endpoints (401/públicas/drift)
 ```
 
-## Testing the bootstrap before pushing
+## Testando com act-cli
 
-Everything above tests **this checkout**. It does not answer the question that
-matters for a template repo: _does `hedhog new` still produce a working project
-from the current code?_
-
-```powershell
-pnpm test:bootstrap
-```
-
-[`test/smoke-bootstrap.ps1`](test/smoke-bootstrap.ps1) runs the real `hedhog new`
-(which internally already runs `hedhog add core`) and then walks the same
-sequence as [`ci.yml`](.github/workflows/ci.yml): `build:libs` → unit tests →
-`nest build` + `copy:core-assets` → `prisma:deploy` → `start:prod` → `/health` →
-`POST /install` → `pnpm test:e2e`.
-
-### Why a plain `hedhog new` is not enough
-
-The CLI clones a hardcoded URL — `https://github.com/hed-hog/template.git` —
-with no flag for a branch, a local path, or an alternate template. Run bare, it
-validates what is **already on GitHub**, which is exactly the code you have not
-pushed yet.
-
-The script redirects that clone to your local working copy using git's
-`insteadOf`, supplied through environment variables:
-
-```text
-GIT_CONFIG_COUNT=1
-GIT_CONFIG_KEY_0=url.<repo-path>.insteadOf
-GIT_CONFIG_VALUE_0=https://github.com/hed-hog/template.git
-```
-
-The CLI spawns git with `env: { ...process.env }`, so the child inherits it. The
-script asserts the redirect resolved to your local `HEAD` before doing any work,
-and aborts rather than silently testing the wrong code.
-
-### It cannot dirty the repo
-
-- The generated project lives **outside** the repo, under
-  `%LOCALAPPDATA%\Temp\hedhog-smoke\<timestamp>`, and is removed at the end
-  (`-KeepSandbox` keeps it).
-- The redirect is process-scoped: no `git config` is ever written, `.git/config`
-  is untouched, and cloning from a local path is read-only on the source.
-- Postgres and Redis come from
-  [`test/docker-compose.smoke.yaml`](test/docker-compose.smoke.yaml) on ports
-  55432/56379 under the separate compose project `hedhog-smoke`, so `down -v`
-  can never reach your dev containers on 5444/6379.
-- The script ends by asserting `git status --porcelain` is still clean.
-
-### Flags
-
-| Flag             | Effect                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| `-AllowDirty`    | Proceed with a dirty tree (uncommitted changes are **not** tested — only `HEAD` is cloned) |
-| `-SkipUnitTests` | Skip `pnpm turbo run test`, the longest step                                               |
-| `-KeepSandbox`   | Keep the generated project for inspection                                                  |
-| `-ApiPort <n>`   | Serve on a port other than 3100                                                            |
-
-Only the committed `HEAD` is cloned, so the script refuses to run on a dirty tree
-unless you pass `-AllowDirty`. Commit first, test, then push.
-
-## Testing with act-cli
-
-### Install act
-
+### Instalar act
 ```powershell
 winget install nektos.act
 ```
 
-### Run workflow locally
-
+### Rodar workflow localmente
 ```powershell
-# List jobs
+# Listar jobs
 act -l
 
-# Run workflow
+# Rodar workflow
 act push
 
-# NOTE: Services (PostgreSQL) may not work perfectly in act
-# It is recommended to use the local docker-compose PostgreSQL
+# NOTA: Services (PostgreSQL) podem não funcionar perfeitamente no act
+# Recomenda-se usar o PostgreSQL local do docker-compose
 ```
 
-## Test Structure
+## Estrutura dos Testes
 
-The E2E tests run against a **running server**; they do not initialize the AppModule directly.
+Os testes E2E testam contra um **servidor rodando**, não inicializam o AppModule diretamente.
 
-- `auth.e2e-spec.ts` — login/refresh (cookie and body), invalid credentials
+- `auth.e2e-spec.ts` — login/refresh (cookie e body), credenciais inválidas
 - `app.e2e-spec.ts` / `health.e2e-spec.ts` — health check
 - `locale.e2e-spec.ts` — /locale
 - `settings.e2e-spec.ts` — /setting/initial
-- `all-endpoints.e2e-spec.ts` — protected routes → 401; `@Public` → never 401; bidirectional
-  drift between controllers ↔ `route.yaml` (`@NoRole` is recognized and does not require route.yaml)
-- `contract.e2e-spec.ts` — responses validated against the shared zod schemas
-  (`@hed-hog/api-types`): pagination envelope and error format
-- `security.e2e-spec.ts` — live helmet headers + positive/negative authz
+- `all-endpoints.e2e-spec.ts` — protegidas → 401; `@Public` → nunca 401; drift
+  bidirecional controllers ↔ `route.yaml` (`@NoRole` é reconhecido e não exige route.yaml)
+- `contract.e2e-spec.ts` — respostas validadas contra os schemas zod compartilhados
+  (`@hed-hog/api-types`): envelope de paginação e formato de erro
+- `security.e2e-spec.ts` — headers do helmet ao vivo + authz positivo/negativo
+- `vaults-security.e2e-spec.ts` — matriz de authz por papel de cofre
+  (OWNER/ADMIN/EDITOR/READER/estranho) e isolamento entre cofres (IDOR).
+  Provisiona 5 usuários dedicados `e2e-vaults-*@hedhog.com` com cripto real
+  (~5 s de Argon2id no primeiro `beforeAll`) e é idempotente: reseta os keystores
+  com `DELETE /crypto/me` antes de montar. **Rodar só contra banco de
+  desenvolvimento/CI.** Sem servidor, os casos se pulam informando o motivo.
+- `finance-reports.e2e-spec.ts` / `contact-reports.e2e-spec.ts` — relatórios
+  (o login desses testes exige header `User-Agent`)
 
-> **Note:** the `/auth` credential endpoints are rate-limited (10/min per IP).
-> The full E2E suite exceeds this — which is why step 4 uses `DISABLE_RATE_LIMIT=true`
-> (the 429 mechanism is covered by `apps/api/src/security/throttler.spec.ts`).
+> **Nota:** os endpoints de credencial do `/auth` têm rate-limit (10/min por IP).
+> A suíte E2E completa excede isso — por isso o passo 4 usa `DISABLE_RATE_LIMIT=true`
+> (o mecanismo de 429 é coberto por `apps/api/src/security/throttler.spec.ts`).
 
-## Unit tests (no server)
+## Testes unitários (sem servidor)
 
 ```powershell
-pnpm turbo run test        # full gate: 18 packages (backend Jest + frontend Vitest)
-pnpm --filter api test     # API only
-pnpm --filter admin test   # admin only (Vitest, with coverage)
+pnpm turbo run test        # gate completo: 18 pacotes (backend Jest + frontend Vitest)
+pnpm --filter api test     # só a API
+pnpm --filter admin test   # só o admin (Vitest, com cobertura)
 ```
 
-Coverage/threshold details, Playwright, and CI: [docs/testing.md](docs/testing.md).
+Detalhes de cobertura/thresholds, Playwright e CI: [docs/testing.md](docs/testing.md).
 
 ## Troubleshooting
 
-### Error: Prisma schema validation
-
-Remove quotes from DATABASE_URL in .env:
-
+### Erro: Prisma schema validation
+Remova aspas do DATABASE_URL no .env:
 ```env
-# ❌ Wrong
+# ❌ Errado
 DATABASE_URL="postgresql://..."
 
-# ✅ Correct
+# ✅ Correto
 DATABASE_URL=postgresql://...
 ```
 
-### Error: RuntimeException when initializing AppModule
+### Erro: RuntimeException ao inicializar AppModule
+Os testes foram atualizados para não inicializar o AppModule.
+Eles agora testam contra o servidor rodando.
 
-The tests were updated to not initialize the AppModule.
-They now run against the running server.
-
-### Server does not start
-
+### Servidor não inicia
 ```powershell
-# Check whether port 3100 is in use
+# Verificar se porta 3100 está em uso
 Get-NetTCPConnection -LocalPort 3100
 
-# Kill the process on that port
+# Matar processo na porta
 Stop-Process -Id (Get-NetTCPConnection -LocalPort 3100).OwningProcess -Force
 ```

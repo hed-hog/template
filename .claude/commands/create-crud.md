@@ -6,7 +6,7 @@ Create a complete admin CRUD screen for **$ARGUMENTS** (expected format: `<libra
 e.g. `finance expense`). If library or entity name is missing, ask the user before proceeding.
 
 Admin UI standards reference: `apps/admin/AGENTS.md`.
-Canonical layout reference: the first generated page under `apps/admin/src/app/(app)/(libraries)/<library>/<entity>/page.tsx`, once one exists.
+Canonical layout reference: `apps/admin/src/app/(app)/(libraries)/contact/accounts/page.tsx`.
 
 ---
 
@@ -14,7 +14,7 @@ Canonical layout reference: the first generated page under `apps/admin/src/app/(
 
 Path: `apps/admin/src/app/(app)/(libraries)/<library>/<entity>/page.tsx`
 
-Follow the canonical layout:
+Follow the canonical layout (reference: `apps/admin/src/app/(app)/(libraries)/contact/accounts/page.tsx`):
 
 ```
 PageHeader (title + primary create action in `actions` prop)

@@ -3,8 +3,18 @@
   "version": "0.0.11",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "_dev": "pnpm build --watch",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prebuild": "pnpm --dir ../.. exec ts-node ./scripts/build-dependencies.ts packages/api-mail",
+    "build": "tsc --project tsconfig.production.json",
+    "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api-mail",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks",
+    "test": "jest --config jest.config.ts --runInBand --passWithNoTests"
+  },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.1014.0",
+    "@hed-hog/api-prisma": "workspace:*",
     "@nestjs/axios": "*",
     "@nestjs/common": "*",
     "@nestjs/config": "*",
@@ -16,8 +26,7 @@
     "imapflow": "^1.6.6",
     "mimemessage": "1.0.5",
     "nodemailer": "^7.0.11",
-    "rxjs": "*",
-    "@hed-hog/api-prisma": "workspace:*"
+    "rxjs": "*"
   },
   "exports": {
     ".": {
@@ -36,19 +45,10 @@
     }
   },
   "devDependencies": {
+    "@hed-hog/jest-config": "workspace:*",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "@hed-hog/jest-config": "workspace:*"
-  },
-  "scripts": {
-    "_dev": "pnpm build --watch",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "prebuild": "pnpm --dir ../.. exec ts-node ./scripts/build-dependencies.ts packages/api-mail",
-    "build": "tsc --project tsconfig.production.json",
-    "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api-mail",
-    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks",
-    "test": "jest --config jest.config.ts --runInBand --passWithNoTests"
+    "ts-jest": "^29.2.5"
   }
 }

@@ -1,59 +1,54 @@
-import type { ReactElement, ReactNode } from 'react';
-import { render as rtlRender, type RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppProvider, QueryClient as AppQueryClient } from '@hed-hog/next-app-provider';
-
-export * from '@testing-library/react';
-
-/**
- * Wraps `ui` in a fresh QueryClientProvider (retry disabled) so components
- * using `useQuery`/`useMutation` render without needing a real network layer
- * (pair with MSW handlers from `@hed-hog/vitest-config` for data).
- */
-export function renderWithProviders(
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & { queryClient?: QueryClient },
-) {
-  const queryClient =
-    options?.queryClient ??
-    new QueryClient({ defaultOptions: { queries: { retry: false } } });
-
-  function Wrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  }
-
-  return { queryClient, ...rtlRender(ui, { wrapper: Wrapper, ...options }) };
-}
-
-/* v8 ignore next */
-const noop = () => {};
-const toastStub = Object.assign(noop, { error: noop, success: noop, warning: noop, info: noop });
+import { AppProvider, QueryClient } from '@hed-hog/next-app-provider';
+// O QueryClient vem do @tanstack/react-query (e não do next-app-provider) porque
+// quem usa `renderWithProviders` costuma mockar o módulo inteiro do provider:
+// a classe re-exportada de lá não existiria no mock.
+import {
+  QueryClient as ReactQueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+import {
+  render,
+  type RenderOptions,
+  type RenderResult,
+} from '@testing-library/react';
+import { type ReactElement, type ReactNode } from 'react';
 
 /**
- * Wrapper for components that call `useApp()` (from `@hed-hog/next-app-provider`).
- * The test file importing this MUST declare these two mocks (vi.mock is hoisted
- * per-file, so they can't live here) BEFORE any other imports:
+ * Wrapper de render para testes de componentes que consomem `useApp()`.
  *
- *   const push = vi.fn();
- *   vi.mock('next/navigation', () => ({
- *     useRouter: () => ({ push, replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
- *   }));
- *   vi.mock('@bprogress/next', () => ({
- *     AppProgressProvider: ({ children }: { children: React.ReactNode }) => children,
- *   }));
- *
- * See `src/test/app-provider.integration.test.tsx` for the full pattern.
+ * Espelha o setup de `app-provider.integration.test.tsx`: o AppProvider real,
+ * apontado para a base URL que o MSW intercepta. Quem usa isto precisa mockar
+ * `next/navigation` e `@bprogress/next` no próprio arquivo de teste — o
+ * provider importa os dois e eles não existem sob jsdom.
  */
+const toastStub = Object.assign(() => {}, {
+  error: () => {},
+  success: () => {},
+  warning: () => {},
+  info: () => {},
+});
+
 export function makeAppProviderWrapper({
-  apiBaseUrl = 'http://api.test',
-  queryClient = new AppQueryClient({ defaultOptions: { queries: { retry: false } } }),
-}: { apiBaseUrl?: string; queryClient?: AppQueryClient } = {}) {
+  apiBaseUrl,
+  settings = {},
+  locales = [{ code: 'en', name: 'English' }],
+}: {
+  apiBaseUrl: string;
+  settings?: Record<string, unknown>;
+  locales?: { code: string; name: string }[];
+}) {
+  // Um client por wrapper: cache compartilhado entre testes vazaria resultado
+  // de um teste para o outro. `retry: false` faz o erro chegar de imediato.
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <AppProvider
         toast={toastStub as never}
-        settings={{ 'api-base-url': apiBaseUrl }}
-        locales={[]}
+        settings={{ 'api-base-url': apiBaseUrl, ...settings }}
+        locales={locales}
         queryClient={queryClient}
       >
         {children}
@@ -62,7 +57,25 @@ export function makeAppProviderWrapper({
   };
 }
 
-/** Passthrough `t(key) => key` stub matching the repo's established next-intl mock convention. */
-export function identityTranslations(key: string) {
-  return key;
+/**
+ * Render com apenas o QueryClientProvider. Para componentes que mockam
+ * `@hed-hog/next-app-provider` inteiro e só precisam do cache do react-query
+ * de pé — montar o AppProvider real aqui pegaria o módulo mockado.
+ */
+export function renderWithProviders(
+  ui: ReactElement,
+  {
+    queryClient,
+    ...renderOptions
+  }: Omit<RenderOptions, 'wrapper'> & { queryClient?: ReactQueryClient } = {}
+): RenderResult & { queryClient: ReactQueryClient } {
+  const client =
+    queryClient ??
+    new ReactQueryClient({ defaultOptions: { queries: { retry: false } } });
+
+  function Wrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  }
+
+  return { queryClient: client, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
 }

@@ -3,18 +3,18 @@ import { formatPhone } from './format-phone';
 
 describe('formatPhone', () => {
   it('formata celular e fixo brasileiros', () => {
-    expect(formatPhone('11999999999')).toBe('(11) 99999-9999');
+    expect(formatPhone('11992662104')).toBe('(11) 99266-2104');
     expect(formatPhone('1133334444')).toBe('(11) 3333-4444');
   });
 
   it('formata E.164 brasileiro com e sem o "+"', () => {
-    expect(formatPhone('+5511999999999')).toBe('+55 (11) 99999-9999');
-    expect(formatPhone('5511999999999')).toBe('+55 (11) 99999-9999');
+    expect(formatPhone('+5511992662104')).toBe('+55 (11) 99266-2104');
+    expect(formatPhone('5511992662104')).toBe('+55 (11) 99266-2104');
     expect(formatPhone('551133334444')).toBe('+55 (11) 3333-4444');
   });
 
   it('ignora números já mascarados sem alterar o resultado', () => {
-    expect(formatPhone('(11) 99999-9999')).toBe('(11) 99999-9999');
+    expect(formatPhone('(11) 99266-2104')).toBe('(11) 99266-2104');
   });
 
   it('não aplica máscara brasileira em outro DDI', () => {

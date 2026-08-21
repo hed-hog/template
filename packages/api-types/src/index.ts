@@ -57,5 +57,5 @@ export * from './UserMfaWebauthn';
 export * from './UserRecoveryCode';
 export * from './UserSession';
 
-// Hand-written API contracts (zod) — pagination envelope and error format.
+// Contratos de API escritos à mão (zod) — envelope de paginação e formato de erro.
 export * from './contracts';

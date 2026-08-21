@@ -80,7 +80,7 @@ export function formatPersonName(value: unknown): string {
 
   // Vários fallbacks gravam e-mail no campo nome (`data.name ?? email` em
   // findOrCreateIndividualByEmail e em prepareAccountInvite). Recaixar transformaria
-  // "joao@example.com" em "Joao@example.com", que é pior que o problema original.
+  // "joao@hcode.com.br" em "Joao@hcode.com.br", que é pior que o problema original.
   if (collapsed.includes('@')) return collapsed;
   if (!LETTER.test(collapsed)) return collapsed;
 
@@ -214,7 +214,7 @@ export async function applyPersonNameToArgs(
       const type = declaredType(row);
       if (type === null) undecided.push(pending);
       else if (type === 'individual') decided.push(pending);
-      // Pessoa jurídica fica fora: "ACME TECNOLOGIA LTDA" viraria "Acme Tecnologia Ltda".
+      // Pessoa jurídica fica fora: "HCODE TECNOLOGIA LTDA" viraria "Hcode Tecnologia Ltda".
     });
   }
 

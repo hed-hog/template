@@ -49,12 +49,16 @@ vi.mock('@hed-hog/next-app-provider', () => ({
   AppProvider: ({ children }: { children: ReactNode }) => (
     <div data-testid="app-provider">{children}</div>
   ),
+  // O layout passou a montar o banner de simulacao de acesso (impersonation).
+  ImpersonationBanner: () => <div data-testid="impersonation-banner" />,
 }));
 
 vi.mock('next-intl', () => ({
   NextIntlClientProvider: ({ children }: { children: ReactNode }) => (
     <div data-testid="next-intl-provider">{children}</div>
   ),
+  // Um filho do layout passou a traduzir; identidade basta para asserir markup.
+  useTranslations: () => (key: string) => key,
 }));
 
 vi.mock('next/font/google', () => ({
@@ -75,6 +79,9 @@ vi.mock('@/lib/admin-api', () => ({
   getAdminApiBaseUrl: (...args: unknown[]) => getAdminApiBaseUrl(...args),
   isRetryableAdminApiError: (...args: unknown[]) =>
     isRetryableAdminApiError(...args),
+  // Sem NEXT_PUBLIC_API_BASE_URL o real cai no getAdminApiBaseUrl — delegar
+  // mantem o valor do fixture, que e o que as asserts abaixo esperam.
+  getPublicApiBaseUrl: (...args: unknown[]) => getAdminApiBaseUrl(...args),
 }));
 
 // Import after mocks

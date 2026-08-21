@@ -9,13 +9,8 @@ vi.mock('@bprogress/next', () => ({
   AppProgressProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
-import {
-  render,
-  screen,
-  renderWithProviders,
-  makeAppProviderWrapper,
-  identityTranslations,
-} from './test-utils';
+import { render, screen } from '@testing-library/react';
+import { renderWithProviders, makeAppProviderWrapper } from './test-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useApp } from '@hed-hog/next-app-provider';
 
@@ -46,13 +41,10 @@ describe('test-utils', () => {
     expect(screen.getByText('sem-valor')).toBeInTheDocument();
   });
 
-  it('makeAppProviderWrapper usa a apiBaseUrl e o queryClient padrão quando nada é informado', () => {
-    const Wrapper = makeAppProviderWrapper();
+  it('makeAppProviderWrapper usa settings, locales e queryClient padrão quando só a apiBaseUrl é informada', () => {
+    const Wrapper = makeAppProviderWrapper({ apiBaseUrl: 'http://default.test' });
     render(<AppProbe />, { wrapper: Wrapper });
     expect(screen.getByText('sem-valor')).toBeInTheDocument();
   });
 
-  it('identityTranslations retorna a própria chave', () => {
-    expect(identityTranslations('goToNextPage')).toBe('goToNextPage');
-  });
 });

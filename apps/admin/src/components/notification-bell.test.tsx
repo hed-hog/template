@@ -503,7 +503,11 @@ describe('useNotifications (leitura do stream SSE)', () => {
 });
 
 describe('NotificationBell (componente)', () => {
-  function renderBell(overrides: Partial<Parameters<typeof useNotifications>> = {}) {
+  function renderBell(
+    overrides: Partial<Parameters<typeof useNotifications>> = {} as Partial<
+      Parameters<typeof useNotifications>
+    >,
+  ) {
     const state = {
       notifications: [makeNotification()],
       unreadCount: 1,

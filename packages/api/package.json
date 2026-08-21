@@ -4,11 +4,19 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "_dev": "pnpm build --watch",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prebuild": "pnpm --dir ../.. exec ts-node ./scripts/build-dependencies.ts packages/api",
+    "build": "tsc --project tsconfig.production.json",
+    "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
+  },
   "dependencies": {
+    "@hed-hog/api-prisma": "workspace:*",
     "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
-    "typeorm": "^0.3.25",
-    "@hed-hog/api-prisma": "workspace:*"
+    "typeorm": "^0.3.25"
   },
   "exports": {
     ".": {
@@ -29,13 +37,5 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "js-yaml": "^4.1.1"
-  },
-  "scripts": {
-    "_dev": "pnpm build --watch",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "prebuild": "pnpm --dir ../.. exec ts-node ./scripts/build-dependencies.ts packages/api",
-    "build": "tsc --project tsconfig.production.json",
-    "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api",
-    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
   }
 }

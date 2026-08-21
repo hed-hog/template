@@ -135,6 +135,34 @@ describe('EntityPicker', () => {
     expect(onChange).toHaveBeenCalledWith('1', options[0]);
   });
 
+  it('distingue opções de rótulo idêntico e id diferente (não colidem no cmdk)', () => {
+    const onChange = vi.fn();
+    const duplicateLabelOptions: EntityPickerOption[] = [
+      { id: 10, name: 'Completo Anual', description: 'R$ 1.999,00' },
+      { id: 11, name: 'Completo Anual', description: 'R$ 1.999,00' },
+    ];
+
+    const { container } = render(
+      <EntityPicker
+        value={null}
+        onChange={onChange}
+        placeholder="Selecionar preço"
+        options={duplicateLabelOptions}
+      />,
+    );
+
+    const items = container.querySelectorAll('[cmdk-item]');
+    expect(items.length).toBe(2);
+    // Cada item precisa de um `value` (data-value) único, senão o cmdk
+    // destaca/seleciona todos os iguais juntos.
+    const values = Array.from(items).map((el) => el.getAttribute('data-value'));
+    expect(new Set(values).size).toBe(2);
+
+    // Selecionar o segundo item deve propagar o id 11 (e não o 10).
+    fireEvent.click(items[1]!);
+    expect(onChange).toHaveBeenCalledWith('11', duplicateLabelOptions[1]);
+  });
+
   it('filtra opções pelo texto de busca local', async () => {
     render(
       <EntityPicker

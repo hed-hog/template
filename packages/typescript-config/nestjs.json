@@ -17,7 +17,6 @@
     "sourceMap": true,
     "strictNullChecks": false,
     "strictBindCallApply": false,
-    "baseUrl": ".",
     "paths": {
       "@prisma/client": ["../api-prisma/node_modules/.prisma/client"],
       "@prisma/client/*": ["../api-prisma/node_modules/.prisma/client/*"],

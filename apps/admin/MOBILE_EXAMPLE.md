@@ -1,18 +1,18 @@
-# 📱 React Native - Implementation Example
+# 📱 React Native - Exemplo de Implementação
 
-## 🔧 Installing Dependencies
+## 🔧 Instalação de Dependências
 
 ```bash
-# For Expo
+# Para Expo
 npx expo install expo-secure-store axios
 
-# For React Native CLI
+# Para React Native CLI
 npm install react-native-keychain axios
 ```
 
 ---
 
-## 📝 Full Implementation
+## 📝 Implementação Completa
 
 ### 1. **Auth Service (authService.ts)**
 
@@ -20,7 +20,7 @@ npm install react-native-keychain axios
 import * as SecureStore from 'expo-secure-store';
 import axios, { AxiosInstance } from 'axios';
 
-const API_URL = 'https://api.yoursite.com'; // Your API in production
+const API_URL = 'https://api.seusite.com'; // Sua API em produção
 
 class AuthService {
   private api: AxiosInstance;
@@ -34,7 +34,7 @@ class AuthService {
       },
     });
 
-    // Interceptor to attach the access token
+    // Interceptor para adicionar access token
     this.api.interceptors.request.use(
       async (config) => {
         if (this.accessToken && !config.url?.includes('/auth/')) {
@@ -45,13 +45,13 @@ class AuthService {
       (error) => Promise.reject(error)
     );
 
-    // Interceptor for automatic refresh
+    // Interceptor para refresh automático
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
 
-        // If 401 and it's not an auth route, try to refresh
+        // Se 401 e não é rota de auth, tentar refresh
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
@@ -65,7 +65,7 @@ class AuthService {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return this.api(originalRequest);
           } catch (refreshError) {
-            // Refresh failed, log out
+            // Refresh falhou, fazer logout
             await this.logout();
             throw refreshError;
           }
@@ -77,14 +77,14 @@ class AuthService {
   }
 
   /**
-   * Login with email and password
+   * Login com email e senha
    */
   async login(email: string, password: string): Promise<{ accessToken: string }> {
     try {
       const response = await this.api.post('/auth/login', { email, password });
       const { accessToken, refreshToken } = response.data;
 
-      // Save tokens
+      // Salvar tokens
       this.accessToken = accessToken;
       await SecureStore.setItemAsync('refreshToken', refreshToken);
 
@@ -96,7 +96,7 @@ class AuthService {
   }
 
   /**
-   * Refresh the access token
+   * Refresh do access token
    */
   async refreshAccessToken(): Promise<string> {
     try {
@@ -109,7 +109,7 @@ class AuthService {
       const response = await this.api.post('/auth/refresh', { refreshToken });
       const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-      // Update tokens
+      // Atualizar tokens
       this.accessToken = accessToken;
       await SecureStore.setItemAsync('refreshToken', newRefreshToken);
 
@@ -128,20 +128,20 @@ class AuthService {
       const refreshToken = await SecureStore.getItemAsync('refreshToken');
 
       if (refreshToken) {
-        // Revoke the session on the backend
+        // Revogar sessão no backend
         await this.api.post('/auth/logout', { refreshToken });
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear tokens locally (even if the backend call fails)
+      // Limpar tokens localmente (mesmo se backend falhar)
       this.accessToken = null;
       await SecureStore.deleteItemAsync('refreshToken');
     }
   }
 
   /**
-   * Check whether the user is authenticated
+   * Verificar se está autenticado
    */
   async isAuthenticated(): Promise<boolean> {
     const refreshToken = await SecureStore.getItemAsync('refreshToken');
@@ -149,14 +149,14 @@ class AuthService {
   }
 
   /**
-   * Get the current access token
+   * Obter access token atual
    */
   getAccessToken(): string | null {
     return this.accessToken;
   }
 
   /**
-   * Make authenticated requests
+   * Fazer requisições autenticadas
    */
   async request<T>(config: any): Promise<T> {
     const response = await this.api.request(config);
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check whether a session exists on startup
+    // Verificar se há sessão ao iniciar
     checkAuth();
   }, []);
 
@@ -204,7 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const isAuth = await authService.isAuthenticated();
       if (isAuth) {
-        // Try to fetch user data
+        // Tentar obter dados do usuário
         const userData = await authService.request<User>({
           url: '/auth/verify',
           method: 'GET',
@@ -278,16 +278,16 @@ export function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
 
     setLoading(true);
     try {
       await login(email, password);
-      // Navigation will be handled by AuthProvider
+      // Navegação será tratada pelo AuthProvider
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Login failed');
+      Alert.alert('Erro', error.response?.data?.message || 'Login falhou');
     } finally {
       setLoading(false);
     }
@@ -308,14 +308,14 @@ export function LoginScreen() {
       
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Senha"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       
       <Button
-        title={loading ? 'Signing in...' : 'Sign in'}
+        title={loading ? 'Entrando...' : 'Entrar'}
         onPress={handleLogin}
         disabled={loading}
       />
@@ -363,7 +363,7 @@ function AppNavigator() {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return <Text>Carregando...</Text>;
   }
 
   return (
@@ -390,9 +390,9 @@ export default function App() {
 
 ---
 
-## 🔒 Additional Security
+## 🔒 Segurança Adicional
 
-### **Certificate Pinning (Optional, but Recommended)**
+### **Certificate Pinning (Opcional, mas Recomendado)**
 
 ```bash
 npm install react-native-ssl-pinning
@@ -401,10 +401,10 @@ npm install react-native-ssl-pinning
 ```typescript
 import { fetch } from 'react-native-ssl-pinning';
 
-const response = await fetch('https://api.yoursite.com/auth/login', {
+const response = await fetch('https://api.seusite.com/auth/login', {
   method: 'POST',
   sslPinning: {
-    certs: ['certificate'], // Add the certificate to the project
+    certs: ['certificate'], // Adicionar certificado ao projeto
   },
   headers: {
     'Content-Type': 'application/json',
@@ -415,53 +415,53 @@ const response = await fetch('https://api.yoursite.com/auth/login', {
 
 ---
 
-## 📊 Differences: Web vs Mobile
+## 📊 Diferenças: Web vs Mobile
 
-| Aspect | Web (Next.js) | Mobile (React Native) |
+| Aspecto | Web (Next.js) | Mobile (React Native) |
 |---------|---------------|----------------------|
-| **Refresh Token** | httpOnly cookie | SecureStore |
-| **Sending** | Automatic (cookie) | Manual (body) |
-| **/login Response** | Ignores `refreshToken` | Saves `refreshToken` |
-| **/refresh Response** | Ignores `refreshToken` | Updates `refreshToken` |
-| **Logout** | Cookie cleared | SecureStore deleted |
+| **Refresh Token** | Cookie httpOnly | SecureStore |
+| **Envio** | Automático (cookie) | Manual (body) |
+| **Resposta /login** | Ignora `refreshToken` | Salva `refreshToken` |
+| **Resposta /refresh** | Ignora `refreshToken` | Atualiza `refreshToken` |
+| **Logout** | Cookie limpado | SecureStore deletado |
 
 ---
 
-## ✅ Implementation Checklist
+## ✅ Checklist de Implementação
 
-- [ ] Install `expo-secure-store` or `react-native-keychain`
-- [ ] Create `authService.ts` with login/refresh/logout
-- [ ] Implement interceptors for automatic refresh
-- [ ] Create `AuthContext` to manage global state
-- [ ] Implement conditional navigation (authenticated/not authenticated)
-- [ ] Add certificate pinning (production)
-- [ ] Test automatic refresh when the token expires
-- [ ] Test logout and session cleanup
+- [ ] Instalar `expo-secure-store` ou `react-native-keychain`
+- [ ] Criar `authService.ts` com login/refresh/logout
+- [ ] Implementar interceptors para refresh automático
+- [ ] Criar `AuthContext` para gerenciar estado global
+- [ ] Implementar navegação condicional (autenticado/não autenticado)
+- [ ] Adicionar certificate pinning (produção)
+- [ ] Testar refresh automático quando token expira
+- [ ] Testar logout e limpeza de sessão
 
 ---
 
-## 🎯 Full Flow
+## 🎯 Fluxo Completo
 
 ```
 1. Login:
    POST /auth/login { email, password }
    ← { accessToken, refreshToken }
-   → Save refreshToken to SecureStore
-   → Keep accessToken in memory
+   → Salvar refreshToken no SecureStore
+   → Guardar accessToken na memória
 
-2. Requests:
+2. Requisições:
    GET /auth/verify
    → Header: Authorization: Bearer {accessToken}
 
-3. Expired Token (401):
-   → Interceptor detects the 401
+3. Token Expirado (401):
+   → Interceptor detecta 401
    → POST /auth/refresh { refreshToken }
    ← { accessToken, refreshToken }
-   → Update tokens
-   → Retry the original request
+   → Atualizar tokens
+   → Retentar requisição original
 
 4. Logout:
    POST /auth/logout { refreshToken }
-   → Delete refreshToken from SecureStore
-   → Clear accessToken from memory
+   → Deletar refreshToken do SecureStore
+   → Limpar accessToken da memória
 ```

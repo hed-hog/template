@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import type { ComponentProps } from 'react';
 import * as RechartsPrimitive from 'recharts';
 
 import {
@@ -135,7 +136,11 @@ describe('ChartTooltipContent', () => {
       <ChartContainer config={config}>
         <ChartTooltipContent
           active
-          payload={payload}
+          payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          }
           label="desktop"
           nameKey="name"
         />
@@ -161,7 +166,11 @@ describe('ChartTooltipContent', () => {
       <ChartContainer config={config}>
         <ChartTooltipContent
           active
-          payload={payload}
+          payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          }
           label="desktop"
           labelFormatter={(value) => <span>Formatted: {String(value)}</span>}
         />
@@ -185,7 +194,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} hideLabel label="desktop" />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } hideLabel label="desktop" />
       </ChartContainer>,
     );
 
@@ -208,7 +221,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} hideIndicator />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } hideIndicator />
       </ChartContainer>,
     );
 
@@ -229,14 +246,22 @@ describe('ChartTooltipContent', () => {
 
     const { rerender, container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} indicator="line" />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } indicator="line" />
       </ChartContainer>,
     );
     expect(container.querySelector('.w-1')).not.toBeNull();
 
     rerender(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} indicator="dashed" />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } indicator="dashed" />
       </ChartContainer>,
     );
     expect(container.querySelector('.border-dashed')).not.toBeNull();
@@ -256,7 +281,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -285,7 +314,11 @@ describe('ChartTooltipContent', () => {
 
     render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} formatter={formatter} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } formatter={formatter} />
       </ChartContainer>,
     );
 
@@ -307,7 +340,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -335,7 +372,11 @@ describe('ChartTooltipContent', () => {
 
     render(
       <ChartContainer config={configWithIcon}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -356,7 +397,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -387,7 +432,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} indicator="line" label="desktop" />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } indicator="line" label="desktop" />
       </ChartContainer>,
     );
 
@@ -413,7 +462,11 @@ describe('ChartTooltipContent', () => {
       <ChartContainer config={config}>
         <ChartTooltipContent
           active
-          payload={payload}
+          payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          }
           className="custom-tooltip"
         />
       </ChartContainer>,
@@ -435,7 +488,11 @@ describe('ChartTooltipContent', () => {
 
     render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -455,7 +512,11 @@ describe('ChartTooltipContent', () => {
     expect(() =>
       render(
         <ChartContainer config={config}>
-          <ChartTooltipContent active payload={payload} />
+          <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
         </ChartContainer>,
       ),
     ).not.toThrow();
@@ -475,7 +536,11 @@ describe('ChartTooltipContent', () => {
 
     render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} label="unknown-label" />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } label="unknown-label" />
       </ChartContainer>,
     );
 
@@ -496,7 +561,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -517,7 +586,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} color="#ff0000" />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } color="#ff0000" />
       </ChartContainer>,
     );
 
@@ -539,7 +612,11 @@ describe('ChartTooltipContent', () => {
 
     const { container } = render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -561,7 +638,11 @@ describe('ChartTooltipContent', () => {
 
     render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -580,7 +661,11 @@ describe('ChartTooltipContent', () => {
 
     render(
       <ChartContainer config={config}>
-        <ChartTooltipContent active payload={payload} />
+        <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
       </ChartContainer>,
     );
 
@@ -600,7 +685,11 @@ describe('ChartTooltipContent', () => {
     expect(() =>
       render(
         <ChartContainer config={config}>
-          <ChartTooltipContent active payload={payload} />
+          <ChartTooltipContent active payload={
+            payload as unknown as ComponentProps<
+              typeof ChartTooltipContent
+            >['payload']
+          } />
         </ChartContainer>,
       ),
     ).not.toThrow();

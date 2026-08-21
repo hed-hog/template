@@ -4,17 +4,17 @@ import {
 } from './database-infra-error';
 
 /**
- * Cenario real de producao: um cron agendado disparou no minuto exato em que o
- * servidor Postgres estava fora do ar.
+ * Mensagem real do Sentry API-X (14/08/2026): o cron `reconcileStuckRuns` do
+ * agendador de agentes disparou no minuto em que o `postgresql-hub` estava fora.
  */
 function unreachableError(): Error {
   const error = new Error(
     [
       'Invalid `prisma.agent_run.findMany()` invocation:',
       '',
-      "Can't reach database server at `postgres:5432`",
+      "Can't reach database server at `postgresql-hub:5432`",
       '',
-      'Please make sure your database server is running at `postgres:5432`.',
+      'Please make sure your database server is running at `postgresql-hub:5432`.',
     ].join('\n'),
   );
   error.name = 'PrismaClientKnownRequestError';

@@ -1,11 +1,12 @@
 import { ForbiddenDialog } from '@/components/forbidden-dialog';
+import { AppImpersonationBanner } from '@/components/impersonation/impersonation-banner-labels';
 import { InstallationProvider } from '@/components/provider/installation-provider';
 import { ThemeProvider } from '@/components/provider/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   fetchAdminApiJson,
-  getAdminApiBaseUrl,
+  getPublicApiBaseUrl,
   isRetryableAdminApiError,
 } from '@/lib/admin-api';
 import { AppProvider } from '@hed-hog/next-app-provider';
@@ -194,7 +195,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const apiBaseUrl = getAdminApiBaseUrl();
+  // Public URL, not the internal one: this crosses into InstallationProvider
+  // ('use client'), so it is serialized into the RSC payload and seeds the
+  // "URL publica da API" field saved as the api-url setting.
+  const apiBaseUrl = getPublicApiBaseUrl();
 
   // Fetch settings fresh on every render
   const { setting, locales } = await getSystemSettings();
@@ -319,8 +323,11 @@ export default async function RootLayout({
             <InstallationProvider apiBaseUrl={apiBaseUrl} installed={installed}>
               <Toaster />
               <TooltipProvider>
-                <AppProvider toast={toast} settings={setting} locales={locales}>
+                <AppProvider toast={toast} settings={setting} locales={locales} appName="admin">
                   <ForbiddenDialog />
+                  {/* No layout raiz, e não no do grupo (app): assim a faixa
+                      cobre também as rotas de auth e a tela de resgate. */}
+                  <AppImpersonationBanner />
                   {children}
                 </AppProvider>
               </TooltipProvider>

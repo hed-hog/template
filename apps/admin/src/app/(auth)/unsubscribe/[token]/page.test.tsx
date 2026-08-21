@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
-import { render } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { http, HttpResponse, server } from '@hed-hog/vitest-config';
 
 let paramsValue: Record<string, unknown> = { token: 'abc123' };

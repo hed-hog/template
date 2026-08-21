@@ -77,6 +77,26 @@ export const getAdminApiBaseUrl = () => {
   return DEFAULT_API_BASE_URL;
 };
 
+/**
+ * Base URL safe to hand to the browser (RSC props, HTML attributes).
+ *
+ * `getAdminApiBaseUrl` prioritizes INTERNAL_API_URL, which in Kubernetes is the
+ * in-cluster Service (http://hub-api:3100) — unreachable from the browser and
+ * not something to leak into the page. Use this whenever the value crosses the
+ * server/client boundary; falls back to the internal URL only in local dev,
+ * where NEXT_PUBLIC_API_BASE_URL is typically unset.
+ */
+export const getPublicApiBaseUrl = () => {
+  const publicBaseUrl = resolveAbsoluteUrl(
+    process.env.NEXT_PUBLIC_API_BASE_URL?.trim()
+  );
+  if (publicBaseUrl) {
+    return normalizeApiBaseUrl(publicBaseUrl);
+  }
+
+  return getAdminApiBaseUrl();
+};
+
 export const buildAdminApiUrl = (path: string) =>
   new URL(path.replace(/^\//, ''), `${getAdminApiBaseUrl()}/`).toString();
 

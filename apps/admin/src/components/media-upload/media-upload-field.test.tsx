@@ -348,14 +348,14 @@ describe('MediaUploadField', () => {
 
       let capturedAnchor: HTMLAnchorElement | null = null;
       const originalCreateElement = document.createElement.bind(document);
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
         const el = originalCreateElement(tag);
         if (tag === 'a') {
           capturedAnchor = el as HTMLAnchorElement;
           el.click = clickSpy;
         }
         return el;
-      });
+      }) as unknown as typeof document.createElement);
 
       fireEvent.click(downloadBtn);
       await waitFor(() => expect(clickSpy).toHaveBeenCalled());
@@ -377,14 +377,14 @@ describe('MediaUploadField', () => {
 
       let capturedAnchor: HTMLAnchorElement | null = null;
       const originalCreateElement = document.createElement.bind(document);
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
         const el = originalCreateElement(tag);
         if (tag === 'a') {
           capturedAnchor = el as HTMLAnchorElement;
           el.click = vi.fn();
         }
         return el;
-      });
+      }) as unknown as typeof document.createElement);
 
       fireEvent.click(downloadBtn);
       await waitFor(() => expect(capturedAnchor).not.toBeNull());
@@ -403,14 +403,14 @@ describe('MediaUploadField', () => {
 
       let capturedAnchor: HTMLAnchorElement | null = null;
       const originalCreateElement = document.createElement.bind(document);
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
         const el = originalCreateElement(tag);
         if (tag === 'a') {
           capturedAnchor = el as HTMLAnchorElement;
           el.click = vi.fn();
         }
         return el;
-      });
+      }) as unknown as typeof document.createElement);
 
       fireEvent.click(downloadBtn);
       // Fallback ext depends on `kind` ('png' for image).
@@ -430,14 +430,14 @@ describe('MediaUploadField', () => {
 
       let capturedAnchor: HTMLAnchorElement | null = null;
       const originalCreateElement = document.createElement.bind(document);
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
         const el = originalCreateElement(tag);
         if (tag === 'a') {
           capturedAnchor = el as HTMLAnchorElement;
           el.click = vi.fn();
         }
         return el;
-      });
+      }) as unknown as typeof document.createElement);
 
       fireEvent.click(downloadBtn);
       await waitFor(() => expect(capturedAnchor).not.toBeNull());

@@ -56,9 +56,14 @@ export function usePersistedSheetWidth({
     const storageKey = getStorageKey(sheetId, ownerKey);
 
     try {
-      const storedWidth = Number(window.localStorage.getItem(storageKey));
+      // A chave ausente precisa ser tratada ANTES da conversao: Number(null)
+      // e 0, e 0 e finito, entao a guarda abaixo nao disparava e o clamp
+      // jogava toda folha para o minWidth na primeira abertura — o
+      // defaultWidth nunca valia nada. O mesmo vale para "" (Number('') === 0).
+      const rawWidth = window.localStorage.getItem(storageKey);
+      const storedWidth = rawWidth === null ? Number.NaN : Number(rawWidth);
 
-      if (!Number.isFinite(storedWidth)) {
+      if (!Number.isFinite(storedWidth) || storedWidth <= 0) {
         setWidthState(clampWidth(defaultWidth, minWidth, maxWidth));
         return;
       }

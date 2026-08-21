@@ -64,7 +64,7 @@ function createEditorMock(overrides: Partial<EditorMock> = {}): EditorMock {
 
 function getLastEditorConfig() {
   const calls = useEditorMock.mock.calls;
-  return calls[calls.length - 1][0];
+  return calls[calls.length - 1]![0];
 }
 
 function getSuggestionConfig() {
@@ -72,7 +72,7 @@ function getSuggestionConfig() {
     typeof vi.fn
   >;
   const calls = configureMock.mock.calls;
-  return calls[calls.length - 1][0].suggestion;
+  return calls[calls.length - 1]![0].suggestion;
 }
 
 const mentions: MentionItem[] = [
@@ -274,7 +274,7 @@ describe('CommentRichEditor', () => {
     // Click an item selects it via handleSelectItem
     fireEvent.mouseDown(screen.getByText('Carla'));
     expect(command).toHaveBeenCalledWith(
-      expect.objectContaining({ ...mentions[2], id: String(mentions[2].id) }),
+      expect.objectContaining({ ...mentions[2], id: String(mentions[2]!.id) }),
     );
 
     // Dropdown closes after selection
@@ -317,7 +317,7 @@ describe('CommentRichEditor', () => {
 
     fireEvent.mouseDown(screen.getByText('Bob'));
     expect(command).toHaveBeenCalledWith(
-      expect.objectContaining({ ...mentions[1], id: String(mentions[1].id) }),
+      expect.objectContaining({ ...mentions[1], id: String(mentions[1]!.id) }),
     );
   });
 
@@ -458,7 +458,7 @@ describe('CommentRichEditor', () => {
       typeof vi.fn
     >;
     render(<CommentRichEditor mentions={mentions} />);
-    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
 
     expect(lastCall.renderText({ node: { attrs: { label: 'Alice' } } })).toBe(
       '@Alice',

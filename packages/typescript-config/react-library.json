@@ -44,6 +44,12 @@
       ],
       "@hed-hog/api-types/*": [
         "../../packages/api-types/dist/*"
+      ],
+      "@hed-hog/vault-crypto": [
+        "../../packages/vault-crypto/dist"
+      ],
+      "@hed-hog/vault-crypto/*": [
+        "../../packages/vault-crypto/dist/*"
       ]
     }
   }

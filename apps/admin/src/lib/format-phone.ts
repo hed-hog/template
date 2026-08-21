@@ -19,7 +19,7 @@ export function formatPhone(value?: string | null): string {
   // Sem esta guarda, `+14155550123` (11 dígitos) viraria `(14) 15555-0123`.
   if (raw.startsWith('+') && !digits.startsWith('55')) return raw;
 
-  // E.164 brasileiro: +5511999999999 / 5511999999999 / 551133334444.
+  // E.164 brasileiro: +5511992662104 / 5511992662104 / 551133334444.
   const isBr =
     digits.startsWith('55') && (digits.length === 12 || digits.length === 13);
   const national = isBr ? digits.slice(2) : digits;

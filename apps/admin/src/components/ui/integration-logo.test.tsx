@@ -1,32 +1,31 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
-vi.mock('@iconify-json/logos', () => ({
-  icons: {
-    icons: {
-      // Entry with explicit width AND height -> exercises the truthy side of
-      // both `entry.width ?? set.width` and `entry.height ?? set.height`.
-      'google-icon': { body: '<path d="M1"/>', width: 24, height: 24 },
-      // Entry with neither dimension -> exercises the fallback-to-`set`
-      // side of both `??`s.
-      'microsoft-icon': { body: '<path d="M2"/>' },
-      'linkedin-icon': { body: '<path d="M3"/>', height: 32 },
-      'claude-icon': { body: '<path d="M4"/>' },
-      'whatsapp-icon': { body: '<path d="M5"/>' },
-      'google-gmail': { body: '<path d="M6"/>' },
-      'aws-ses': { body: '<path d="M7"/>' },
-      'aws-s3': { body: '<path d="M8"/>' },
-      'google-cloud': { body: '<path d="M9"/>' },
-      'microsoft-azure': { body: '<path d="M10"/>' },
-      'digital-ocean-icon': { body: '<path d="M11"/>' },
-      kubernetes: { body: '<path d="M12"/>' },
-      recaptcha: { body: '<path d="M13"/>' },
-      'cloudflare-icon': { body: '<path d="M14"/>' },
-      // Deliberately no entry for `facebook` -> exercises the
-      // `logoEntry` found but `iconifyLogo` returns null (entry missing) path.
-    },
-    width: 256,
-    height: 256,
+// Stands in for the subset written by `scripts/generate-icon-subset.mjs`. Its
+// shape is flat and every entry carries concrete dimensions — the generator
+// resolves the set-level defaults at generation time, so the component no longer
+// has a `?? set.width ?? 256` path to exercise. Every slug in
+// `providerLogoIcons` must be present: the component indexes the record
+// directly, which is exactly what `LogoSlug` guarantees at compile time.
+vi.mock('@/generated/integration-logos', () => ({
+  logoIcons: {
+    'google-icon': { body: '<path d="M1"/>', width: 24, height: 24 },
+    'microsoft-icon': { body: '<path d="M2"/>', width: 256, height: 256 },
+    'linkedin-icon': { body: '<path d="M3"/>', width: 256, height: 32 },
+    'claude-icon': { body: '<path d="M4"/>', width: 256, height: 256 },
+    'whatsapp-icon': { body: '<path d="M5"/>', width: 256, height: 256 },
+    'google-gmail': { body: '<path d="M6"/>', width: 256, height: 256 },
+    'aws-ses': { body: '<path d="M7"/>', width: 256, height: 256 },
+    'aws-s3': { body: '<path d="M8"/>', width: 256, height: 256 },
+    'google-cloud': { body: '<path d="M9"/>', width: 256, height: 256 },
+    'microsoft-azure': { body: '<path d="M10"/>', width: 256, height: 256 },
+    'digital-ocean-icon': { body: '<path d="M11"/>', width: 256, height: 256 },
+    kubernetes: { body: '<path d="M12"/>', width: 256, height: 256 },
+    'google-play-icon': { body: '<path d="M15"/>', width: 256, height: 283 },
+    recaptcha: { body: '<path d="M13"/>', width: 256, height: 256 },
+    'cloudflare-icon': { body: '<path d="M14"/>', width: 256, height: 256 },
+    'deepseek-icon': { body: '<path d="M16"/>', width: 256, height: 256 },
+    facebook: { body: '<path d="M17"/>', width: 256, height: 256 },
   },
 }));
 
@@ -148,6 +147,12 @@ describe('getIntegrationLogoTheme', () => {
     );
   });
 
+  it('retorna tema do microsoft entra id, distinto do microsoft', () => {
+    expect(getIntegrationLogoTheme('microsoft_entra_id_oauth').dotClassName).toBe(
+      'bg-[#0294e4]'
+    );
+  });
+
   it('retorna tema do apple', () => {
     expect(getIntegrationLogoTheme('apple_oauth').dotClassName).toBe(
       'bg-foreground'
@@ -168,7 +173,7 @@ describe('getIntegrationLogoTheme', () => {
 });
 
 describe('IntegrationLogo', () => {
-  it('renderiza o logo colorido do iconify quando a entrada tem largura e altura definidas', () => {
+  it('renderiza o logo colorido do iconify com o viewBox do ícone', () => {
     const { container } = render(<IntegrationLogo provider="google" />);
     const svg = container.querySelector('svg');
     expect(svg).toBeTruthy();
@@ -176,22 +181,13 @@ describe('IntegrationLogo', () => {
     expect(svg).toHaveAttribute('height', '20');
   });
 
-  it('usa as dimensões do set quando a entrada do iconify não define largura/altura', () => {
-    const { container } = render(<IntegrationLogo provider="microsoft" />);
+  it('preserva a proporção de ícones não-quadrados na largura', () => {
+    const { container } = render(<IntegrationLogo provider="google_play" />);
     const svg = container.querySelector('svg');
     expect(svg).toBeTruthy();
-    expect(svg).toHaveAttribute('viewBox', '0 0 256 256');
-  });
-
-  it('cai para a apresentação customizada quando a entrada do iconify não existe', () => {
-    const { container, getByRole } = render(
-      <IntegrationLogo provider="facebook" decorative={false} />
-    );
-    // logoEntry existe (providerLogoIcons.facebook) mas não há entrada
-    // correspondente no set mockado do iconify -> iconifyLogo retorna null.
-    expect(container.querySelector('svg[viewbox]')).toBeFalsy();
-    const img = getByRole('img');
-    expect(img).toHaveAttribute('aria-label', 'Facebook');
+    expect(svg).toHaveAttribute('viewBox', '0 0 256 283');
+    // 20 (size) * 256 / 283, arredondado.
+    expect(svg).toHaveAttribute('width', '18');
   });
 
   it('renderiza a apresentação customizada (SVG próprio) quando não há logo iconify', () => {
@@ -222,6 +218,19 @@ describe('IntegrationLogo', () => {
   it('renderiza o ícone Lucide HardDrive para provedores de armazenamento', () => {
     render(<IntegrationLogo provider="custom_storage_service" />);
     expect(document.querySelector('svg.lucide-hard-drive')).toBeTruthy();
+  });
+
+  it('renderiza o logo colorido do Google Play para o slug google_play', () => {
+    const { container } = render(
+      <IntegrationLogo provider="google_play" decorative={false} />
+    );
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveAttribute('viewBox', '0 0 256 283');
+    expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
+    expect(container.querySelector('[role="img"]')).toHaveAttribute(
+      'aria-label',
+      'Google Play Billing'
+    );
   });
 
   it('renderiza o ícone Lucide PlugZap como fallback genérico', () => {

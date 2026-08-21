@@ -1,12 +1,12 @@
 import type { HelmetOptions } from 'helmet';
 
-// Helmet options shared between the bootstrap (main.ts) and the tests.
-// Conservative for a JSON API consumed by front-ends from another origin:
-//  - CSP disabled (the API doesn't serve HTML; avoids surprises).
-//  - CORP/COEP relaxed for cross-origin: the front-end loads files/images
-//    served by the API (e.g.: /file/open, /file/download).
-// Keeps the valuable security headers: X-Content-Type-Options (nosniff),
-// X-Frame-Options, HSTS, Referrer-Policy, and removes X-Powered-By.
+// Opções do helmet compartilhadas entre o bootstrap (main.ts) e os testes.
+// Conservadoras para uma API JSON consumida por front-ends de outra origem:
+//  - CSP desligado (a API não serve HTML; evita surpresas).
+//  - CORP/COEP liberados para cross-origin: o front carrega arquivos/imagens
+//    servidos pela API (ex.: /file/open, /file/download).
+// Mantém os headers de segurança valiosos: X-Content-Type-Options (nosniff),
+// X-Frame-Options, HSTS, Referrer-Policy, e remove X-Powered-By.
 export const helmetOptions: HelmetOptions = {
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,

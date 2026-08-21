@@ -1,9 +1,9 @@
 import { setupServer } from 'msw/node';
 
 /**
- * Shared MSW server. Tests add per-case handlers via
- * `server.use(http.get(...))`. The lifecycle (listen/resetHandlers/close) is
- * wired up in setup.ts. Re-exported by index.ts so apps don't need to
- * declare `msw` directly.
+ * Servidor MSW compartilhado. Tests adicionam handlers por caso via
+ * `server.use(http.get(...))`. O ciclo de vida (listen/resetHandlers/close) é
+ * ligado no setup.ts. Reexportado por index.ts para os apps não precisarem
+ * declarar `msw` diretamente.
  */
 export const server = setupServer();

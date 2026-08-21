@@ -18,6 +18,8 @@ interface CopyButtonProps {
   copiedMessage?: string;
   /** Ao copiar, exibe toast de sucesso. Default: true. */
   showToast?: boolean;
+  /** Efeito colateral do clique (auditoria, telemetria). Não bloqueia a cópia. */
+  onCopy?: () => void;
 }
 
 export function CopyButton({
@@ -25,6 +27,7 @@ export function CopyButton({
   className,
   copiedMessage,
   showToast = true,
+  onCopy,
 }: CopyButtonProps) {
   const t = useTranslations('crm.ContactPage');
   const [copied, setCopied] = useState(false);
@@ -35,6 +38,7 @@ export function CopyButton({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     if (showToast) toast.success(copiedText);
+    onCopy?.();
   };
 
   return (

@@ -72,9 +72,9 @@ docker-compose up -d
 
 ### 📚 Docker Documentation
 
-- [`Dockerfile`](./Dockerfile) - Multi-stage build for the admin image
-- [`docker-compose.yaml`](../../docker-compose.yaml) - Local Postgres, Redis and Mailhog
-- [DEPLOYMENT.md](../../DEPLOYMENT.md) - Production deployment guide
+- [Quick Start Guide](./DOCKER-QUICKSTART.md) - Fast setup and common scenarios
+- [Dockerfile Documentation](./DOCKERFILE.md) - Detailed Dockerfile explanation
+- [Deployment Guide](./DEPLOY.md) - Full production deployment guide
 
 ## 🏗️ Project Structure
 
@@ -167,19 +167,19 @@ const { data } = useQuery({
 
 ### Project Resources
 
-- [DEPLOYMENT.md](../../DEPLOYMENT.md) - Environment setup and deployment scenarios
-- [`docker-compose.yaml`](../../docker-compose.yaml) - Local service stack
-- [`Dockerfile`](./Dockerfile) - Multi-stage build explanation
+- [Deployment Guide](./DEPLOY.md) - Environment setup and deployment scenarios
+- [Docker Quick Start](./DOCKER-QUICKSTART.md) - Docker commands and examples
+- [Dockerfile Documentation](./DOCKERFILE.md) - Multi-stage build explanation
 
 ## 🚢 Deployment
 
 ### Docker (Recommended)
 
-See [DEPLOYMENT.md](../../DEPLOYMENT.md) for the complete guide.
+See [DOCKER-QUICKSTART.md](./DOCKER-QUICKSTART.md) for complete guide.
 
 ### Kubernetes
 
-See [DEPLOYMENT.md](../../DEPLOYMENT.md) for the Kubernetes deployment guide.
+Helm charts available in `helm/hub/`.
 
 ### Cloud Platforms
 
@@ -188,7 +188,7 @@ See [DEPLOYMENT.md](../../DEPLOYMENT.md) for the Kubernetes deployment guide.
 - **Google Cloud**: Deploy to Cloud Run
 - **Azure**: Use Container Apps
 
-See [DEPLOYMENT.md](../../DEPLOYMENT.md) for detailed deployment instructions.
+See [DEPLOY.md](./DEPLOY.md) for detailed deployment instructions.
 
 ## 🔒 Security
 

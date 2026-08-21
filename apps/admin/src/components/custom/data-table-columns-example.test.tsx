@@ -128,7 +128,7 @@ describe('data-table-columns-example columns', () => {
     setup();
     const active = screen.getAllByText('active')[0];
     const inactive = screen.getByText('inactive');
-    expect(active.className).toContain('bg-green-50');
+    expect(active!.className).toContain('bg-green-50');
     expect(inactive.className).toContain('bg-gray-50');
   });
 
@@ -153,7 +153,7 @@ describe('data-table-columns-example columns', () => {
     const rowCheckboxes = screen.getAllByRole('checkbox', {
       name: 'Select row',
     });
-    fireEvent.click(rowCheckboxes[0]);
+    fireEvent.click(rowCheckboxes[0]!);
 
     const selectAll = screen.getByRole('checkbox', {
       name: 'Select all',
@@ -181,7 +181,7 @@ describe('data-table-columns-example columns', () => {
   it('copia o email do usuário pelo menu de ações', () => {
     setup();
     const copyButtons = screen.getAllByRole('button', { name: 'Copy email' });
-    fireEvent.click(copyButtons[0]);
+    fireEvent.click(copyButtons[0]!);
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
       'john@example.com',
     );

@@ -4,6 +4,7 @@ import { Role } from '@hed-hog/api-types';
 import { useApp, useQuery } from '@hed-hog/next-app-provider';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { ImpersonationNoAccessPage } from '@/components/impersonation/impersonation-no-access-page';
 import { ForbiddenPage } from './forbbiden-page';
 import { LoadingPage } from './loading-page';
 import { LoginPage } from './login-page';
@@ -47,7 +48,8 @@ type GuardPage = {
 };
 
 export const GuardPage = ({ children }: GuardPage) => {
-  const { request, accessToken, setUrlAfterLogin, user } = useApp();
+  const { request, accessToken, setUrlAfterLogin, user, impersonation } =
+    useApp();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -123,6 +125,13 @@ export const GuardPage = ({ children }: GuardPage) => {
   const hasAdminAccess = roles.some((role) => role.slug?.startsWith('admin'));
 
   if (!hasAdminAccess) {
+    // Simular um usuário comum dentro do painel cairia no Forbidden genérico,
+    // que não tem saída — o operador ficaria preso numa tela sem botão. Aqui ele
+    // ao menos entende o que aconteceu e consegue encerrar a simulação.
+    if (impersonation) {
+      return <ImpersonationNoAccessPage />;
+    }
+
     return <ForbiddenPage />;
   }
 

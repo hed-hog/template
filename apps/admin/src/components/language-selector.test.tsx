@@ -52,9 +52,20 @@ describe('LanguageSelector', () => {
     expect(setCurrentLocaleCode).toHaveBeenCalledWith('pt');
   });
 
-  it('inicializa com "en" quando não há cookie', () => {
+  // Este seletor aparece na tela de login. Forçar 'en' aqui sobrescrevia o
+  // idioma que o provider tinha resolvido (setting do sistema ou navegador) e
+  // fazia o login sair com `Accept-Language: en` — origem dos e-mails
+  // transacionais em inglês para usuário brasileiro.
+  it('não força "en" quando não há cookie', () => {
+    currentLocaleCode = 'pt';
     render(<LanguageSelector />);
-    expect(setCurrentLocaleCode).toHaveBeenCalledWith('en');
+    expect(setCurrentLocaleCode).not.toHaveBeenCalled();
+  });
+
+  it('grava o cookie com o locale do provider quando não há cookie', () => {
+    currentLocaleCode = 'pt';
+    render(<LanguageSelector />);
+    expect(document.cookie).toContain('locale=pt');
   });
 
   it('renderiza o select com as opções de idioma', () => {

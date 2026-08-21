@@ -1,4 +1,4 @@
 /** @type {import("prettier").Config} */
 module.exports = {
-  ...require('@hed-hog/eslint-config/prettier-base'),
+  ...require('@hedhog/eslint-config/prettier-base'),
 };

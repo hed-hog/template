@@ -13,6 +13,8 @@ type FormActionsProps = {
   cancelSize?: React.ComponentProps<typeof Button>['size'];
   onCancel?: () => void;
   onSubmit?: () => void;
+  /** Ação secundária opcional (ex.: "Testar conexão"), antes de Cancelar/Salvar. */
+  secondaryAction?: React.ReactNode;
   sheet?: boolean;
   sheetClassName?: string;
   statusContent?: React.ReactNode;
@@ -30,6 +32,7 @@ function FormActions({
   cancelSize,
   onCancel,
   onSubmit,
+  secondaryAction,
   sheet = false,
   sheetClassName,
   statusContent,
@@ -52,6 +55,7 @@ function FormActions({
       </div>
 
       <div className="ml-auto flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:flex-row sm:justify-end">
+        {secondaryAction}
         {onCancel ? (
           <Button
             type="button"

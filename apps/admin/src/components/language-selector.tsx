@@ -31,10 +31,25 @@ export function LanguageSelector({ onChange }: LanguageSelectorProps) {
     document.cookie = `${name}=${value}; expires=${expires}; path=/`;
   }
 
+  // O cookie e a fonte do next-intl (server components); o provider e a fonte
+  // do `Accept-Language`. Este efeito so os alinha - nos DOIS sentidos.
+  //
+  // Antes ele fazia `setCurrentLocaleCode(cookieLocale || 'en')`, e como o
+  // seletor aparece na tela de login, todo navegador sem cookie voltava para
+  // ingles e mandava `Accept-Language: en` no login. Era dai que saiam os
+  // e-mails transacionais em ingles para quem nunca escolheu idioma.
   useEffect(() => {
     const cookieLocale = getCookie('locale');
-    setCurrentLocaleCode(cookieLocale || 'en');
-  }, []);
+
+    if (cookieLocale) {
+      if (cookieLocale !== currentLocaleCode) setCurrentLocaleCode(cookieLocale);
+      return;
+    }
+
+    // Sem cookie, quem decide e o provider (setting do sistema ou idioma do
+    // navegador). Escrever o cookie evita a UI do admin divergir do header.
+    if (currentLocaleCode) setCookie('locale', currentLocaleCode);
+  }, [currentLocaleCode, setCurrentLocaleCode]);
 
   const handleSelect = async (code: string) => {
     const previousLocale = currentLocaleCode;

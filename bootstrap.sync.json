@@ -74,6 +74,9 @@
     "apps/api/src/observability/**",
     "apps/api/src/instrument.ts",
     "apps/admin/src/instrumentation-client.ts",
+    "apps/admin/src/app/error.tsx",
+    "apps/api/src/main.ts",
+    "apps/api/src/filters/http-exception.filter.ts",
     "apps/api/src/filters/*.sentry.spec.ts",
     "docs/sentry.md",
     "apps/api/src/legacy/**",
@@ -113,7 +116,9 @@
     "apps/api/src/app.module.ts",
     "apps/api/package.json",
     "**/.env",
-    "**/.env.*"
+    "**/.env.*",
+    "packages/api-types/src/index.ts",
+    "packages/api-types/src/contracts/index.ts"
   ],
   "sanitize": {
     "packages/typescript-config/base.json": "tsconfigPaths",

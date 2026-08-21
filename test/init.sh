@@ -6,6 +6,7 @@
 START_TIME=$(date +%s)
 
 # Configuration
+CLI_PATH="E:/HedHogV2/cli/dist/src/main.js"
 PROJECT_NAME="test-project"
 DB_TYPE="postgres"
 DB_HOST="localhost"
@@ -15,17 +16,13 @@ DB_PASSWORD="changeme"
 DB_NAME="hedhog"
 LIBRARIES=("category" "contact" "contact-us" "faq" "tag" "content")
 
-# Install the HedHog CLI (mirrors test/init.ps1)
-echo -e "\033[32mInstalling @hed-hog/cli globally...\033[0m"
-npm i -g @hed-hog/cli
-
 # Clean up existing project
 echo -e "\033[33mRemoving existing project directory...\033[0m"
 rm -rf "./${PROJECT_NAME}" 2>/dev/null
 
 # Create new project
 echo -e "\033[32mCreating new HedHog project...\033[0m"
-hedhog new "$PROJECT_NAME" \
+node "$CLI_PATH" new "$PROJECT_NAME" \
   --dbtype "$DB_TYPE" \
   --dbhost "$DB_HOST" \
   --dbport "$DB_PORT" \
@@ -44,7 +41,7 @@ cd "./${PROJECT_NAME}" || exit 1
 
 # Add libraries
 echo -e "\033[32mAdding libraries: ${LIBRARIES[*]}...\033[0m"
-hedhog add "${LIBRARIES[@]}"
+node "$CLI_PATH" add "${LIBRARIES[@]}"
 
 if [ $? -ne 0 ]; then
   echo -e "\033[31mFailed to add libraries\033[0m"

@@ -1,11 +1,10 @@
-# HedHog Framework - Bootstrap Template
+# HedHog Framework - Development Repository
 
-[![CI](https://github.com/hed-hog/template/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/hed-hog/template/actions/workflows/ci.yml)
-[![Security](https://github.com/hed-hog/template/actions/workflows/security.yml/badge.svg?branch=master)](https://github.com/hed-hog/template/actions/workflows/security.yml)
+Official website: **[hedhog.com](https://hedhog.com)**
 
-This is the bootstrap template for the **HedHog Framework**, a modular framework based on NestJS and Next.js for building enterprise applications. Use it as a starting point for a new project.
+[![API Tests](https://github.com/hed-hog/lab-v2/actions/workflows/test.yaml/badge.svg)](https://github.com/hed-hog/lab-v2/actions/workflows/test.yaml)
 
-> 🌐 Official website and full documentation: **[hedhog.com](https://hedhog.com)**
+This is the development repository for the **HedHog Framework**, a modular framework based on NestJS and Next.js for building enterprise applications.
 
 ## Project Structure
 
@@ -13,14 +12,15 @@ HedHog is organized as a monorepo using **pnpm** and **Turborepo**, split into t
 
 ### 📁 Apps
 
-Main applications that already come ready with the framework:
+Main applications that ship ready-to-use with the framework:
 
-- **`apps/admin`** - Admin dashboard in Next.js with authentication, user management, roles and settings
-- **`apps/api`** - REST API in NestJS that serves as the backend for the admin dashboard
+- **`apps/admin`** - Next.js admin dashboard with authentication, user management, roles, and settings
+- **`apps/api`** - NestJS REST API that serves as the backend for the admin
+- **`apps/hedhog`** - Marketing/documentation site for the framework (powers hedhog.com)
 
 ### 📚 Libraries
 
-Feature modules that can be installed into HedHog as needed. The `libraries/` directory **is not committed to the template** — it is created and populated by the HedHog CLI as modules are installed into the project.
+Feature modules that can be installed into HedHog as needed.
 
 > **Licensing**: only the **Core** module is Open Source (MIT). All other modules are **Enterprise** and require an active HedHog commercial license.
 
@@ -32,14 +32,14 @@ Feature modules that can be installed into HedHog as needed. The `libraries/` di
 
 - **`libraries/address`** - Address management
 - **`libraries/agent`** - AI agents
-- **`libraries/campaign`** - Email campaigns (templates, recipient lists, sending, suppression and tracking)
+- **`libraries/campaign`** - Email campaigns (templates, recipient lists, sending, suppression, and tracking)
 - **`libraries/category`** - Category system
 - **`libraries/cms`** - Content management
-- **`libraries/commerce`** - Commerce (products, orders and payments)
-- **`libraries/crm`** - CRM (people, contacts, proposals and sales funnel)
-- **`libraries/finance`** - Finance (accounts, entries and reports)
+- **`libraries/commerce`** - Commerce (products, orders, and payments)
+- **`libraries/crm`** - CRM (people, contacts, proposals, and sales pipeline)
+- **`libraries/finance`** - Finance (accounts, entries, and reports)
 - **`libraries/inbox`** - Unified inbox
-- **`libraries/lms`** - LMS (courses, lessons, classes, enrollments, certificates and gamification)
+- **`libraries/lms`** - LMS (courses, lessons, classes, enrollments, certificates, and gamification)
 - **`libraries/operations`** - Operations (contracts and operational routines)
 - **`libraries/queue`** - Queues and asynchronous processing
 - **`libraries/tag`** - Tag system
@@ -86,9 +86,9 @@ This monorepo already comes configured with essential tools:
 ### Installation
 
 ```bash
-# Clone this template
-git clone <your-repository-url> my-project
-cd my-project
+# Clone the repository
+git clone https://github.com/hed-hog/lab-v2.git
+cd lab-v2
 
 # Install dependencies
 pnpm install
@@ -106,6 +106,8 @@ pnpm prisma:deploy
 # Go back to the root and start the project
 cd ../..
 pnpm start:admin  # Starts admin (3200) + api (3100)
+# or
+pnpm start:web    # Starts web (3000) + api (3100)
 # or
 pnpm dev          # Starts everything in parallel
 ```
@@ -129,6 +131,7 @@ pnpm run dev
 
 # Or start specific apps
 pnpm start:admin  # Admin + API
+pnpm start:web    # Web + API
 pnpm start:api    # API only
 ```
 
@@ -145,10 +148,10 @@ pnpm run test:e2e
 #### Lint and Formatting
 
 ```bash
-# Code linting
+# Code lint
 pnpm run lint
 
-# Formats all code
+# Format all code
 pnpm format
 ```
 
@@ -167,7 +170,7 @@ pnpm prisma:deploy
 
 ### Creating a New Library
 
-Libraries under `libraries/` follow the NestJS module pattern and can be installed as needed:
+Libraries in `libraries/` follow the NestJS module pattern and can be installed as needed:
 
 ```typescript
 // Example: libraries/my-module/src/my-module.module.ts
@@ -192,17 +195,17 @@ pnpm prod  # Runs: patch → build → publish
 ### Backend (NestJS)
 
 - **Library-First pattern**: All business logic lives in `libraries/core`
-- **apps/api**: Just an entry point that imports the modules from the libraries
-- **Prisma**: Migration-first workflow; changes to database YAML require a new versioned SQL migration
+- **apps/api**: Just an entry point that imports the library modules
+- **Prisma**: Migration-first workflow; YAML database changes require a new versioned SQL migration
 - **Authentication**: JWT with refresh tokens
-- **Authorization**: Role and route-based permission system
+- **Authorization**: Role- and route-based permission system
 
 ### Frontend (Next.js)
 
 - **App Router**: Next.js 15 with React Server Components
 - **Shadcn/UI**: Components with Tailwind CSS v4
 - **TanStack Query**: Server state management via `@hed-hog/next-app-provider`
-- **Internationalization**: next-intl with support for multiple languages
+- **Internationalization**: next-intl with multi-language support
 - **Forms**: react-hook-form + zod for validation
 
 ### Remote Caching
@@ -226,18 +229,6 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 npx turbo link
 ```
 
-## Maintaining this template
-
-This repository is the seed `hedhog new` clones. Before pushing, verify that a
-new project still builds from it:
-
-```powershell
-pnpm test:bootstrap
-```
-
-To carry a change from a working project into this one, see
-[docs/bootstrap-sync.md](docs/bootstrap-sync.md).
-
 ## Contributing
 
 This is a project under active development. Contributions are welcome!
@@ -250,7 +241,6 @@ This is a project under active development. Contributions are welcome!
 
 ## Useful Links
 
-- [HedHog - Official Website and Documentation](https://hedhog.com)
 - [Turborepo Documentation](https://turborepo.com/docs)
 - [NestJS Documentation](https://docs.nestjs.com)
 - [Next.js Documentation](https://nextjs.org/docs)
@@ -259,6 +249,4 @@ This is a project under active development. Contributions are welcome!
 
 ## License
 
-This template is **Open Source** under the MIT license — see [LICENSE](LICENSE).
-
-The **Core** module (`libraries/core`) is likewise MIT. All other modules under `libraries/*` are **Enterprise**, distributed under a commercial license — see the `LICENSE.md` of each library.
+The **Core** module (`libraries/core`) is **Open Source** under the MIT license. All other modules in `libraries/*` are **Enterprise**, distributed under a commercial license — see each library's `LICENSE.md`.

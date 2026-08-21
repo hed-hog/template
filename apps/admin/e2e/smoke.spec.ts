@@ -1,22 +1,31 @@
 import { test, expect } from '@playwright/test';
-import { expectPageLoads } from './support';
 
-// Minimal smoke test that works on a fresh checkout of the template, with no
-// library installed: confirms that the authenticated session (via storageState from
-// auth.setup.ts) loads the home page without falling back to /login. Once the first
-// library is installed, add per-module specs covering their actual routes
-// (see git history for the pattern used by removed module specs).
-test.describe('Smoke', () => {
-  test('home loads authenticated without redirecting to /login', async ({
+// Fluxo crítico ponta a ponta: autenticado (via storageState do setup) →
+// abre uma listagem → navega ao detalhe. Ajuste a rota e os seletores às páginas
+// reais do admin (aqui usamos commerce/customers como exemplo de lista).
+test.describe('Fluxo de listagem', () => {
+  test('abre uma página de listagem sem ser redirecionado para /login', async ({
     page,
   }) => {
-    await expectPageLoads(page, '/');
+    await page.goto('/commerce/customers');
+
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('does not redirect to /login on a basic navigation', async ({
-    page,
-  }) => {
-    await page.goto('/');
+  test('navega para o detalhe ao clicar no primeiro item', async ({ page }) => {
+    await page.goto('/commerce/customers');
+
+    const firstItem = page
+      .locator('a[href*="/commerce/customers/"], [role="row"]')
+      .first();
+
+    if ((await firstItem.count()) === 0) {
+      test.skip(true, 'Lista vazia — sem item para abrir o detalhe.');
+      return;
+    }
+
+    await firstItem.click();
     await expect(page).not.toHaveURL(/\/login/);
   });
 });

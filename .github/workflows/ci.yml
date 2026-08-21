@@ -1,8 +1,7 @@
 name: CI
 
-# Gate de qualidade rodado em push/PR para `master` e também manualmente
-# (workflow_dispatch no GitHub Actions ou `pnpm test` localmente), num único
-# job encadeado:
+# Gate de qualidade executado manualmente (workflow_dispatch no GitHub Actions
+# ou `pnpm test` localmente), num único job encadeado:
 #
 #   1. Instala e builda os workspaces `@hed-hog/*` (+ client Prisma) UMA vez.
 #   2. Roda o gate obrigatório de testes unitários (18 pacotes, Jest backend +
@@ -16,10 +15,6 @@ name: CI
 # quality). Unificado num job só, o install/build acontece uma única vez.
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
 
 # Um novo disparo manual no mesmo ref cancela execuções antigas — só a mais
 # recente importa para o gate.
@@ -36,13 +31,13 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: hedhog
+          POSTGRES_USER: hub
           POSTGRES_PASSWORD: changeme
-          POSTGRES_DB: hedhog
+          POSTGRES_DB: hub
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U hedhog"
+          --health-cmd "pg_isready -U hub"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -57,13 +52,12 @@ jobs:
           --health-retries 5
 
     env:
-      # Valores descartáveis, exclusivos do CI: o banco é um service container
-      # efêmero. Nunca reutilize estes valores fora do CI.
-      DATABASE_URL: postgresql://hedhog:changeme@localhost:5432/hedhog
-      JWT_SECRET: ci-only-jwt-secret-not-for-production
+      # Segredos de teste (não-produção) — espelham TESTING.md.
+      DATABASE_URL: postgresql://hub:changeme@localhost:5432/hub
+      JWT_SECRET: ZUZWNU1LM3ZtYkRHSzNHanZqcG1ab2sweDVSeDBBWGJPSGE3TGp5OTAzUQ==
       JWT_EXPIRES_IN: 7d
-      PEPPER: ci-only-pepper-not-for-production
-      ENCRYPTION_SECRET: ci-only-encryption-secret-not-for-production
+      PEPPER: QWFLNW5pV21kUDlGb2NtZGJ5NWRmUQ==
+      ENCRYPTION_SECRET: RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
       CORS_ALLOWED_ORIGINS: http://localhost:3200
       REDIS_HOST: localhost
       REDIS_PORT: 6379
@@ -89,21 +83,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install HedHog CLI
-        run: npm i -g @hed-hog/cli
-
-      - name: Add core library
-        # Downloads libraries/core, generates + applies its Prisma migration
-        # against the `postgres` service (already healthy by the time steps
-        # run) — see docs/YAML-SPEC.md. Required at runtime by
-        # apps/api/src/main.ts (SettingService) and by copy:core-assets below.
-        run: hedhog add core
-
-      - name: Install core library dependencies
-        # `hedhog add core` adds a new workspace member not reflected in the
-        # committed pnpm-lock.yaml, so link it with a non-frozen install
-        # (ephemeral to this run — nothing gets committed back).
-        run: pnpm install --no-frozen-lockfile
+      # Os subconjuntos de ícones em `**/generated/` são commitados, não gerados
+      # no build (o Dockerfile do class instala só as deps do app e não teria
+      # `@iconify-json/*`). Este passo garante que o que está no repositório
+      # ainda corresponde ao que o gerador produz — sem ele, um slug editado à
+      # mão ou um bump do pacote passariam despercebidos.
+      - name: Check generated icon subsets
+        run: pnpm generate:icons:check
 
       - name: Build libraries & packages
         # Gera os `dist/` dos workspaces `@hed-hog/*` (dos quais apps e libs
@@ -123,9 +109,17 @@ jobs:
         run: pnpm turbo run lint
         continue-on-error: true
 
+      - name: Typecheck do class (gate obrigatório)
+        # `apps/class` já passa limpo, e `next.config.mjs` não ignora mais erro
+        # de tipo no build — então aqui é bloqueante, para a dívida não voltar.
+        # Sem isso um hook usado sem import (TS2304) chegava ao navegador do
+        # aluno como `ReferenceError`.
+        run: pnpm --filter class run typecheck
+
       - name: Typecheck (report-only)
         # TODO: remover `continue-on-error` quando a dívida de tipos pré-existente
-        # for corrigida.
+        # em apps/training e apps/hcode-site for corrigida (apps/admin, apps/api
+        # e apps/class já passam limpos).
         run: pnpm turbo run typecheck
         continue-on-error: true
 
@@ -143,6 +137,20 @@ jobs:
       - name: Apply database migrations
         working-directory: apps/api
         run: pnpm prisma:deploy
+
+      - name: Check schema.prisma drift
+        working-directory: apps/api
+        # Falha quando uma migration altera o banco e o schema.prisma (gerado por
+        # `prisma db pull`) não acompanha. Foi essa janela que levou o valor 'link'
+        # do enum setting_component para produção sem o Prisma Client conhecê-lo: o
+        # banco recebeu o valor pela migration e a imagem foi gerada de um schema
+        # que ainda não o declarava, quebrando toda leitura da tabela `setting`.
+        # `--exit-code`: 0 = sem diferença, 2 = drift.
+        run: |
+          pnpm exec prisma migrate diff \
+            --from-url "$DATABASE_URL" \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code
 
       - name: Start API server
         working-directory: apps/api

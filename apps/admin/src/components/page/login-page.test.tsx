@@ -325,6 +325,11 @@ describe('LoginPage', () => {
       expect(appState.setAccessToken).toHaveBeenCalledWith('new-tok');
     });
     expect(push).toHaveBeenCalledWith('/dash');
+    // @simplewebauthn/browser v13 recebe as options embrulhadas em optionsJSON;
+    // passar o payload cru faz o prompt do navegador falhar em runtime.
+    expect(startAuthentication).toHaveBeenCalledWith({
+      optionsJSON: { challenge: 'abc' },
+    });
   });
 
   it('redireciona para troca de senha após login via chave de segurança quando requerido', async () => {

@@ -43,7 +43,7 @@ function removeTsBuildInfoFiles(dir) {
   });
 }
 
-// NEW FUNCTION: Remove .js, .d.ts, .d.ts.map files from the src folder
+// NOVA FUNÇÃO: Remove arquivos .js, .d.ts, .d.ts.map da pasta src
 function removeGeneratedFromSrc(srcDir) {
   if (!fs.existsSync(srcDir)) return;
   fs.readdirSync(srcDir, { withFileTypes: true }).forEach((entry) => {
@@ -71,7 +71,7 @@ resetInDir(rootDir);
 // Remove tsconfig.tsbuildinfo from all apps and packages
 [appsDir, packagesDir].forEach(removeTsBuildInfoFiles);
 
-// Reset each app and package (and also clean src)
+// Reset each app and package (e também limpa src)
 [appsDir, packagesDir].forEach(resetInSubDirs);
 
 console.log('==========================');

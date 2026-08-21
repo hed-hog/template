@@ -2,7 +2,7 @@
 Frontend
 
 # Use when
-- Non-trivial changes in `apps/admin` (or other frontend apps as they're added to the project)
+- Non-trivial changes in `apps/admin` or `apps/web`
 - Forms, lists, pages, client data fetching, UX fixes, and frontend i18n/messages
 
 # Do not use when
@@ -26,7 +26,7 @@ Frontend
 - Use `FileTypeIcon` from `@/components/file-type-icon` for filename, MIME type, or `file` table displays
 
 # Admin UI invariants
-- For admin CRUD/list pages, follow the canonical layout below; use the first generated page under `apps/admin/src/app/(app)/(libraries)/<library>/<entity>/page.tsx` as the concrete reference once one exists (the folder is empty in a fresh template checkout)
+- For admin CRUD/list pages, use `apps/admin/src/app/(app)/(libraries)/contact/accounts/page.tsx` as the canonical layout reference
 - Keep the list-page shell flat: `PageHeader` -> KPI summary row -> one responsive toolbar row -> content -> `PaginationFooter`
 - Do not wrap the toolbar or full listing area in an extra parent `Card`
 - Clickable rows/cards/list items must render pointer affordance

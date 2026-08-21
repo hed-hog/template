@@ -1,6 +1,6 @@
 {
   "name": "@hed-hog/api-prisma",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,7 +13,7 @@
     "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "prisma:update": "prisma generate --schema=./../../apps/api/prisma/schema.prisma",
-    "test": "jest"
+    "test": "jest --config jest.config.ts --runInBand --passWithNoTests"
   },
   "dependencies": {
     "@loancrate/prisma-schema-parser": "^3.0.0",
@@ -21,10 +21,11 @@
     "@prisma/client": "6.18.0"
   },
   "devDependencies": {
+    "prisma": "6.18.0",
     "@hed-hog/jest-config": "workspace:*",
     "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
-    "prisma": "6.18.0",
     "ts-jest": "^29.2.5"
   },
   "exports": {

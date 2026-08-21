@@ -18,6 +18,7 @@ export type User = {
   suspended_reason?: string;
   deactivated_at?: string;
   requires_password_reset?: boolean;
+  last_login_at?: string | null;
   created_at?: string;
   updated_at?: string;
   file?: File;

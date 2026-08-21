@@ -19,6 +19,18 @@ import {
 } from 'react';
 import { toast } from "sonner";
 import { useLocalStorage } from 'usehooks-ts';
+import {
+    clearImpersonation,
+    ImpersonationState,
+    readImpersonation,
+    remainingMs,
+    writeImpersonation,
+} from './impersonation';
+import {
+    getRawErrorMessage,
+    isNetworkError,
+    NETWORK_ERROR_MESSAGE,
+} from './network-error';
 
 
 // Export QueryClient for external use
@@ -195,6 +207,17 @@ type AppContextType = {
 	setSettingValue: (key: string, value: any) => Promise<void>;
 	forbiddenError: ForbiddenErrorState;
 	setForbiddenError: Dispatch<SetStateAction<ForbiddenErrorState>>;
+	/** URL base da API já resolvida (prop > env > setting > '/api'). */
+	apiBaseUrl: string;
+	/**
+	 * Simulação de acesso ativa NESTA aba (`sessionStorage`), ou `null`. Enquanto
+	 * houver valor aqui, `user` é o ALVO e todo refresh de token está desligado.
+	 */
+	impersonation: ImpersonationState | null;
+	/** Usado pela tela de resgate depois de trocar o código pelo token. */
+	startImpersonationSession: (state: ImpersonationState) => void;
+	/** Encerra a simulação sem tocar na sessão do operador. */
+	stopImpersonation: () => Promise<void>;
 };
 
 export const AppContext = createContext<AppContextType>({
@@ -229,6 +252,10 @@ export const AppContext = createContext<AppContextType>({
 	setSettingValue: () => Promise.resolve(),
 	forbiddenError: emptyForbiddenErrorState,
 	setForbiddenError: () => {},
+	apiBaseUrl: '/api',
+	impersonation: null,
+	startImpersonationSession: () => {},
+	stopImpersonation: () => Promise.resolve(),
 });
 
 type RequestLoginType = {
@@ -254,6 +281,13 @@ export type ApiErrorContext = {
 	url: string;
 	method?: string;
 	statusCode?: number;
+	/**
+	 * Resolved value of the per-request `showErrors` flag (defaults to `true`).
+	 * `false` means the call site asked for silence and handles the failure on
+	 * its own — a host app should not put a modal on screen for it, though it may
+	 * still report it somewhere invisible to the user (e.g. Sentry).
+	 */
+	showErrors: boolean;
 };
 
 export type AppProviderProps = {
@@ -265,12 +299,21 @@ export type AppProviderProps = {
 	bprogressConfig?: AppProgressProviderProps;
 	/**
 	 * Optional global hook fired for every real API error (any non-cancelled
-	 * response error), regardless of the per-request `showErrors` flag. Lets a
-	 * host app surface errors (e.g. a global error modal) without touching each
-	 * call site. Not fired for cancelled/aborted requests or the silent token
-	 * refresh cycle.
+	 * response error), including calls made with `showErrors: false`. Lets a host
+	 * app surface errors (e.g. a global error modal) without touching each call
+	 * site. Not fired for cancelled/aborted requests or the silent token refresh
+	 * cycle.
+	 *
+	 * The per-request flag is forwarded as `context.showErrors` instead of
+	 * filtering here, so the host app decides what silence means for it — dropping
+	 * the report, or keeping it but off screen.
 	 */
 	onError?: (error: any, context: ApiErrorContext) => void;
+	/**
+	 * App key sent to the backend (e.g. in `/auth/forgot`) so it can resolve the
+	 * correct base URL from the `app-urls` setting for transactional email links.
+	 */
+	appName?: string;
 };
 
 // Create a default QueryClient instance
@@ -311,6 +354,8 @@ function AppContextProvider({
 	children,
 	accessToken,
 	setAccessToken,
+	impersonation,
+	setImpersonation,
 	urlAfterLogin,
 	setUrlAfterLogin,
 	settings,
@@ -318,10 +363,13 @@ function AppContextProvider({
 	toast: toaster,
 	locales,
 	onError,
+	appName,
 }: {
 	children: ReactNode;
 	accessToken: string;
 	setAccessToken: Dispatch<SetStateAction<string>>;
+	impersonation: ImpersonationState | null;
+	setImpersonation: Dispatch<SetStateAction<ImpersonationState | null>>;
 	urlAfterLogin: string;
 	setUrlAfterLogin: Dispatch<SetStateAction<string>>;
 	settings: Record<string, any>;
@@ -329,9 +377,21 @@ function AppContextProvider({
 	toast?: typeof toast | any;
 	locales: { code: string; name: string }[];
 	onError?: (error: any, context: ApiErrorContext) => void;
+	appName?: string;
 }) {
+	// Numa aba simulada, TODO caminho que renova ou sincroniza token esta
+	// desligado: `/auth/refresh` e `@Public()` e le o cookie `rt` da mesma
+	// origem, que e o do OPERADOR — renovar devolveria a aba a identidade dele no
+	// meio da simulacao. A sessao simulada nao e renovavel; quando vence, acaba.
+	const isImpersonating = Boolean(impersonation);
 	const [settingsState, setSettingsState] = useLocalStorage('settings', JSON.stringify(settings));
-	const [currentLocaleCode, setCurrentLocaleCode] = useLocalStorage("locale", "en");
+	// O default sai da setting do sistema, e nao de `en` fixo: o idioma do
+	// dispositivo entra logo abaixo, num efeito, para nao divergir entre o render
+	// do servidor e o do cliente (`navigator` so existe num deles).
+	const [currentLocaleCode, setCurrentLocaleCode] = useLocalStorage(
+		"locale",
+		normalizeLocaleTag(settings['language']) ?? 'en',
+	);
 	const [currentTheme, setStoredCurrentTheme] = useLocalStorage<ThemeMode>(
 		THEME_STORAGE_KEY,
 		isThemeMode(settings['theme-mode']) ? settings['theme-mode'] : 'system',
@@ -357,6 +417,23 @@ function AppContextProvider({
 		process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
 		settingsApiBaseUrl ||
 		'/api';
+
+	// Idioma do dispositivo, adotado UMA vez: so quando o usuario ainda nao
+	// escolheu nenhum. Sem isto o admin abria sempre em `en` num navegador novo
+	// e mandava `Accept-Language: en` no login - de onde saiam os e-mails
+	// transacionais em ingles para usuario brasileiro.
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		if (window.localStorage.getItem('locale')) return;
+
+		const fromBrowser = normalizeLocaleTag(window.navigator?.language);
+		if (!fromBrowser) return;
+
+		const supported = locales.some((item) => item.code === fromBrowser);
+		if (!supported || fromBrowser === currentLocaleCode) return;
+
+		setCurrentLocaleCode(fromBrowser);
+	}, [locales, currentLocaleCode, setCurrentLocaleCode]);
 
 	// Track the previous settings to detect changes
 	const prevSettingsRef = useRef<string>('');
@@ -385,26 +462,37 @@ function AppContextProvider({
 	const forbiddenQueueRef = useRef<ForbiddenErrorState[]>([]);
 	const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
+	const KNOWN_AUTH_ERROR_PATTERNS: Array<{ pattern: RegExp; friendly: string }> = [
+		{
+			pattern: /too many|rate limit|muitas solicita/i,
+			friendly: 'Você atingiu o limite de tentativas. Aguarde alguns minutos e tente novamente.',
+		},
+		{
+			pattern: /invalid.*expired|inv[aá]lido.*expirou/i,
+			friendly: 'Este link expirou ou já foi utilizado. Solicite um novo link para continuar.',
+		},
+		{
+			pattern: /user not found|usu[aá]rio n[aã]o encontrado/i,
+			friendly: 'Não encontramos uma conta com esses dados. Verifique se digitou corretamente.',
+		},
+	];
+
 	const getErrorMessage = (error: any) => {
-		const raw = error?.response?.data?.message ?? error?.message;
-		if (typeof raw === 'string') return raw;
-		if (Array.isArray(raw)) return raw.join(' ');
-		if (raw && typeof raw === 'object') return Object.values(raw).flat().join(' ');
-		return 'An unknown error occurred';
+		if (isNetworkError(error)) return NETWORK_ERROR_MESSAGE;
+		const raw = getRawErrorMessage(error);
+		if (!raw) return 'Não foi possível concluir a solicitação. Tente novamente.';
+		const known = KNOWN_AUTH_ERROR_PATTERNS.find(({ pattern }) => pattern.test(raw));
+		return known ? known.friendly : raw;
 	};
 
 	const handleError = (error: any) => {
-		const message = getErrorMessage(error);
-		if (message.includes('Invalid file type: ')) {
+		const rawMessage = getRawErrorMessage(error);
+		if (rawMessage.includes('Invalid file type: ')) {
 			toaster.error('O tipo de arquivo enviado não é permitido.');
+		} else if (isNetworkError(error)) {
+			toaster.error(NETWORK_ERROR_MESSAGE);
 		} else {
-			switch (error.code) {
-				case 'ERR_NETWORK':
-					toaster.error('Network error');
-					break;
-				default:
-					toaster.error(message || 'An error occurred');
-			}
+			toaster.error(getErrorMessage(error));
 		}
 	};
 
@@ -467,6 +555,11 @@ function AppContextProvider({
 	);
 
 	const refreshTokenRequest = useCallback(async (): Promise<string | null> => {
+		// Ponto unico por onde todo refresh passa. Ver a nota em `isImpersonating`.
+		if (isImpersonating) {
+			return null;
+		}
+
 		try {
 			const browserId = getBrowserId();
 			const refreshInstance = axios.create({
@@ -501,7 +594,7 @@ function AppContextProvider({
 			}
 			return null;
 		}
-	}, [apiBaseUrl, currentLocaleCode, refreshToken, setRefreshToken]);
+	}, [apiBaseUrl, currentLocaleCode, refreshToken, setRefreshToken, isImpersonating]);
 
 	const enqueueForbiddenError = useCallback((forbiddenState: ForbiddenErrorState) => {
 		setForbiddenError(currentForbiddenError => {
@@ -648,8 +741,17 @@ function AppContextProvider({
 						cnf.headers['Authorization'] = `Bearer ${accessToken}`;
 					}
 					cnf.headers['Accept-Language'] = currentLocaleCode ?? 'en';
-					const browserId = getBrowserId();
+					// Numa simulacao o browser id e o do OPERADOR: manda-lo faria a
+					// sessao simulada entrar no slot de navegador do alvo e disputar o
+					// `max-concurrent-sessions` dele.
+					const browserId = isImpersonating ? '' : getBrowserId();
 					if (browserId) cnf.headers['X-Browser-ID'] = browserId;
+					// Quem esta chamando. O User-Agent diz o navegador, nao o produto:
+					// dois portais web mandam exatamente o mesmo UA, e sem isto os
+					// relatorios de acesso nao conseguem separar um do outro. O valor
+					// sai da prop `appName` porque este provider e compartilhado.
+					cnf.headers['X-App-Platform'] = 'web';
+					if (appName) cnf.headers['X-App-Name'] = appName;
 					return cnf;
 				},
 				error => {
@@ -665,6 +767,15 @@ function AppContextProvider({
 					const statusCode = error.response?.status;
 					const requestUrl = originalRequest.url || '';
 
+					// Once a logout/redirect-to-login is underway, the app is leaving
+					// regardless of what any in-flight request resolves to. Suppress
+					// all error UI (toasts, ForbiddenDialog, refresh attempts) so a
+					// stray 401/403 from a request that lost its token mid-navigation
+					// doesn't flash on screen right before the redirect completes.
+					if (isRedirectingToLoginRef.current) {
+						return Promise.reject(error);
+					}
+
 					// Detect authentication errors - check both status code AND message
 					const errorMessage = typeof error.response?.data?.message === 'string' 
 						? error.response.data.message.toLowerCase() 
@@ -675,20 +786,28 @@ function AppContextProvider({
 					);
 
 					if (isAuthorizationFailure) {
-						enqueueForbiddenError(
-							createForbiddenErrorState(
-								error,
-								originalRequest,
-								requestUrl,
-								statusCode,
-								config?.method,
-							),
-						);
+						// `showErrors: false` também silencia o ForbiddenDialog: quem
+						// renderiza o próprio 403 (a página do convite de cofre, por
+						// exemplo) não deve levar o modal genérico por cima. O `onError`
+						// abaixo continua disparando de qualquer forma, agora levando o
+						// flag no contexto para o app decidir o que fazer com ele.
+						if (config?.showErrors !== false) {
+							enqueueForbiddenError(
+								createForbiddenErrorState(
+									error,
+									originalRequest,
+									requestUrl,
+									statusCode,
+									config?.method,
+								),
+							);
+						}
 
 						onError?.(error, {
 							url: requestUrl,
 							method: originalRequest.method,
 							statusCode,
+							showErrors: config?.showErrors !== false,
 						});
 
 						return Promise.reject(error);
@@ -708,6 +827,17 @@ function AppContextProvider({
 						originalRequest.url?.includes('/auth/login') ||
 						originalRequest.url?.includes('/auth/refresh') ||
 						originalRequest.url?.includes('/auth/signup');
+
+					// Numa aba simulada, 401 significa "a janela acabou" — e nunca "renove".
+					// Todo o ramo abaixo e proibido aqui: ele renovaria com o cookie `rt`
+					// do operador, adotaria os tokens dele do localStorage no fallback
+					// sem Web Locks, e no fim chamaria `/auth/logout`, revogando a sessao
+					// real do operador.
+					if (isAuthError && isImpersonating) {
+						clearImpersonation();
+						setImpersonation(null);
+						return Promise.reject(error);
+					}
 
 					if (isAuthError && !shouldNotRetry) {
 						// If already refreshing, queue this request
@@ -828,8 +958,9 @@ function AppContextProvider({
 					}
 
 					// Surface every real (non-cancelled) API error to the optional global
-					// handler, regardless of `showErrors`, so a host app can render a modal
-					// even for calls that intentionally suppress the toast.
+					// handler, including calls that intentionally suppress the toast — the
+					// resolved `showErrors` goes in the context so the host app decides
+					// whether silence means "drop it" or "report it off screen".
 					const isCanceled =
 						axios.isCancel?.(error) ||
 						error?.code === 'ERR_CANCELED' ||
@@ -839,11 +970,14 @@ function AppContextProvider({
 							url: requestUrl,
 							method: originalRequest.method,
 							statusCode,
+							showErrors: config?.showErrors !== false,
 						});
 					}
 
-					// For non-auth errors, show error message if configured
-					if (config?.showErrors !== false) handleError(error);
+					// For non-auth errors, show error message if configured (canceled
+					// requests — e.g. an unmounted component aborting its own fetch —
+					// are not real errors and must never surface a toast).
+					if (!isCanceled && config?.showErrors !== false) handleError(error);
 					return Promise.reject(error);
 				},
 			);
@@ -868,14 +1002,17 @@ function AppContextProvider({
 			refreshToken,
 			router,
 			onError,
+			isImpersonating,
+			setImpersonation,
+			appName,
 		],
 	);
 
-	// STABLE identity for `request`. Consumers that put `request` in effect
-	// dependency arrays (a pattern used throughout the app) will no longer
-	// re-trigger — and abort the in-flight request — on every token/locale/router
-	// change, which used to keep pages stuck in "loading". Call behavior is
-	// identical: the wrapper always delegates to the latest implementation via ref.
+	// Identidade ESTÁVEL de `request`. Consumidores que colocam `request` em arrays
+	// de dependência de efeitos (padrão em todo o app) não vão mais re-disparar — e
+	// abortar a requisição em voo — a cada mudança de token/locale/router, o que
+	// prendia páginas no "carregando". O comportamento da chamada é idêntico: o
+	// wrapper sempre delega para a implementação mais recente via ref.
 	const requestImplRef = useRef(requestImpl);
 	requestImplRef.current = requestImpl;
 	const request = useCallback(
@@ -960,14 +1097,14 @@ function AppContextProvider({
 	};
 
 	const forgot = async (email: string) => {
-		await request({ url: '/auth/forgot', method: 'POST', data: { email } });
+		await request({ url: '/auth/forgot', method: 'POST', data: { email, app: appName } });
 	};
 
 	const signup = async (data: RegisterForm) => {
 		const { data: response } = await request<RequestSignupType>({
 			url: '/auth/signup',
 			method: 'POST',
-			data,
+			data: { ...data, app: appName },
 			showErrors: false,
 		});
 
@@ -1034,7 +1171,43 @@ function AppContextProvider({
 		}
 	};
 
+	/**
+	 * Encerra a simulacao SEM tocar na sessao do operador. Nunca chama
+	 * `/auth/logout`: aquele endpoint le o cookie `rt` da mesma origem, que e o
+	 * do operador, e o revogaria. Tambem nao roda `clearStoredFormDrafts()`, que
+	 * apagaria rascunhos do operador no `localStorage` compartilhado.
+	 */
+	const stopImpersonation = useCallback(async () => {
+		try {
+			await request({ url: '/impersonation/stop', method: 'POST', showErrors: false });
+		} catch {
+			// A sessao expira sozinha de qualquer forma; o importante e a aba sair
+			// da identidade simulada agora.
+		} finally {
+			clearImpersonation();
+			setImpersonation(null);
+		}
+	}, [request, setImpersonation]);
+
+	const startImpersonationSession = useCallback(
+		(state: ImpersonationState) => {
+			writeImpersonation(state);
+			setImpersonation(state);
+		},
+		[setImpersonation],
+	);
+
 	const logout = async () => {
+		// Numa aba simulada, "sair" significa encerrar a simulacao — nao deslogar o
+		// operador, cuja sessao continua viva nas outras abas.
+		if (isImpersonating) {
+			await stopImpersonation();
+			return;
+		}
+
+		// Mark the redirect as underway immediately so the response interceptor
+		// suppresses any error UI for requests that fail once tokens are cleared.
+		isRedirectingToLoginRef.current = true;
 		try {
 			// Call server logout to clear refresh token cookie
 			await request({ 
@@ -1117,6 +1290,9 @@ function AppContextProvider({
 
 		channel.onmessage = (event: MessageEvent) => {
 			if (event.data?.type !== 'TOKEN_REFRESHED') return;
+			// Adotar o token de outra aba nesta aba trocaria o alvo pelo operador
+			// no meio da simulacao.
+			if (isImpersonating) return;
 			setAccessToken(event.data.accessToken);
 			if (event.data.refreshToken) {
 				setRefreshToken(event.data.refreshToken);
@@ -1129,7 +1305,7 @@ function AppContextProvider({
 			channel.close();
 			broadcastChannelRef.current = null;
 		};
-	}, [setAccessToken, setRefreshToken]);
+	}, [setAccessToken, setRefreshToken, isImpersonating]);
 
 	// Proactive refresh on tab focus: if the access token is expired or expiring within 60s,
 	// refresh silently before any request fails, avoiding the "session expired" toast entirely.
@@ -1139,6 +1315,8 @@ function AppContextProvider({
 		const handleVisibilityChange = async () => {
 			if (document.visibilityState !== 'visible') return;
 			if (isRefreshingRef.current) return;
+			// Refresh proativo tambem renovaria com o cookie do operador.
+			if (isImpersonating) return;
 
 			const currentAccessToken = readLocalStorageToken(LocalStorageKeys.AccessToken);
 			const currentRefreshToken = readLocalStorageToken(LocalStorageKeys.RefreshToken);
@@ -1183,7 +1361,20 @@ function AppContextProvider({
 
 		document.addEventListener('visibilitychange', handleVisibilityChange);
 		return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-	}, [refreshTokenRequest, setAccessToken, processQueue]);
+	}, [refreshTokenRequest, setAccessToken, processQueue, isImpersonating]);
+
+	// A janela simulada nao e renovavel: quando vence, a aba precisa sair da
+	// identidade do alvo por conta propria, sem esperar um 401.
+	useEffect(() => {
+		if (!impersonation) return;
+
+		const timeout = window.setTimeout(() => {
+			clearImpersonation();
+			setImpersonation(null);
+		}, Math.max(0, remainingMs(impersonation)));
+
+		return () => window.clearTimeout(timeout);
+	}, [impersonation, setImpersonation]);
 
 	useEffect(() => {
 		if (getStoredThemeSource() === 'explicit') {
@@ -1233,6 +1424,10 @@ function AppContextProvider({
 				setSettingValue,
 				forbiddenError,
 				setForbiddenError: setForbiddenErrorState,
+				apiBaseUrl,
+				impersonation,
+				startImpersonationSession,
+				stopImpersonation,
 			}}
 		>
 			{children}
@@ -1240,7 +1435,18 @@ function AppContextProvider({
 	);
 }
 
-export const AppProvider = ({children, toast: _, queryClient, settings, locales, bprogressConfig, onError}: AppProviderProps) => {
+/**
+ * Reduz uma tag de idioma ao code de 2 letras que a API usa (`pt-BR` -> `pt`).
+ *
+ * A tabela `locale` guarda `char(2)`, entao mandar a tag completa no
+ * `Accept-Language` nao casa com registro nenhum.
+ */
+function normalizeLocaleTag(tag: unknown): string | null {
+	const [code = ''] = String(tag ?? '').trim().toLowerCase().split(/[-_]/);
+	return /^[a-z]{2,3}$/.test(code) ? code : null;
+}
+
+export const AppProvider = ({children, toast: _, queryClient, settings, locales, bprogressConfig, onError, appName}: AppProviderProps) => {
 	const settingsApiBaseUrl =
 		typeof settings['api-base-url'] === 'string'
 			? settings['api-base-url'].trim()
@@ -1251,12 +1457,24 @@ export const AppProvider = ({children, toast: _, queryClient, settings, locales,
 	const [urlAfterLogin, setUrlAfterLogin] = useLocalStorage(LocalStorageKeys.UrlAfterLogin, '/');
 	const client = queryClient || defaultQueryClient;
 
+	// Hidratado no mount, e nao no primeiro render: `sessionStorage` nao existe
+	// no servidor e ler direto aqui daria divergencia de hidratacao.
+	const [impersonation, setImpersonation] = useState<ImpersonationState | null>(null);
+
+	useEffect(() => {
+		setImpersonation(readImpersonation());
+	}, []);
+
 	return (
 		<ProgressProvider {...bprogressConfig} color={settings['theme-primary-light'] || settings['theme-primary-dark'] || '#000000'}>
 			<QueryClientProvider client={client}>
 				<AppContextProvider
-					accessToken={accessToken}
+					// O token simulado vence o do operador NESTA aba — e so nela,
+					// porque `sessionStorage` nao vaza para as outras.
+					accessToken={impersonation?.accessToken || accessToken}
 					setAccessToken={setAccessToken}
+					impersonation={impersonation}
+					setImpersonation={setImpersonation}
 					urlAfterLogin={urlAfterLogin}
 					setUrlAfterLogin={setUrlAfterLogin}
 					settings={settings}
@@ -1264,6 +1482,7 @@ export const AppProvider = ({children, toast: _, queryClient, settings, locales,
 					toast={_}
 					locales={locales}
 					onError={onError}
+					appName={appName}
 				>
 					{children}
 				</AppContextProvider>

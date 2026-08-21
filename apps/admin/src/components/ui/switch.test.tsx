@@ -21,7 +21,7 @@ describe('Switch', () => {
   });
 
   it('reflete o estado marcado quando controlado', () => {
-    render(<Switch aria-label="ativar" checked readOnly />);
+    render(<Switch {...({ 'aria-label': 'ativar', checked: true, readOnly: true } as any)} />);
     expect(screen.getByRole('switch', { name: 'ativar' })).toHaveAttribute(
       'data-state',
       'checked'

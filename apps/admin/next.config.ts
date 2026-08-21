@@ -6,7 +6,15 @@ const isStandaloneBuild =
 
 const nextConfig: NextConfig = {
   output: isStandaloneBuild ? 'standalone' : undefined,
-  transpilePackages: ['@hed-hog/next-app-provider'],
+  transpilePackages: ['@hed-hog/next-app-provider', '@hed-hog/next-build-skew'],
+  // Página prerenderizada responde `s-maxage=60, stale-while-revalidate=<expireTime - 60>`,
+  // e o padrão do Next para `expireTime` é um ano. `stale-while-revalidate` vale
+  // também para o cache privado do navegador: quem já visitou recebe o HTML de
+  // um build antigo direto do disco, por meses, revalidando só em segundo
+  // plano. Esse HTML aponta para chunks que o deploy seguinte apagou do pod (o
+  // nome tem hash de conteúdo) e a página quebra com "module factory is not
+  // available". Cinco minutos limitam a janela sem perder o alívio de tráfego.
+  expireTime: 300,
   experimental: {
     proxyClientMaxBodySize: '100mb',
   },

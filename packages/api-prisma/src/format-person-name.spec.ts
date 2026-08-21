@@ -66,7 +66,7 @@ describe('formatPersonName', () => {
   });
 
   it('não recaixa e-mail gravado no campo nome', () => {
-    expect(formatPersonName('joao@example.com')).toBe('joao@example.com');
+    expect(formatPersonName('joao@hcode.com.br')).toBe('joao@hcode.com.br');
   });
 
   it('normaliza espaços mesmo sem recaixar', () => {
@@ -98,7 +98,7 @@ describe('applyPersonNameToArgs', () => {
   });
 
   it('não toca em pessoa jurídica', async () => {
-    const args = { data: { name: 'ACME TECNOLOGIA LTDA', type: 'company' } };
+    const args = { data: { name: 'HCODE TECNOLOGIA LTDA', type: 'company' } };
 
     expect(await applyPersonNameToArgs('create', args, individual)).toBe(args);
   });
@@ -165,7 +165,7 @@ describe('applyPersonNameToArgs', () => {
     const args = {
       data: [
         { name: 'MARIA JOSE', type: 'individual' },
-        { name: 'ACME TECNOLOGIA LTDA', type: 'company' },
+        { name: 'HCODE TECNOLOGIA LTDA', type: 'company' },
         { name: 'joao pedro', type: 'individual' },
       ],
     };
@@ -173,7 +173,7 @@ describe('applyPersonNameToArgs', () => {
     expect(await applyPersonNameToArgs('createMany', args, notIndividual)).toEqual({
       data: [
         { name: 'Maria Jose', type: 'individual' },
-        { name: 'ACME TECNOLOGIA LTDA', type: 'company' },
+        { name: 'HCODE TECNOLOGIA LTDA', type: 'company' },
         { name: 'Joao Pedro', type: 'individual' },
       ],
     });

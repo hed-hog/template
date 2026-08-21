@@ -61,6 +61,28 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+// `useApp` gates the AI button (richtext-ai-enabled + richtext-ai-profile-id)
+// and provides the request/toast plumbing for the submit flow.
+const requestMock = vi.fn();
+const showToastHandlerMock = vi.fn();
+const getSettingValueMock = vi.fn((_key: string) => undefined as unknown);
+
+vi.mock('@hed-hog/next-app-provider', () => ({
+  useApp: () => ({
+    request: requestMock,
+    getSettingValue: getSettingValueMock,
+    showToastHandler: showToastHandlerMock,
+  }),
+}));
+
+function mockAiSettings(enabled: boolean, profileId: string) {
+  getSettingValueMock.mockImplementation((key: string) => {
+    if (key === 'richtext-ai-enabled') return enabled;
+    if (key === 'richtext-ai-profile-id') return profileId;
+    return undefined;
+  });
+}
+
 // Radix-backed primitives need real providers/portals we don't want to
 // fight in a unit test; replace with simple passthroughs (same convention
 // as src/components/ui/entity-picker.test.tsx).
@@ -184,7 +206,7 @@ function createEditorMock(options: EditorMockOptions = {}) {
 
 function getLastEditorConfig() {
   const calls = useEditorMock.mock.calls;
-  return calls[calls.length - 1][0];
+  return calls[calls.length - 1]![0];
 }
 
 function getExtensionConfigure(
@@ -213,6 +235,10 @@ function setup(
 describe('RichTextEditor', () => {
   beforeEach(() => {
     useEditorMock.mockReset();
+    requestMock.mockReset();
+    showToastHandlerMock.mockReset();
+    getSettingValueMock.mockReset();
+    getSettingValueMock.mockImplementation(() => undefined);
   });
 
   it('não renderiza nada quando o editor ainda não está pronto', () => {
@@ -233,14 +259,47 @@ describe('RichTextEditor', () => {
     expect(screen.queryByText('emptyPlaceholder')).not.toBeInTheDocument();
   });
 
+  // Regressão: o rascunho da IA chega pelo `value`, e o sync interno roda
+  // `setContent(..., { emitUpdate: false })`. Como o `useEditor` do Tiptap v3 não
+  // re-renderiza por transação, ler `editor.isEmpty` no render deixava o
+  // placeholder desenhado por cima do texto gerado.
+  it('esconde o placeholder quando o conteúdo chega de fora, sem onUpdate', () => {
+    const editor = createEditorMock({ isEmpty: true, getHTML: () => '' });
+    const { rerender } = setup(editor, { value: '' });
+    expect(screen.getByText('emptyPlaceholder')).toBeInTheDocument();
+
+    editor.isEmpty = false;
+    editor.getHTML = vi.fn(() => '<p>rascunho da IA</p>');
+    rerender(
+      <RichTextEditor value="<p>rascunho da IA</p>" onChange={vi.fn()} />,
+    );
+
+    expect(screen.queryByText('emptyPlaceholder')).not.toBeInTheDocument();
+  });
+
+  it('devolve o placeholder quando o conteúdo é limpo de fora', () => {
+    const editor = createEditorMock({
+      isEmpty: false,
+      getHTML: () => '<p>resposta</p>',
+    });
+    const { rerender } = setup(editor, { value: '<p>resposta</p>' });
+    expect(screen.queryByText('emptyPlaceholder')).not.toBeInTheDocument();
+
+    editor.isEmpty = true;
+    editor.getHTML = vi.fn(() => '');
+    rerender(<RichTextEditor value="" onChange={vi.fn()} />);
+
+    expect(screen.getByText('emptyPlaceholder')).toBeInTheDocument();
+  });
+
   it('expande a toolbar ao focar e recolhe ao perder o foco para fora', () => {
     const editor = createEditorMock();
     const { container } = setup(editor);
     const root = container.firstElementChild as HTMLElement;
 
     fireEvent.focus(root);
-    // Toolbar wrapper becomes visible (max-h-16 class applied).
-    expect(root.querySelector('.max-h-16')).not.toBeNull();
+    // Toolbar wrapper becomes visible (max-h-24 class applied).
+    expect(root.querySelector('.max-h-24')).not.toBeNull();
 
     fireEvent.blur(root, { relatedTarget: null });
     expect(root.querySelector('.max-h-0')).not.toBeNull();
@@ -268,8 +327,10 @@ describe('RichTextEditor', () => {
 
   it('mostra destaque (bg-muted) quando bold/italic/underline estão ativos', () => {
     const editor = createEditorMock({
-      isActive: (name: string) =>
-        name === 'bold' || name === 'italic' || name === 'underline',
+      isActive: ((name: string) =>
+        name === 'bold' || name === 'italic' || name === 'underline') as (
+        ...args: unknown[]
+      ) => boolean,
     });
     setup(editor);
     expect(screen.getByTitle('bold').className).toContain('bg-muted');
@@ -395,7 +456,10 @@ describe('RichTextEditor', () => {
 
   it('alterna listas com marcadores e numeradas', () => {
     const editor = createEditorMock({
-      isActive: (name: string) => name === 'bulletList' || name === 'orderedList',
+      isActive: ((name: string) =>
+        name === 'bulletList' || name === 'orderedList') as (
+        ...args: unknown[]
+      ) => boolean,
     });
     setup(editor);
 
@@ -416,7 +480,9 @@ describe('RichTextEditor', () => {
   it('aplica um link via Enter no campo de URL e via botão aplicar, e remove o link', () => {
     const editor = createEditorMock({
       getAttributes: (type) => (type === 'link' ? { href: 'http://old.test' } : {}),
-      isActive: (name: string) => name === 'link',
+      isActive: ((name: string) => name === 'link') as (
+        ...args: unknown[]
+      ) => boolean,
     });
     setup(editor);
 
@@ -620,7 +686,7 @@ describe('RichTextEditor', () => {
     });
     const customButtons = screen.getAllByText('Ver HTML');
     expect(customButtons.length).toBeGreaterThan(0);
-    fireEvent.click(customButtons[0]);
+    fireEvent.click(customButtons[0]!);
     expect(screen.getByTestId('dialog')).toBeInTheDocument();
   });
 
@@ -713,7 +779,7 @@ describe('RichTextEditor', () => {
       '@tiptap/extension-mention'
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
-    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
 
     expect(lastCall.suggestion.items({ query: 'al' })).toEqual([mentions[0]]);
     expect(lastCall.suggestion.items({ query: '' }).length).toBe(2);
@@ -732,7 +798,7 @@ describe('RichTextEditor', () => {
       '@tiptap/extension-mention'
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
-    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     const command = vi.fn();
@@ -770,7 +836,7 @@ describe('RichTextEditor', () => {
 
     fireEvent.mouseDown(screen.getByText('Bob'));
     expect(command).toHaveBeenCalledWith(
-      expect.objectContaining({ ...mentions[1], id: String(mentions[1].id) }),
+      expect.objectContaining({ ...mentions[1], id: String(mentions[1]!.id) }),
     );
     expect(screen.queryByText('Alice')).not.toBeInTheDocument();
   });
@@ -783,7 +849,7 @@ describe('RichTextEditor', () => {
       '@tiptap/extension-mention'
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
-    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -821,7 +887,7 @@ describe('RichTextEditor', () => {
       '@tiptap/extension-mention'
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
-    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -839,7 +905,7 @@ describe('RichTextEditor', () => {
       expect(handled).toBe(true);
     });
     expect(command).toHaveBeenCalledWith(
-      expect.objectContaining({ ...items[0], id: String(items[0].id) }),
+      expect.objectContaining({ ...items[0], id: String(items[0]!.id) }),
     );
 
     act(() => {
@@ -859,7 +925,7 @@ describe('RichTextEditor', () => {
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
     const lastCall =
-      configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+      configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -889,7 +955,7 @@ describe('RichTextEditor', () => {
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
     const lastCall =
-      configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+      configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -913,7 +979,7 @@ describe('RichTextEditor', () => {
 
     fireEvent.mouseDown(screen.getByText('Bob'));
     expect(updatedCommand).toHaveBeenCalledWith(
-      expect.objectContaining({ ...mentions[1], id: String(mentions[1].id) }),
+      expect.objectContaining({ ...mentions[1], id: String(mentions[1]!.id) }),
     );
   });
 
@@ -931,7 +997,7 @@ describe('RichTextEditor', () => {
       '@tiptap/extension-mention'
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
-    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+    const lastCall = configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -1008,16 +1074,16 @@ describe('RichTextEditor', () => {
       setup(editor);
       const fontSize = getExtension('fontSize');
       const ctx = { options: { types: ['textStyle'] } };
-      const [{ types, attributes }] = fontSize.addGlobalAttributes.call(ctx);
+      const { types, attributes } = fontSize.addGlobalAttributes.call(ctx)[0]!;
 
       expect(types).toEqual(['textStyle']);
       expect(
-        attributes.fontSize.parseHTML({
+        attributes.fontSize!.parseHTML({
           style: { fontSize: '12px;' },
         } as unknown as HTMLElement),
       ).toBe('12px');
       expect(
-        attributes.fontSize.parseHTML({
+        attributes.fontSize!.parseHTML({
           style: {},
         } as unknown as HTMLElement),
       ).toBeUndefined();
@@ -1028,10 +1094,10 @@ describe('RichTextEditor', () => {
       setup(editor);
       const fontSize = getExtension('fontSize');
       const ctx = { options: { types: ['textStyle'] } };
-      const [{ attributes }] = fontSize.addGlobalAttributes.call(ctx);
+      const { attributes } = fontSize.addGlobalAttributes.call(ctx)[0]!;
 
-      expect(attributes.fontSize.renderHTML({ fontSize: null })).toEqual({});
-      expect(attributes.fontSize.renderHTML({ fontSize: '14px' })).toEqual({
+      expect(attributes.fontSize!.renderHTML({ fontSize: null })).toEqual({});
+      expect(attributes.fontSize!.renderHTML({ fontSize: '14px' })).toEqual({
         style: 'font-size: 14px',
       });
     });
@@ -1071,7 +1137,7 @@ describe('RichTextEditor', () => {
       const editor = createEditorMock();
       setup(editor);
       const preserve = getExtension('preserveAttributes');
-      const [{ types, attributes }] = preserve.addGlobalAttributes();
+      const { types, attributes } = preserve.addGlobalAttributes()[0]!;
 
       expect(types).toEqual(
         expect.arrayContaining([
@@ -1087,32 +1153,32 @@ describe('RichTextEditor', () => {
       );
 
       expect(
-        attributes.style.parseHTML({
+        attributes.style!.parseHTML({
           getAttribute: () => 'color:red',
         } as unknown as HTMLElement),
       ).toBe('color:red');
-      expect(attributes.style.renderHTML({ style: null })).toEqual({});
-      expect(attributes.style.renderHTML({ style: 'color:red' })).toEqual({
+      expect(attributes.style!.renderHTML({ style: null })).toEqual({});
+      expect(attributes.style!.renderHTML({ style: 'color:red' })).toEqual({
         style: 'color:red',
       });
 
       expect(
-        attributes.class.parseHTML({
+        attributes.class!.parseHTML({
           getAttribute: () => 'foo',
         } as unknown as HTMLElement),
       ).toBe('foo');
-      expect(attributes.class.renderHTML({ class: null })).toEqual({});
-      expect(attributes.class.renderHTML({ class: 'foo' })).toEqual({
+      expect(attributes.class!.renderHTML({ class: null })).toEqual({});
+      expect(attributes.class!.renderHTML({ class: 'foo' })).toEqual({
         class: 'foo',
       });
 
       expect(
-        attributes.id.parseHTML({
+        attributes.id!.parseHTML({
           getAttribute: () => 'bar',
         } as unknown as HTMLElement),
       ).toBe('bar');
-      expect(attributes.id.renderHTML({ id: null })).toEqual({});
-      expect(attributes.id.renderHTML({ id: 'bar' })).toEqual({ id: 'bar' });
+      expect(attributes.id!.renderHTML({ id: null })).toEqual({});
+      expect(attributes.id!.renderHTML({ id: 'bar' })).toEqual({ id: 'bar' });
     });
   });
 
@@ -1246,7 +1312,7 @@ describe('RichTextEditor', () => {
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
     const lastCall =
-      configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+      configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -1275,7 +1341,7 @@ describe('RichTextEditor', () => {
     )) as unknown as { default: { configure: ReturnType<typeof vi.fn> } };
     const configureMock = mentionModule.default.configure;
     const lastCall =
-      configureMock.mock.calls[configureMock.mock.calls.length - 1][0];
+      configureMock.mock.calls[configureMock.mock.calls.length - 1]![0];
     const handlers = lastCall.suggestion.render();
 
     act(() => {
@@ -1289,5 +1355,77 @@ describe('RichTextEditor', () => {
     });
 
     expect(await screen.findByText('Alice')).toBeInTheDocument();
+  });
+
+  describe('botão de IA (richtext-ai-enabled + richtext-ai-profile-id)', () => {
+    it('não mostra o botão quando a IA está desabilitada', () => {
+      mockAiSettings(false, 'profile-1');
+      const editor = createEditorMock();
+      setup(editor);
+      expect(screen.queryByTitle('aiEdit')).not.toBeInTheDocument();
+    });
+
+    it('não mostra o botão quando não há perfil de IA selecionado', () => {
+      mockAiSettings(true, '');
+      const editor = createEditorMock();
+      setup(editor);
+      expect(screen.queryByTitle('aiEdit')).not.toBeInTheDocument();
+    });
+
+    it('mostra o botão quando a IA está habilitada e há um perfil selecionado', () => {
+      mockAiSettings(true, 'profile-1');
+      const editor = createEditorMock();
+      setup(editor);
+      expect(screen.getByTitle('aiEdit')).toBeInTheDocument();
+    });
+
+    it('envia o prompt, aplica o HTML retornado ao editor e mostra toast de sucesso', async () => {
+      mockAiSettings(true, 'profile-1');
+      requestMock.mockResolvedValue({ data: { html: '<p>novo</p>' } });
+      const editor = createEditorMock({ getHTML: () => '<p>atual</p>' });
+      const { onChange } = setup(editor);
+
+      const textarea = screen.getByPlaceholderText('aiEditPromptPlaceholder');
+      fireEvent.change(textarea, { target: { value: 'deixe mais formal' } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('aiEditSubmit'));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(requestMock).toHaveBeenCalledWith({
+        url: '/ai/richtext/edit-html',
+        method: 'POST',
+        data: { html: '<p>atual</p>', instruction: 'deixe mais formal' },
+      });
+      expect(editor.commands.setContent).toHaveBeenCalledWith('<p>novo</p>');
+      expect(onChange).toHaveBeenCalledWith('<p>novo</p>');
+      expect(showToastHandlerMock).toHaveBeenCalledWith(
+        'success',
+        'aiEditSuccess',
+      );
+    });
+
+    it('mostra toast de erro quando a chamada falha, sem alterar o conteúdo', async () => {
+      mockAiSettings(true, 'profile-1');
+      requestMock.mockRejectedValue(new Error('boom'));
+      const editor = createEditorMock();
+      setup(editor);
+      editor.commands.setContent.mockClear();
+
+      const textarea = screen.getByPlaceholderText('aiEditPromptPlaceholder');
+      fireEvent.change(textarea, { target: { value: 'algo' } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('aiEditSubmit'));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(showToastHandlerMock).toHaveBeenCalledWith(
+        'error',
+        'aiEditError',
+      );
+      expect(editor.commands.setContent).not.toHaveBeenCalled();
+    });
   });
 });

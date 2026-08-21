@@ -65,11 +65,11 @@ describe('FfmpegParamsEditor', () => {
     render(<FfmpegParamsEditor value="" onChange={onChange} className="extra" />);
 
     const [resolutionTrigger] = selectDom();
-    fireEvent.click(resolutionTrigger);
+    fireEvent.click(resolutionTrigger!);
     fireEvent.click(screen.getByText('720p HD'));
 
     expect(onChange).toHaveBeenCalled();
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).toContain('scale=1280:720');
   });
 
@@ -78,7 +78,7 @@ describe('FfmpegParamsEditor', () => {
     render(<FfmpegParamsEditor value="" onChange={onChange} />);
 
     const [resolutionTrigger] = selectDom();
-    fireEvent.click(resolutionTrigger);
+    fireEvent.click(resolutionTrigger!);
     fireEvent.click(screen.getByText('customResolution'));
 
     const widthInput = screen.getByDisplayValue('1920');
@@ -86,7 +86,7 @@ describe('FfmpegParamsEditor', () => {
     const heightInput = screen.getByDisplayValue('1080');
     fireEvent.change(heightInput, { target: { value: '480' } });
 
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).toContain('scale=640:480');
   });
 
@@ -94,7 +94,7 @@ describe('FfmpegParamsEditor', () => {
     const onChange = vi.fn();
     render(<FfmpegParamsEditor value="" onChange={onChange} />);
     const [resolutionTrigger] = selectDom();
-    fireEvent.click(resolutionTrigger);
+    fireEvent.click(resolutionTrigger!);
     fireEvent.click(screen.getByText('customResolution'));
 
     const widthInput = screen.getByDisplayValue('1920');
@@ -112,7 +112,7 @@ describe('FfmpegParamsEditor', () => {
     const keepAspectSwitch = screen.getByText('keepAspectRatio').closest('div')!
       .parentElement!.querySelector('button[role="switch"]') as HTMLElement;
     fireEvent.click(keepAspectSwitch);
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     // deinterlace remains on by default, so only the aspect-ratio scale filter drops.
     expect(last).toContain('-vf "yadif=mode=0,scale=1920:1080"');
     expect(last).not.toContain('force_original_aspect_ratio');
@@ -122,11 +122,11 @@ describe('FfmpegParamsEditor', () => {
     const onChange = vi.fn();
     render(<FfmpegParamsEditor value="" onChange={onChange} />);
     const [, videoCodecTrigger] = selectDom();
-    fireEvent.click(videoCodecTrigger);
+    fireEvent.click(videoCodecTrigger!);
     fireEvent.click(screen.getByText('VP9'));
 
     expect(screen.queryByText('encodingSpeed')).not.toBeInTheDocument();
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).not.toContain('-preset');
     expect(last).not.toContain('-profile:v');
   });
@@ -135,9 +135,9 @@ describe('FfmpegParamsEditor', () => {
     const onChange = vi.fn();
     render(<FfmpegParamsEditor value="" onChange={onChange} />);
     const [, , encodingTrigger] = selectDom();
-    fireEvent.click(encodingTrigger);
+    fireEvent.click(encodingTrigger!);
     fireEvent.click(screen.getByText('presets.fast'));
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).toContain('-preset fast');
   });
 
@@ -154,15 +154,15 @@ describe('FfmpegParamsEditor', () => {
     render(<FfmpegParamsEditor value="" onChange={onChange} />);
     const triggers = selectDom();
     const audioCodecTrigger = triggers[triggers.length - 2];
-    fireEvent.click(audioCodecTrigger);
+    fireEvent.click(audioCodecTrigger!);
     fireEvent.click(screen.getByText('MP3'));
-    let last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    let last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).toContain('-c:a mp3');
 
     const channelsTrigger = selectDom()[selectDom().length - 1];
-    fireEvent.click(channelsTrigger);
+    fireEvent.click(channelsTrigger!);
     fireEvent.click(screen.getByText('mono'));
-    last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).toContain('-ac 1');
   });
 
@@ -174,7 +174,7 @@ describe('FfmpegParamsEditor', () => {
       .closest('div')!
       .parentElement!.querySelector('button[role="switch"]') as HTMLElement;
     fireEvent.click(webOptimizedSwitch);
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).not.toContain('+faststart');
   });
 
@@ -186,7 +186,7 @@ describe('FfmpegParamsEditor', () => {
       .closest('div')!
       .parentElement!.querySelector('button[role="switch"]') as HTMLElement;
     fireEvent.click(deinterlaceSwitch);
-    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0];
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1]![0];
     expect(last).not.toContain('yadif');
   });
 

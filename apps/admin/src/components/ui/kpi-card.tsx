@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from 'react';
 
@@ -32,6 +33,14 @@ export interface KpiCardProps {
   descriptionClassName?: string;
   loading?: boolean;
   layout?: KpiCardLayout;
+  /**
+   * Torna o card acionável — tipicamente para filtrar a listagem abaixo por
+   * aquilo que o número conta. Só com isto o card ganha cursor, foco e teclado;
+   * sem `onClick` ele continua sendo um indicador puramente visual.
+   */
+  onClick?: () => void;
+  /** Marca o card como o filtro em vigor. Só faz sentido junto de `onClick`. */
+  active?: boolean;
 }
 
 export type KpiCardItem = KpiCardProps & {
@@ -253,6 +262,8 @@ export function KpiCard({
   descriptionClassName,
   loading = false,
   layout = 'default',
+  onClick,
+  active = false,
 }: KpiCardProps) {
   const styles = layoutStyles[layout];
   const displayValue = loading ? (
@@ -265,8 +276,25 @@ export function KpiCard({
 
   return (
     <Card
+      {...(onClick
+        ? {
+            role: 'button' as const,
+            tabIndex: 0,
+            'aria-pressed': active,
+            onClick,
+            onKeyDown: (event: ReactKeyboardEvent) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onClick();
+              }
+            },
+          }
+        : {})}
       className={cn(
         'min-w-0 overflow-hidden border-border/70 py-0 gap-0',
+        onClick &&
+          'hover:bg-accent/30 focus-visible:ring-ring cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
+        active && 'ring-primary/40 bg-accent/20 ring-2',
         className
       )}
     >

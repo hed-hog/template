@@ -14,9 +14,9 @@ class PingController {
   }
 }
 
-// Bootstraps a minimal Nest app with THE SAME helmet options as main.ts and
-// verifies that the security headers are applied — a regression check in case
-// someone loosens/removes the helmet config.
+// Bootstrapa um app Nest mínimo com AS MESMAS opções de helmet do main.ts e
+// verifica que os headers de segurança são aplicados — regressão para o caso de
+// alguém afrouxar/remover a config de helmet.
 describe('helmet security headers', () => {
   let app: NestExpressApplication;
 
@@ -33,14 +33,14 @@ describe('helmet security headers', () => {
     await app.close();
   });
 
-  it('applies security headers and removes X-Powered-By', async () => {
+  it('aplica headers de segurança e remove X-Powered-By', async () => {
     const res = await request(app.getHttpServer()).get('/ping');
 
     expect(res.status).toBe(200);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBeDefined();
     expect(res.headers['x-powered-by']).toBeUndefined();
-    // CORP relaxed for cross-origin (front-end loads files served by the API).
+    // CORP liberado para cross-origin (front carrega arquivos servidos pela API).
     expect(res.headers['cross-origin-resource-policy']).toBe('cross-origin');
   });
 });

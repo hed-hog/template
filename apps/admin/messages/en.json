@@ -42,6 +42,7 @@
       "fieldProviderPlaceholder": "Select provider",
       "providerOpenai": "OpenAI",
       "providerGemini": "Gemini",
+      "providerDeepseek": "DeepSeek",
       "fieldModel": "Model (optional)",
       "fieldModelPlaceholder": "gpt-4o-mini",
       "fieldInstructions": "Instructions (optional)",
@@ -59,6 +60,21 @@
       "toastDeleteError": "Error removing agent",
       "validationSlugMinLength": "Slug must be at least 2 characters"
     }
+  },
+  "AuthorizeApp": {
+    "title": "Authorize {app}",
+    "subtitle": "{app} wants to access your account.",
+    "permissions": "This will allow it to:",
+    "scope": {
+      "vaults": "Read and manage your vault items"
+    },
+    "authorize": "Authorize",
+    "cancel": "Cancel",
+    "successTitle": "Authorization successful!",
+    "successMessage": "You can now close this tab and return to the app.",
+    "error": "Could not complete the authorization. Please try again.",
+    "invalidTitle": "Invalid request",
+    "invalidMessage": "This authorization link is invalid or has expired. Start again from the app."
   },
   "DesktopAuth": {
     "title": "Authorize HedHog Desktop",

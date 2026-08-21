@@ -97,6 +97,22 @@ describe('usePersistedSheetWidth', () => {
     expect(result.current[0]).toBe(500);
   });
 
+  // Number(null) é 0, e 0 é finito: sem tratar a chave ausente antes da
+  // conversão, o clamp jogava toda folha para o minWidth na primeira abertura
+  // e o defaultWidth nunca valia nada.
+  it('usa o defaultWidth quando nada foi armazenado', () => {
+    const { result } = setup();
+    expect(result.current[0]).toBe(500);
+  });
+
+  it('usa o defaultWidth quando o valor armazenado é vazio ou zero', () => {
+    localStorage.setItem(KEY_USER, '');
+    expect(setup().result.current[0]).toBe(500);
+
+    localStorage.setItem(KEY_USER, '0');
+    expect(setup().result.current[0]).toBe(500);
+  });
+
   describe('falhas de acesso ao localStorage', () => {
     afterEach(() => {
       vi.restoreAllMocks();

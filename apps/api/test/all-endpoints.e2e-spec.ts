@@ -25,8 +25,8 @@ interface ControllerRoute {
   method: string;
   url: string;
   isPublic: boolean;
-  // @NoRole(): authenticated but without a specific role — the RoleGuard SKIPS
-  // it (like @Public), so these routes don't need an entry in route.yaml.
+  // @NoRole(): autenticado mas sem role específica — o RoleGuard PULA (como
+  // @Public), então essas rotas não precisam de entrada no route.yaml.
   isNoRole: boolean;
 }
 
@@ -318,7 +318,7 @@ describe('Smoke Test — Unauthenticated', () => {
     const noRoleCount = allControllerRoutes.filter((r) => r.isNoRole && !r.isPublic).length;
     const protectedCount = allControllerRoutes.filter((r) => !r.isPublic && !r.isNoRole).length;
 
-    // @Public and @NoRole are skipped by the RoleGuard → they don't need route.yaml.
+    // @Public e @NoRole são pulados pelo RoleGuard → não precisam de route.yaml.
     const unregistered = allControllerRoutes.filter(
       (r) => !r.isPublic && !r.isNoRole && !yamlRouteSet.has(`${r.method}:${r.url}`),
     );

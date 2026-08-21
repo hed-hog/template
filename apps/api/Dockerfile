@@ -47,6 +47,55 @@ RUN test -d /app/node_modules/.prisma/client && \
 
 RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm run build:docker
 
+# Portao de subida: um provider injetado sem que o modulo o enxergue ("Nest
+# can't resolve dependencies of X") so estoura quando o processo sobe — sem esta
+# checagem o erro estreia no cluster, com o pod em CrashLoopBackOff e o rollout
+# revertido. Roda offline: o compile() do @nestjs/testing monta o grafo sem
+# disparar onModuleInit, e o PrismaService entra trocado por um duble, entao nao
+# ha banco nem Redis envolvidos. As variaveis abaixo sao descartaveis, so
+# existem para satisfazer quem valida configuracao no construtor, e ficam no
+# comando (nao viram ENV da imagem).
+RUN NODE_ENV=production \
+    DATABASE_URL="postgresql://di-check:di-check@127.0.0.1:5432/di-check" \
+    JWT_SECRET=di-check \
+    JWT_EXPIRES_IN=7d \
+    PEPPER=di-check \
+    ENCRYPTION_SECRET=di-check \
+    CORS_ALLOWED_ORIGINS=http://localhost \
+    node scripts/di-check.js
+
+# Source maps do Sentry. O `nest build` e tsc puro (sem bundler), entao nao ha
+# plugin que suba os mapas: o upload e explicito, via @sentry/cli. Tem de ser
+# AQUI, e nao depois: o stage `deployer` apaga todo *.map de /prod/api/dist
+# antes de a imagem de producao ser montada — e e assim que deve continuar. O
+# que sobrevive e o Debug ID que o `sourcemaps inject` grava DENTRO de cada
+# .js; e ele que casa o stack trace de producao com o mapa guardado no Sentry,
+# sem embarcar nenhum .map no runtime.
+ARG SENTRY_RELEASE
+ARG SENTRY_ORG=hcode-3o
+ARG SENTRY_PROJECT=api
+# O token entra por mount, nunca por ARG/ENV: ARG fica visivel no `docker
+# history` e ENV fica gravado na camada exportada para o cache do GitHub
+# Actions (`cache-to: type=gha,mode=max,scope=api`). Sem token o build passa
+# igual — so nao sobe os mapas, e o stack trace de producao chega minificado.
+RUN --mount=type=secret,id=sentry_auth_token \
+    set -eu; \
+    SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)"; \
+    if [ -z "$SENTRY_AUTH_TOKEN" ]; then \
+      echo "AVISO: SENTRY_AUTH_TOKEN ausente — pulando inject/upload de source maps."; \
+    elif [ -z "${SENTRY_RELEASE:-}" ]; then \
+      echo "AVISO: SENTRY_RELEASE ausente — pulando inject/upload de source maps."; \
+    else \
+      export SENTRY_AUTH_TOKEN; \
+      pnpm exec sentry-cli sourcemaps inject dist; \
+      pnpm exec sentry-cli sourcemaps upload \
+        --org "$SENTRY_ORG" \
+        --project "$SENTRY_PROJECT" \
+        --release "$SENTRY_RELEASE" \
+        dist \
+      || echo "AVISO: upload de source maps falhou (Sentry indisponivel?); build segue."; \
+    fi
+
 WORKDIR /app
 
 RUN mkdir -p /app/apps/api/dist/apps/api && \
@@ -166,8 +215,11 @@ RUN rm -rf \
 # Runtime doesn't need TypeScript declaration/maps in compiled output.
 RUN find /prod/api/dist -type f \( -name "*.map" -o -name "*.d.ts" -o -name "*.tsbuildinfo" \) -delete
 
-# Install system binaries used in runtime workloads (PDF + video conversion).
-RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont ffmpeg
+# NOTA: nao instale binarios de runtime (chromium, ffmpeg) aqui. O stage de
+# producao copia apenas /prod/api/ deste stage — pacotes apk vao para /usr/bin e
+# /usr/lib, fora do caminho copiado — e ja os instala por conta propria. Um
+# `apk add` aqui e ~500MB de layer morta que so ocupa disco no runner e infla o
+# export `cache-to: type=gha,mode=max,scope=api`.
 
 # Stage 4: Migrator - dedicated image for running Prisma migrations only
 FROM node:24-alpine AS migrator
@@ -210,6 +262,14 @@ RUN chmod +x /app/apps/api/docker-entrypoint.sh
 
 # Create storage directory (if needed by the app)
 RUN mkdir -p /app/apps/api/storage && chown -R nestjs:nodejs /app/apps/api/storage
+
+# Release assado na imagem: o @sentry/node le `release` de SENTRY_RELEASE, entao
+# nao existe env var de release para manter nos Deployments — a imagem E o
+# release, e hub-queue-worker/hub-video-worker herdam o mesmo valor porque usam
+# a mesma imagem. Fica DEPOIS do apk add de proposito: o valor muda a cada
+# commit e invalidaria a camada mais cara do stage (chromium + ffmpeg).
+ARG SENTRY_RELEASE
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 
 # Switch to non-root user
 USER nestjs

@@ -7,4 +7,7 @@ export type UserActivity = {
   created_at?: string;
   updated_at?: string;
   user?: User;
+  /** Quem provocou a atividade, quando nao foi o proprio usuario. */
+  actor_user_id?: number | null;
+  actor?: { id: number; name: string } | null;
 }

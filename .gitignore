@@ -5,12 +5,12 @@ node_modules
 .pnp
 .pnp.js
 
-# Local env files. Ignore every .env variant and re-allow only the committed
-# examples, so a real .env.production (or any new variant) can never be added
-# by accident.
+# Local env files
 .env
-.env.*
-!.env*.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Testing
 .nyc_output
@@ -66,11 +66,40 @@ hedhog.json
 .build-lock-*
 .npmrc
 .claude/settings.local.json
+# Cache incremental do tsc. Cada `typecheck` reescreve o arquivo, então
+# versioná-lo suja a árvore a cada checagem. O padrão já existia, mas quatro
+# deles tinham sido commitados antes dele e continuavam rastreados — gitignore
+# não solta o que já está no índice.
 *.tsbuildinfo
-libraries/core/tsconfig.tsbuildinfo
 
 # Jest config TypeScript compilation artifacts
 jest.config.js
 jest.config.js.map
 jest.config.d.ts
 jest.config.d.ts.map
+
+# Dumps de banco tirados durante manutenção do cluster (dado pessoal de produção,
+# e o histórico do git não desfaz). Os manifests ao lado deles são versionados.
+infra/digitalocean/do-k8s/Temp/
+
+# Manifests do cluster que carregam credencial real no corpo. Ficam só no disco;
+# o valor vivo está no cluster (`kubectl get secret <nome> -n hcode -o yaml`).
+infra/digitalocean/do-k8s/helm/postgresql/secret.yaml
+infra/digitalocean/do-k8s/k8s/secret-authelia.yaml
+infra/digitalocean/do-k8s/k8s/secret-hedhog-new-auth.yaml
+infra/digitalocean/do-k8s/k8s/secrets/
+# Secret embutido no meio do manifesto (senha do Postgres de cada um).
+infra/digitalocean/do-k8s/k8s/evolution-api/evolution-api.yaml
+infra/digitalocean/do-k8s/k8s/umami/umami.yaml
+
+# Terraform. O tfvars carrega o token de API do provedor e o tfstate carrega o
+# retrato inteiro da infra — nenhum dos dois vai para o git; ficam na máquina de
+# quem opera. Até 2026-08-18 não havia nenhuma linha aqui sobre Terraform: um
+# `terraform.tfvars` com credencial entraria no commit sem aviso, e só não
+# entrou porque ninguém tinha criado um ainda.
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log

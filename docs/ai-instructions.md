@@ -1,55 +1,55 @@
-# AI Instructions in HedHog
+# Instruções de IA no HedHog
 
-This document describes how AI instructions work in HedHog, how to create agents and tools, how to measure cost, and how to debug executions.
-
----
-
-## How AI instructions work
-
-AI instructions are manageable texts — not hardcoded — that guide the behavior of language models. They live in the `ai_instruction` table and are composed in layers before each call to the LLM.
-
-The system uses an in-memory cache with a 5-minute TTL for the static layers. Dynamic context (user, date, permissions) is generated at call time and is never cached.
+Este documento descreve como as instruções de IA funcionam no HedHog, como criar agentes e tools, como medir custo e como depurar execuções.
 
 ---
 
-## Instruction layers
+## Como funcionam as instruções de IA
+
+As instruções de IA são textos gerenciáveis — não hardcoded — que guiam o comportamento dos modelos de linguagem. Elas ficam na tabela `ai_instruction` e são compostas em camadas antes de cada chamada ao LLM.
+
+O sistema usa cache em memória com TTL de 5 minutos para as camadas estáticas. Contexto dinâmico (usuário, data, permissões) é gerado no momento da chamada e nunca cacheado.
+
+---
+
+## Camadas de instrução
 
 ```
-L1 — system    Global instruction (e.g. "You are a HedHog assistant...")
-L2 — product   Product/platform rules
-L3 — module    Context of the active module (lms, finance, operations...)
-L4 — agent     Agent persona and objective
-L5 — tool      How to use a specific tool (injected on demand)
-L6 — runtime   Dynamic data: userId, locale, date, roles (NEVER saved to the database)
-L7 — output    JSON output contract (expected schema)
+L1 — system    Instrução global (ex: "Você é um assistente HedHog...")
+L2 — product   Regras do produto/plataforma
+L3 — module    Contexto do módulo ativo (lms, finance, operations...)
+L4 — agent     Persona e objetivo do agente
+L5 — tool      Como usar uma tool específica (injetada sob demanda)
+L6 — runtime   Dados dinâmicos: userId, locale, data, roles (NUNCA salvo no banco)
+L7 — output    Contrato de saída JSON (schema esperado)
 ```
 
-| Layer | When included | Cached |
+| Camada | Quando inclusa | Cacheada |
 |--------|---------------|----------|
-| L1 system | Always | Yes, 5 min |
-| L2 product | Always | Yes, 5 min |
-| L3 module | When `moduleSlug` is provided | Yes, 5 min per module |
-| L4 agent | When `agentSlug` is provided | Yes, 5 min per agent |
-| L5 tool | When the tool is called | Together with the tool definition |
-| L6 runtime | Always, generated in real time | Never |
-| L7 output | When an expected schema exists | In code |
+| L1 system | Sempre | Sim, 5 min |
+| L2 product | Sempre | Sim, 5 min |
+| L3 module | Quando `moduleSlug` fornecido | Sim, 5 min por módulo |
+| L4 agent | Quando `agentSlug` fornecido | Sim, 5 min por agente |
+| L5 tool | Quando a tool é chamada | Junto com a definição da tool |
+| L6 runtime | Sempre, gerado em tempo real | Nunca |
+| L7 output | Quando há schema esperado | No código |
 
 ---
 
-## How a final instruction is assembled
+## Como uma instrução final é montada
 
 ```typescript
 // AiPromptBuilderService.build()
 const { systemPrompt } = await promptBuilder.build({
-  moduleSlug: 'lms',       // includes L3
-  agentSlug: 'lms-assistant', // includes L4
+  moduleSlug: 'lms',       // inclui L3
+  agentSlug: 'lms-assistant', // inclui L4
   locale: 'pt',
 });
 
 // systemPrompt = L1 + "\n\n---\n\n" + L2 + "\n\n---\n\n" + L3 + "\n\n---\n\n" + L4
 ```
 
-The runtime context (L6) is added by the caller:
+O contexto de runtime (L6) é adicionado pelo chamador:
 
 ```typescript
 const runtimeCtx = promptBuilder.buildRuntimeContext({
@@ -65,58 +65,58 @@ const finalSystemPrompt = systemPrompt + '\n\n' + runtimeCtx;
 
 ---
 
-## How to reduce tokens correctly
+## Como reduzir tokens corretamente
 
-### 1. Keep L1 + L2 short and stable
+### 1. Mantenha L1 + L2 curtas e estáveis
 
-L1 + L2 combined should never exceed 300 tokens. Any instruction that changes on every request **does not belong in L1/L2** — it goes to L6.
+L1 + L2 nunca devem ultrapassar 300 tokens combinadas. Qualquer instrução que muda a cada request **não pertence a L1/L2** — vai para L6.
 
-**Good:**
+**Bom:**
 ```
 You are a HedHog system assistant. Use available tools to answer accurately.
 Respond in the user's language. Be concise.
 ```
 _(~25 tokens)_
 
-**Bad:**
+**Ruim:**
 ```
 Você é um assistente avançado do sistema HedHog com acesso a ferramentas de finanças,
 operações, LMS, CRM, commerce e campanhas. Responda sempre em português do Brasil
 e use formato markdown quando necessário...
 ```
-_(~60 tokens + hardcoded "pt" which prevents multilingual support)_
+_(~60 tokens + hardcoded "pt" que impede multilíngue)_
 
-### 2. Use L3 and L4 only when necessary
+### 2. Use L3 e L4 apenas quando necessários
 
-Do not include `moduleSlug` if the conversation is not clearly about that module. Do not include `agentSlug` if there is no active agent.
+Não inclua `moduleSlug` se a conversa não for claramente sobre aquele módulo. Não inclua `agentSlug` se não há um agente ativo.
 
-### 3. Do not put business data in static instructions
+### 3. Não coloque dados de negócio nas instruções estáticas
 
-Business data (query results, entity values) belongs in the user message or in `tool_result`. Never in the system instruction.
+Dados de negócio (resultados de queries, valores de entidades) pertencem à mensagem do usuário ou ao `tool_result`. Nunca à instrução do sistema.
 
-**Bad (in an instruction saved to the database):**
+**Ruim (em instrução salva no banco):**
 ```
 O usuário João tem 3 projetos ativos: Alpha ($50k), Beta ($30k), Gamma ($20k).
 ```
 
-**Correct (as tool_result):**
+**Correto (como tool_result):**
 ```json
 { "projects": [{"name": "Alpha", "budget": 50000}, ...] }
 ```
 
-### 4. Limit the history per conversation
+### 4. Limite o histórico por conversa
 
-`McpChatService` keeps the last 40 messages per turn (`HISTORY_MESSAGE_LIMIT = 40`). In long conversations, older messages are discarded.
+O `McpChatService` mantém os últimos 40 mensagens por turn (`HISTORY_MESSAGE_LIMIT = 40`). Em conversas longas, mensagens antigas são descartadas.
 
-To adjust this limit without a deploy, change the constant or evolve it into a configurable setting.
+Para ajustar esse limite sem deploy, altere a constante ou evolua para uma setting configurável.
 
-### 5. Is the model reading unnecessary data?
+### 5. O modelo está lendo dados desnecessários?
 
-Every tool call sends the full result back to the LLM. If a tool's result is very large (e.g. 200 records), consider paginating or truncating it before returning it.
+Cada tool call envia o resultado completo de volta ao LLM. Se o resultado de uma tool é muito grande (ex: 200 registros), considere paginar ou truncar antes de retornar.
 
 ---
 
-## How to create new agents
+## Como criar novos agentes
 
 ### Via API
 
@@ -145,7 +145,7 @@ POST /ai-instruction
       version: 1
 ```
 
-### Usage in code
+### Uso no código
 
 ```typescript
 const { systemPrompt } = await promptBuilder.build({
@@ -153,17 +153,17 @@ const { systemPrompt } = await promptBuilder.build({
 });
 ```
 
-**Rules for an agent's content:**
-- Describe the agent's role, objective, and boundaries
-- Mention which tools it should prefer (e.g. `Use lms.* tools for LMS operations`)
-- Do not repeat global instructions (no need to say "respond in Portuguese" if L1 already instructs that)
-- Maximum ~200 tokens
+**Regras para o conteúdo de um agente:**
+- Descreva o papel, objetivo e limites do agente
+- Mencione quais tools ele deve preferir (ex: `Use lms.* tools for LMS operations`)
+- Não repita instruções globais (não precisar dizer "responda em português" se L1 já instrui isso)
+- Máximo ~200 tokens
 
 ---
 
-## How to create new tools
+## Como criar novas tools
 
-Tools are registered via `@McpTool()` in code. HedHog authenticates tools through the `route` table with `type = 'MCP'`.
+Tools são registradas via `@McpTool()` no código. O HedHog autentica tools via tabela `route` com `type = 'MCP'`.
 
 ```typescript
 @McpTool({
@@ -183,13 +183,13 @@ async listEmployees(args: { departmentId?: number; status?: string }, ctx: McpCo
 }
 ```
 
-**Rules for tool descriptions:**
-- Maximum 2 sentences
-- State what the tool DOES, not how it works
-- Include the main filters in the text (improves the automatic selection score)
-- Use the domain prefix in the name: `hr.`, `finance.`, `lms.`, `operations.`
+**Regras para descrição de tools:**
+- Máximo 2 frases
+- Diga o que a tool FAZ, não como ela funciona
+- Inclua os filtros principais no texto (melhora o score de seleção automática)
+- Use o prefixo de domínio no nome: `hr.`, `finance.`, `lms.`, `operations.`
 
-For the tool to appear in the MCP Chat, add it to `route.yaml` and `role.yaml`:
+Para que a tool apareça no MCP Chat, adicione em `route.yaml` e `role.yaml`:
 
 ```yaml
 # route.yaml
@@ -204,12 +204,12 @@ For the tool to appear in the MCP Chat, add it to `route.yaml` and `role.yaml`:
 
 ---
 
-## How to measure cost
+## Como medir custo
 
-Every call to the LLM generates a record in `ai_execution` with aggregated totals:
+Cada chamada ao LLM gera um registro em `ai_execution` com totais agregados:
 
 ```sql
--- Total cost for the last 24h
+-- Custo total das últimas 24h
 SELECT
   SUM(cost_usd) AS total_usd,
   SUM(tokens_input) AS tokens_in,
@@ -218,7 +218,7 @@ FROM ai_execution
 WHERE started_at >= NOW() - INTERVAL '24 hours'
   AND status = 'completed';
 
--- Cost by model
+-- Custo por modelo
 SELECT provider, model, COUNT(*) AS calls,
        SUM(tokens_input) AS tokens_in,
        SUM(tokens_output) AS tokens_out,
@@ -227,14 +227,14 @@ FROM ai_execution_step
 GROUP BY provider, model
 ORDER BY total_usd DESC;
 
--- Top 10 most expensive executions
+-- Top 10 execuções mais caras
 SELECT id, context_slug, cost_usd, tokens_total, status, started_at
 FROM ai_execution
 ORDER BY cost_usd DESC
 LIMIT 10;
 ```
 
-Prices are stored in `ai_model_pricing` and cached for 1 hour. To update prices without a deploy:
+Os preços ficam em `ai_model_pricing` e são cacheados por 1 hora. Para atualizar preços sem deploy:
 
 ```sql
 INSERT INTO ai_model_pricing (provider, model, price_input_per_million, price_output_per_million, valid_from)
@@ -244,12 +244,12 @@ ON CONFLICT (provider, model, valid_from) DO NOTHING;
 
 ---
 
-## How to debug an execution
+## Como depurar uma execução
 
-### 1. View the details of an execution
+### 1. Ver detalhes de uma execução
 
 ```sql
--- Execution header
+-- Cabeçalho da execução
 SELECT id, context_slug, trigger, status,
        tokens_input, tokens_output, tokens_total,
        ROUND(cost_usd::numeric, 6) AS cost_usd,
@@ -258,7 +258,7 @@ SELECT id, context_slug, trigger, status,
 FROM ai_execution
 WHERE id = <execution_id>;
 
--- Execution steps
+-- Steps da execução
 SELECT step_order, type, provider, model, tool_name,
        tokens_input, tokens_output,
        ROUND(cost_usd::numeric, 8) AS cost_usd,
@@ -270,19 +270,19 @@ WHERE execution_id = <execution_id>
 ORDER BY step_order;
 ```
 
-### 2. View the executed path
+### 2. Ver caminho executado
 
-Look at the `step_order` and `type` of the steps:
+Analise os `step_order` e `type` dos steps:
 
-| type | Meaning |
+| type | Significa |
 |------|-----------|
-| `prompt` | LLM called — includes input/output tokens |
-| `tool_call` | LLM decided to call a tool |
-| `tool_result` | Tool result sent back to the LLM |
-| `output` | Final response to the user |
-| `error` | Error caught during execution |
+| `prompt` | LLM chamado — inclui tokens de input/output |
+| `tool_call` | LLM decidiu chamar uma tool |
+| `tool_result` | Resultado da tool enviado de volta ao LLM |
+| `output` | Resposta final ao usuário |
+| `error` | Erro capturado durante a execução |
 
-### 3. Manually log an execution
+### 3. Registrar uma execução manualmente
 
 ```typescript
 const execId = await aiExecution.start({
@@ -291,7 +291,7 @@ const execId = await aiExecution.start({
   contextSlug: 'meu-contexto',
 });
 
-// ... call the LLM ...
+// ... chama o LLM ...
 
 await aiExecution.recordStep({
   executionId: execId,
@@ -308,15 +308,15 @@ await aiExecution.recordStep({
 await aiExecution.finish(execId, 'completed');
 ```
 
-### 4. Check which instruction was used
+### 4. Verificar a instrução que foi usada
 
 ```sql
--- View the active instruction by slug
+-- Ver instrução ativa por slug
 SELECT slug, layer, name, version, LEFT(content, 500) AS content_preview, is_active
 FROM ai_instruction
 WHERE slug = 'system.global';
 
--- View version history
+-- Ver histórico de versões
 SELECT v.version, v.change_note, v.created_at,
        u.name AS changed_by,
        LEFT(v.content, 300) AS content_preview
@@ -328,27 +328,27 @@ ORDER BY v.version DESC;
 
 ---
 
-## Best practices for writing instructions
+## Boas práticas para escrever instruções
 
-### General principles
+### Princípios gerais
 
-1. **One instruction, one responsibility.** L1 defines tone; L2 defines product; L3 defines module; L4 defines agent. Do not mix them.
-2. **Be specific, not verbose.** 3 precise sentences are worth more than 1 generic paragraph.
-3. **Never instruct what is already the model's default behavior.** "Be polite and respond well" does not need to be written.
-4. **State constraints, not tutorials.** "Confirm destructive operations before executing" is useful. A paragraph explaining why is unnecessary.
-5. **Use action verbs.** "Respond in the user's language." not "You should always try to respond in the same language the user uses."
+1. **Uma instrução, uma responsabilidade.** L1 define tom; L2 define produto; L3 define módulo; L4 define agente. Não misture.
+2. **Seja específico, não verbose.** 3 frases precisas valem mais que 1 parágrafo genérico.
+3. **Nunca instrua o que já é comportamento padrão do modelo.** "Seja educado e responda bem" não precisa estar escrito.
+4. **Coloque constraints, não tutoriais.** "Confirme operações destrutivas antes de executar" é útil. Um parágrafo explicando por que é desnecessário.
+5. **Use verbos de ação.** "Responda no idioma do usuário." não "Você deve sempre tentar responder no mesmo idioma que o usuário utiliza."
 
-### Examples
+### Exemplos
 
-#### Global instruction (L1) — GOOD
+#### Instrução global (L1) — BOA
 
 ```
 You are a HedHog system assistant. Use available tools to answer accurately.
 Respond in the user's language. Be concise.
 ```
-_26 tokens, clear, no redundancy._
+_26 tokens, clara, sem redundância._
 
-#### Global instruction (L1) — BAD
+#### Instrução global (L1) — RUIM
 
 ```
 Você é um assistente do sistema HedHog, uma plataforma empresarial SaaS modular desenvolvida
@@ -357,18 +357,18 @@ educado e profissional, respondendo com clareza e precisão. Use as ferramentas 
 para buscar dados no sistema e nunca invente informações. Sempre responda em português do
 Brasil, usando linguagem formal mas acessível.
 ```
-_~90 tokens, too long, "don't make things up" is an unnecessary generic instruction, fixed language prevents multilingual support._
+_~90 tokens, muito longo, "não invente" é instrução genérica desnecessária, idioma fixo impede multilíngue._
 
 ---
 
-#### Module instruction (L3) — GOOD
+#### Instrução de módulo (L3) — BOA
 
 ```
 LMS module manages courses, lessons, enrollments, and XP. Use lms.* tools for all LMS operations.
 ```
-_22 tokens, enough for the model to know the domain and which tools to use._
+_22 tokens, suficiente para o modelo saber o domínio e quais tools usar._
 
-#### Module instruction (L3) — BAD
+#### Instrução de módulo (L3) — RUIM
 
 ```
 O módulo LMS (Learning Management System) do HedHog gerencia cursos e aulas, que podem ser do
@@ -376,19 +376,19 @@ tipo vídeo, texto ou quiz. Os alunos se matriculam em cursos e ganham XP ao com
 O XP é calculado com base em segmentos da aula, que possuem dificuldade (easy, medium, hard, expert)
 e tipos de aprendizagem. Use sempre as ferramentas com prefixo lms. para consultar dados do LMS.
 ```
-_~100 tokens. The XP schema details are only relevant to the XP agent — not to every LMS agent._
+_~100 tokens. Os detalhes do esquema de XP só são relevantes para o agente de XP — não para todo agente de LMS._
 
 ---
 
-#### Agent instruction (L4) — GOOD
+#### Instrução de agente (L4) — BOA
 
 ```
 You are an LMS assistant. Help instructors and students with course creation, lesson management,
 enrollments, and learning progress. Focus on educational outcomes. Use lms.* tools.
 ```
-_35 tokens, clear persona, clear objective, tool prefix specified._
+_35 tokens, persona clara, objetivo claro, tool prefix especificado._
 
-#### Agent instruction (L4) — BAD
+#### Instrução de agente (L4) — RUIM
 
 ```
 Você é um assistente de LMS. Você deve ajudar professores e alunos. Quando alguém perguntar sobre
@@ -397,90 +397,90 @@ ferramenta de matrículas. Quando alguém perguntar sobre XP, use a ferramenta d
 sem consultar os dados reais do sistema. Sempre confirme com o usuário antes de criar ou deletar
 qualquer coisa no LMS.
 ```
-_~90 tokens. The list of tools per question type is unnecessary — the model already does this via tool selection._
+_~90 tokens. A lista de ferramentas por pergunta é desnecessária — o modelo já faz isso via tool selection._
 
 ---
 
-## Checklist for new AI instructions
+## Checklist para novas instruções de IA
 
-Before creating or updating an instruction, answer:
+Antes de criar ou atualizar uma instrução, responda:
 
-- [ ] **Is the instruction actually necessary?** Does the model's default behavior fail to handle it without an instruction?
-- [ ] **Is it duplicating a global instruction?** If it is already in L1/L2, do not repeat it in L3/L4.
-- [ ] **Can it be shorter?** Cut everything that is not a concrete constraint or guideline.
-- [ ] **Does it depend on dynamic context?** Data that changes per request belongs in L6 (runtime), not in the database.
-- [ ] **Is the dynamic context limited?** L6 should only include what is necessary for the current task.
-- [ ] **Is the expected output clear?** If the response must follow a schema, make it explicit in the instruction or in L7.
-- [ ] **Does an output schema exist?** For structured responses (JSON), use `response_format: { type: 'json_object' }` or specify the schema.
-- [ ] **Is there versioning?** Use `change_note` when updating — the history is automatically saved in `ai_instruction_version`.
-- [ ] **Is there cost logging?** Every LLM call must go through `AiExecutionService.start()` / `recordStep()` / `finish()`.
-- [ ] **Is there a test or execution example?** Before enabling in production, test the instruction with real inputs and verify the behavior.
+- [ ] **A instrução é realmente necessária?** O comportamento padrão do modelo não resolve sem instrução?
+- [ ] **Ela está duplicando uma instrução global?** Se já está em L1/L2, não repita em L3/L4.
+- [ ] **Ela pode ser menor?** Corte tudo que não for uma restrição ou orientação concreta.
+- [ ] **Ela depende de contexto dinâmico?** Dados que mudam por request pertencem a L6 (runtime), não ao banco.
+- [ ] **O contexto dinâmico está limitado?** L6 deve incluir apenas o necessário para a tarefa corrente.
+- [ ] **O output esperado está claro?** Se a resposta deve seguir um schema, deixe explícito na instrução ou em L7.
+- [ ] **Existe schema de saída?** Para respostas estruturadas (JSON), use `response_format: { type: 'json_object' }` ou especifique o schema.
+- [ ] **Existe versionamento?** Use `change_note` ao atualizar — o histórico é salvo automaticamente em `ai_instruction_version`.
+- [ ] **Existe log de custo?** Toda chamada ao LLM deve passar por `AiExecutionService.start()` / `recordStep()` / `finish()`.
+- [ ] **Existe teste ou exemplo de execução?** Antes de ativar em produção, teste a instrução com entradas reais e verifique o comportamento.
 
 ---
 
-## Status report — Technical review (2026-06-10)
+## Relatório de status — Revisão técnica (2026-06-10)
 
-### Issues found
+### Problemas encontrados
 
-| Severity | File | Issue |
+| Severidade | Arquivo | Problema |
 |-----------|---------|---------|
-| **Critical** | `ai-execution.service.ts:listExecutions()` | SQL injection — `userId` and `contextSlug` interpolated into `$queryRawUnsafe` |
-| **Medium** | `ai-instruction.service.ts:invalidateCache()` | Incorrect slug→cache_key mapping — `slug.includes(key)` does not map `module.lms` → `module:lms` |
-| **Medium** | `mcp-chat.service.ts` | Unbounded history — the entire history was loaded and sent to the LLM, with no limit |
-| **Low** | `mcp-chat.service.ts` | Model `gpt-4o-mini` hardcoded in `runOpenAiLoop` (two locations: API call and recordStep) |
-| **Info** | `lesson-xp-ai-calculation.service.ts:278` | System prompt hardcoded for the LMS XP calculation |
-| **Info** | `operations-daily-report-ai.service.ts:65-73` | Instruction + JSON schema + business data mixed in the same message |
-| **Info** | `operations.service.ts:13196,13304` | Two hardcoded system prompts for contract generation/review |
-| **Info** | `mcp-chat.service.ts:100-209` | `DOMAIN_KEYWORDS` still hardcoded (not migrated to an extensible registry) |
-| **Info** | `mcp-chat.service.ts:84` | `TARGET_SELECTED_TOOLS = 112` — no effective tool reduction (the plan proposed ~25) |
+| **Crítico** | `ai-execution.service.ts:listExecutions()` | SQL injection — `userId` e `contextSlug` interpolados em `$queryRawUnsafe` |
+| **Médio** | `ai-instruction.service.ts:invalidateCache()` | Mapeamento slug→cache_key incorreto — `slug.includes(key)` não mapeia `module.lms` → `module:lms` |
+| **Médio** | `mcp-chat.service.ts` | Histórico sem janela — todo o histórico era carregado e enviado ao LLM, sem limite |
+| **Baixo** | `mcp-chat.service.ts` | Modelo `gpt-4o-mini` hardcoded em `runOpenAiLoop` (dois locais: API call e recordStep) |
+| **Info** | `lesson-xp-ai-calculation.service.ts:278` | Prompt de sistema hardcoded para o cálculo de XP do LMS |
+| **Info** | `operations-daily-report-ai.service.ts:65-73` | Instrução + schema JSON + dados de negócio misturados na mesma mensagem |
+| **Info** | `operations.service.ts:13196,13304` | Dois prompts de sistema hardcoded para geração/revisão de contratos |
+| **Info** | `mcp-chat.service.ts:100-209` | `DOMAIN_KEYWORDS` ainda hardcoded (não migrado para registry extensível) |
+| **Info** | `mcp-chat.service.ts:84` | `TARGET_SELECTED_TOOLS = 112` — sem redução efetiva de tools (plano propunha ~25) |
 
-### Adjustments made in this review
+### Ajustes realizados nesta revisão
 
-1. **SQL injection fixed** (`ai-execution.service.ts`) — `listExecutions()` rewritten with a parameterized `Prisma.$queryRaw` for all 4 cases (no filter, by userId, by contextSlug, by both). `limit` capped at 100.
+1. **SQL injection corrigido** (`ai-execution.service.ts`) — `listExecutions()` reescrito com `Prisma.$queryRaw` parametrizado para todos os 4 casos (sem filtro, por userId, por contextSlug, por ambos). `limit` limitado a 100.
 
-2. **Cache invalidation fixed** (`ai-instruction.service.ts`) — `invalidateCache()` now correctly extracts the layer and identifier from the slug to delete the right keys (e.g. `module.lms` → deletes `module` and `module:lms`).
+2. **Cache invalidation corrigida** (`ai-instruction.service.ts`) — `invalidateCache()` agora extrai corretamente layer e identifier do slug para deletar as chaves certas (ex: `module.lms` → deleta `module` e `module:lms`).
 
-3. **History windowing applied** (`mcp-chat.service.ts`) — Both loops (OpenAI and Gemini) now limit the history to the `HISTORY_MESSAGE_LIMIT = 40` most recent messages, preventing token explosion in long conversations. The window uses `.slice()` instead of summarization to preserve the integrity of tool_call/tool_result pairs.
+3. **Histórico com janela aplicada** (`mcp-chat.service.ts`) — Ambos os loops (OpenAI e Gemini) agora limitam o histórico a `HISTORY_MESSAGE_LIMIT = 40` mensagens recentes, prevenindo token explosion em conversas longas. A janela usa `.slice()` em vez de resumo para preservar a integridade dos pares tool_call/tool_result.
 
-### Qualitative token reduction estimate
+### Estimativa qualitativa de redução de tokens
 
-| Change | Estimated reduction |
+| Mudança | Redução estimada |
 |---------|-----------------|
-| Global instruction from the database (instead of duplicated hardcoded text) | 0% (was equivalent) |
-| History windowing (40 msgs instead of unlimited) | **40-80%** in long conversations (>40 msgs) |
-| Selective L3/L4 composition (only when needed) | **20-40%** when module/agent is not identified |
-| Compact global instruction (L1 ~26 tokens vs. previous) | **~5%** per turn |
-| _Pending: tool reduction 112→25_ | _estimated ~60%_ of input tokens in typical requests |
-| _Pending: history window with intelligent summarization_ | _estimated ~20%_ additional on top of simple windowing |
+| Instrução global via banco (em vez de hardcoded duplicado) | 0% (era equivalente) |
+| Janela de histórico (40 msgs em vez de ilimitado) | **40-80%** em conversas longas (>40 msgs) |
+| Composição seletiva L3/L4 (só quando necessário) | **20-40%** quando módulo/agente não identificado |
+| Instrução global compacta (L1 ~26 tokens vs anterior) | **~5%** por turn |
+| _Pendente: redução de tools 112→25_ | _estimado ~60%_ de tokens de input em requests típicos |
+| _Pendente: janela de histórico com resumo inteligente_ | _estimado ~20%_ adicional sobre janela simples |
 
-### What can still be optimized
+### O que ainda pode ser otimizado
 
-1. **`TARGET_SELECTED_TOOLS = 112` → reduce to ~25-30**: the largest available token gain. Requires careful scoring adjustment and testing with users across different roles.
+1. **`TARGET_SELECTED_TOOLS = 112` → reduzir para ~25-30**: maior ganho de tokens disponível. Requer ajuste cuidadoso do scoring e testes com usuários com diferentes roles.
 
-2. **Hardcoded `gpt-4o-mini` model** in `McpChatService`: move to the `mcp-default-model-openai` setting to avoid a deploy when changing models.
+2. **Modelo hardcoded `gpt-4o-mini`** em `McpChatService`: mover para setting `mcp-default-model-openai` para evitar deploy em troca de modelo.
 
-3. **Migrate module prompts**: LMS XP, daily report, and Operations contracts still have hardcoded prompts. Migrate to `ai_instruction` (layer=agent) and `ai_prompt_template` (for templates with variables).
+3. **Migrar prompts de módulo**: LMS XP, daily report e contratos Operations ainda têm prompts hardcoded. Migrar para `ai_instruction` (layer=agent) e `ai_prompt_template` (para templates com variáveis).
 
-4. **Separate the JSON schema from the user message** in the daily report: instruction + schema should be the system prompt (L7), not the user message.
+4. **Separar schema JSON da mensagem do usuário** no daily report: instrução + schema devem ser o system prompt (L7), não a user message.
 
-5. **Intelligent history summarization**: the current windowing is simple (slice). Implement summarization for conversations longer than 40 messages, preserving context without sending tokens.
+5. **Resumo inteligente do histórico**: o atual windowing é simples (slice). Implementar sumarização para conversas de mais de 40 mensagens, preservando contexto sem enviar tokens.
 
-6. **`/ai/instructions` admin screen**: instruction CRUD with a visual diff of versions.
+6. **Tela de administração `/ai/instructions`**: CRUD de instruções com diff visual de versões.
 
-7. **`/ai/usage` dashboard**: cost visualization by period, drill-down by execution, top tools.
+7. **Dashboard `/ai/usage`**: visualização de custo por período, drill-down por execução, top tools.
 
-### Recommendations for the next step
+### Recomendações para próxima etapa
 
-**Immediate step (high priority):**
-- Reduce `TARGET_SELECTED_TOOLS` from 112 to 30 with testing
-- Move the `mcp-chat` default model to a setting
+**Etapa imediata (alta prioridade):**
+- Reduzir `TARGET_SELECTED_TOOLS` de 112 para 30 com testes
+- Mover modelo default de `mcp-chat` para setting
 
-**Next step:**
-- Migrate the LMS XP prompt to `ai_instruction` layer=agent + `ai_prompt_template` for the template with variables
-- Migrate the daily report: separate the instruction (database) from business data (user message)
-- Basic instruction management screen in the admin
+**Etapa seguinte:**
+- Migrar prompt de LMS XP para `ai_instruction` layer=agent + `ai_prompt_template` para o template com variáveis
+- Migrar daily report: separar instrução (banco) de dados de negócio (user message)
+- Tela básica de gerenciamento de instruções no admin
 
-**Future step:**
-- Intelligent history summarization with summary caching
-- Cost and token dashboard
-- Alert via `ai-daily-cost-limit-usd`
+**Etapa futura:**
+- Resumo inteligente de histórico com cache de resumo
+- Dashboard de custo e tokens
+- Alerta por `ai-daily-cost-limit-usd`

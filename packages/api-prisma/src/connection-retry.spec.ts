@@ -5,8 +5,8 @@ import {
 } from './connection-retry';
 
 /**
- * Cenario real de producao: o servidor Postgres recebeu um fast shutdown e
- * derrubou as conexoes abertas no meio de um `findUnique`.
+ * Mensagem real do Sentry API-9 (14/08/2026): o `postgresql-hub` recebeu um fast
+ * shutdown e derrubou as conexões abertas no meio de um `findUnique`.
  */
 const ADMIN_SHUTDOWN_MESSAGE = `
 Invalid \`prisma.queue_job.findUnique()\` invocation:

@@ -71,14 +71,8 @@ describe('detectTemplate', () => {
   });
 });
 
-const manifestPages = getManifestPages();
-
-// O manifesto e gerado a partir de apps/admin/src/app/(app)/(libraries). Num
-// checkout limpo do template nao ha libraries instaladas, entao ele vem vazio e
-// nao ha o que verificar: estas checagens passam a valer assim que a primeira
-// library for criada por `hedhog dev create-library`.
-describe.skipIf(manifestPages.length === 0)('manifesto gerado', () => {
-  const pages = manifestPages;
+describe('manifesto gerado', () => {
+  const pages = getManifestPages();
 
   it('não está vazio', () => {
     expect(pages.length).toBeGreaterThan(0);

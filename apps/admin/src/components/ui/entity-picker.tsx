@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronsUpDown, Plus, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, X } from 'lucide-react';
 import {
   type ReactNode,
   useCallback,
@@ -27,6 +27,13 @@ import {
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from '@/components/ui/pagination';
 import {
   Popover,
   PopoverContent,
@@ -68,6 +75,10 @@ export type EntityPickerCreateField = {
 export type EntityPickerLoadResult<TOption> = {
   items: TOption[];
   hasMore?: boolean;
+  // Total record count across all pages — when present, `variant="inline"` shows a real
+  // Prev/Next paginated footer (page X of Y) instead of the "load more" button. Omit it (or
+  // omit `total` from every page) to keep the load-more behavior in inline mode too.
+  total?: number;
 };
 
 export type EntityPickerCreateContext<TOption> = {
@@ -115,6 +126,11 @@ export type EntityPickerProps<
   noResultsLabel?: string;
   className?: string;
   buttonClassName?: string;
+  // 'popover' (default): current combobox behavior, list hidden behind a trigger button.
+  // 'inline': renders the search input + paginated list directly, always visible — for
+  // multi-select record-picking UX where hiding the list behind a click is the wrong pattern
+  // (e.g. FacetedMultiPicker).
+  variant?: 'popover' | 'inline';
   options?: TOption[];
   debounceMs?: number;
   pageSize?: number;
@@ -140,6 +156,27 @@ export type EntityPickerProps<
     label: string;
   }) => ReactNode;
   isOptionDisabled?: (option: TOption) => boolean;
+  // When false, selecting an option keeps the popover open instead of closing
+  // it — used by multi-select wrappers (e.g. FacetedMultiPicker) so several
+  // items can be toggled in one open/close cycle. Defaults to true so every
+  // existing single-select call site keeps its current behavior.
+  closeOnSelect?: boolean;
+  // Rendered above the option list, outside the scrollable CommandList, with
+  // the options currently loaded/visible (post search + facet filters). Lets
+  // a multi-select wrapper inject a "select all" control scoped to what the
+  // user actually sees. `total`/`search` (when loadOptions supplies a real
+  // total) let it also offer a "select every match across all pages" action —
+  // null total means the caller never returned one, so that action stays hidden.
+  renderListHeader?: (args: {
+    visibleOptions: TOption[];
+    total: number | null;
+    search: string;
+  }) => ReactNode;
+  // `variant="inline"` only: the list stretches to the height its container
+  // gives it (instead of a CommandList's fixed max-height) and the pagination
+  // footer is pinned below the scroll area. For pickers inside a full-height
+  // sheet, where cutting the list at 300px wastes most of the panel.
+  fillHeight?: boolean;
   onCreate?: (
     values: Record<string, string>
   ) => Promise<TOption | null | void> | TOption | null | void;
@@ -188,6 +225,35 @@ function mergeUniqueOptions<TOption extends object>(
   return Array.from(merged.values());
 }
 
+// Mesmo algoritmo de PaginationNav (apps/training): sempre mostra primeira/última página,
+// a página atual ± 1 vizinha, e "…" nos vazios. Ex. 20 páginas, atual = 8 → [1, "…", 7, 8, 9, "…", 20]
+function buildPageRange(page: number, totalPages: number): Array<number | '…'> {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const delta = 1;
+  const range = new Set<number>([1, totalPages]);
+  for (
+    let i = Math.max(2, page - delta);
+    i <= Math.min(totalPages - 1, page + delta);
+    i++
+  ) {
+    range.add(i);
+  }
+
+  const sorted = Array.from(range).sort((a, b) => a - b);
+  const result: Array<number | '…'> = [];
+  let prev = 0;
+  for (const n of sorted) {
+    if (n - prev > 1) result.push('…');
+    result.push(n);
+    prev = n;
+  }
+
+  return result;
+}
+
 function normalizeLoadResult<TOption extends object>(
   payload: EntityPickerLoadResult<TOption> | TOption[]
 ) {
@@ -195,12 +261,14 @@ function normalizeLoadResult<TOption extends object>(
     return {
       items: payload,
       hasMore: false,
+      total: undefined as number | undefined,
     };
   }
 
   return {
     items: payload.items ?? [],
     hasMore: payload.hasMore ?? false,
+    total: payload.total,
   };
 }
 
@@ -238,6 +306,7 @@ export function EntityPicker<
   noResultsLabel = 'Nenhum resultado encontrado.',
   className,
   buttonClassName,
+  variant = 'popover',
   options = [],
   debounceMs = 300,
   pageSize = 20,
@@ -251,6 +320,9 @@ export function EntityPicker<
   renderOption,
   renderSelectedValue,
   isOptionDisabled,
+  closeOnSelect = true,
+  renderListHeader,
+  fillHeight = false,
   onCreate,
   createFields = [],
   mapSearchToCreateValues,
@@ -268,6 +340,7 @@ export function EntityPicker<
   const [remoteOptions, setRemoteOptions] = useState<TOption[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [remoteTotal, setRemoteTotal] = useState<number | null>(null);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [isLoadingMoreOptions, setIsLoadingMoreOptions] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -445,6 +518,7 @@ export function EntityPicker<
 
         setCurrentPage(page);
         setHasMore(Boolean(result.hasMore));
+        setRemoteTotal(result.total ?? null);
         setRemoteOptions((current) =>
           reset
             ? result.items
@@ -459,6 +533,7 @@ export function EntityPicker<
         setHasMore(false);
         if (reset) {
           setRemoteOptions([]);
+          setRemoteTotal(null);
         }
       } finally {
         if (requestIdRef.current === requestId) {
@@ -620,6 +695,13 @@ export function EntityPicker<
     [filteredOptions, visibleCount]
   );
 
+  // Only meaningful when loadOptions supplies `total` — drives the real Prev/Next paginated
+  // footer in variant="inline" instead of the "load more" button.
+  const totalPages =
+    loadOptions && remoteTotal != null
+      ? Math.max(1, Math.ceil(remoteTotal / pageSize))
+      : null;
+
   const setCreateFieldValue = (fieldName: string, nextValue: string) => {
     setCreateValues((current) => ({
       ...current,
@@ -746,6 +828,318 @@ export function EntityPicker<
 
     const shouldShowClear = clearable && hasValue;
 
+    // Melhorar o Picker de alunos: modo alternativo sem popover, onde a lista paginada fica
+    // sempre visível (não escondida atrás de um clique) e o campo de busca ocupa a largura
+    // total — usado por FacetedMultiPicker, que já mantém sua própria seção de "selecionados"
+    // separada da lista de resultados. O modo padrão ('popover') permanece intocado para todo o
+    // resto dos usos (single-select combobox).
+    // Com fillHeight o scroll desce um nível: o CommandList vira só um container
+    // flex de altura livre e quem rola é o CommandGroup, de modo que o rodapé de
+    // paginação (irmão do grupo) fique fixo no pé da lista em vez de só aparecer
+    // depois de rolar até o fim.
+    const stretchList = variant === 'inline' && fillHeight;
+
+    // Rodapé da lista (paginação real ou "carregar mais"). Em modo fillHeight ele é
+    // renderizado fora do CommandList (ver o retorno de variant="inline" abaixo), como
+    // irmão do quadro da lista — assim ele nunca fica escondido atrás do scroll interno
+    // da lista, não importa a altura que ela acabe tendo.
+    const listFooter =
+      variant === 'inline' && totalPages != null ? (
+        <div className="border-t p-2">
+          <Pagination>
+            <PaginationContent className="flex-wrap justify-center gap-1">
+              <PaginationItem>
+                <PaginationLink
+                  href="#"
+                  size="icon"
+                  aria-label="Página anterior"
+                  className={cn(
+                    'size-7',
+                    (currentPage <= 1 || isLoadingOptions) &&
+                      'pointer-events-none opacity-50'
+                  )}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (currentPage > 1) {
+                      void loadRemoteOptions(
+                        currentPage - 1,
+                        debouncedSearch,
+                        true
+                      );
+                    }
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </PaginationLink>
+              </PaginationItem>
+
+              {buildPageRange(currentPage, totalPages).map((item, index) =>
+                item === '…' ? (
+                  <PaginationItem key={`ellipsis-${index}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={item}>
+                    <PaginationLink
+                      href="#"
+                      size="icon"
+                      isActive={item === currentPage}
+                      className="size-7"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        if (item !== currentPage) {
+                          void loadRemoteOptions(item, debouncedSearch, true);
+                        }
+                      }}
+                    >
+                      {item}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
+
+              <PaginationItem>
+                <PaginationLink
+                  href="#"
+                  size="icon"
+                  aria-label="Próxima página"
+                  className={cn(
+                    'size-7',
+                    (currentPage >= totalPages || isLoadingOptions) &&
+                      'pointer-events-none opacity-50'
+                  )}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (currentPage < totalPages) {
+                      void loadRemoteOptions(
+                        currentPage + 1,
+                        debouncedSearch,
+                        true
+                      );
+                    }
+                  }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </PaginationLink>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      ) : filteredOptions.length > visibleCount || hasMore ? (
+        <div className="border-t p-2">
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            disabled={isLoadingOptions || isLoadingMoreOptions}
+            onClick={() => {
+              if (loadOptions && hasMore) {
+                void loadRemoteOptions(
+                  currentPage + 1,
+                  debouncedSearch,
+                  false
+                );
+                return;
+              }
+
+              setVisibleCount((current) => current + visibleCountStep);
+            }}
+          >
+            {isLoadingOptions || isLoadingMoreOptions
+              ? `${loadMoreLabel}...`
+              : loadMoreLabel}
+          </Button>
+        </div>
+      ) : null;
+
+    const commandContent = (
+      <Command
+        shouldFilter={false}
+        className={cn(stretchList && 'flex min-h-0 flex-1 flex-col')}
+      >
+        {searchable ? (
+          <CommandInput
+            placeholder={resolvedSearchPlaceholder}
+            value={search}
+            onValueChange={(nextValue) => {
+              setSearch(nextValue);
+              setVisibleCount(visibleCountStep);
+            }}
+            className="w-full"
+          />
+        ) : null}
+        {renderListHeader
+          ? renderListHeader({
+              visibleOptions,
+              total: remoteTotal,
+              search: debouncedSearch,
+            })
+          : null}
+        <CommandList
+          onWheel={(event) => event.stopPropagation()}
+          className={cn(
+            stretchList &&
+              'flex max-h-none min-h-0 flex-1 flex-col overflow-y-hidden'
+          )}
+        >
+          <CommandEmpty>
+            {isLoadingOptions ? (
+              loadingLabel
+            ) : (
+              <div className="space-y-2 p-2 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {emptyStateDescription || noResultsLabel}
+                </p>
+                {showCreateButton && (onCreate || renderCreateContent) ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={(event) => {
+                      captureParentScrollPosition(event.currentTarget);
+                      openCreateSheet(search.trim());
+                    }}
+                  >
+                    {resolvedCreateActionLabel}
+                  </Button>
+                ) : null}
+              </div>
+            )}
+          </CommandEmpty>
+
+          <CommandGroup
+            className={cn(
+              // Teto fixo (em vez de só flex-1): garante que a lista pare de crescer
+              // numa altura previsível e sempre sobre espaço pro rodapé de paginação
+              // logo abaixo, independente de quanto espaço os ancestrais derem a ela.
+              stretchList && 'min-h-0 max-h-[26rem] flex-1 overflow-y-auto'
+            )}
+          >
+            {allowEmptySelection ? (
+              <CommandItem
+                value="__empty__"
+                onSelect={() => {
+                  setCurrentValue(valueType === 'number' ? null : '', null);
+                  setSelectedLabel('');
+                  setSearch('');
+                  setOpen(false);
+                }}
+              >
+                {emptySelectionLabel ?? resolvedEmptyLabel}
+              </CommandItem>
+            ) : null}
+
+            {visibleOptions.map((option, index) => {
+              const optionValue = optionValueResolver(option);
+              const isSelected = String(optionValue) === normalizedValue;
+              const optionDisabled = isOptionDisabled?.(option) ?? false;
+              // cmdk identifica cada item pelo `value` (não pela `key` do React). Usar o
+              // texto de busca causava colisão entre opções de rótulo idêntico e `id`
+              // diferente, fazendo o cmdk destacar todas juntas. Uma identidade única (id +
+              // índice) garante destaque/seleção próprios.
+              const optionIdentity = `${optionKeyResolver(option)}-${index}`;
+
+              return (
+                <CommandItem
+                  key={optionIdentity}
+                  value={optionIdentity}
+                  disabled={optionDisabled}
+                  onSelect={() => {
+                    // Defensive guard: cmdk's CommandItem (see command.tsx) already
+                    // refuses to invoke `onSelect` at all when `disabled` is set (verified
+                    // by the "não seleciona opção desabilitada" test below, which never
+                    // reaches this closure for a disabled item), so this early return
+                    // can't be exercised through any user interaction with the real cmdk
+                    // library.
+                    /* v8 ignore next 3 */
+                    if (optionDisabled) {
+                      return;
+                    }
+                    setCurrentValue(optionValue ?? null, option);
+                    if (closeOnSelect) {
+                      setSelectedLabel(optionLabelResolver(option));
+                      setSearch(optionLabelResolver(option));
+                      setOpen(false);
+                    }
+                  }}
+                >
+                  {renderOption ? (
+                    renderOption({
+                      option,
+                      isSelected,
+                      isDisabled: optionDisabled,
+                    })
+                  ) : (
+                    <div className="min-w-0">
+                      <div className="truncate">
+                        {optionLabelResolver(option)}
+                      </div>
+                      {optionDescriptionResolver(option) ? (
+                        <div className="truncate text-xs text-muted-foreground">
+                          {optionDescriptionResolver(option)}
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+
+          {/* Em stretchList o rodapé é renderizado fora do CommandList (ver
+              variant="inline" abaixo) — aqui só aparece pros outros modos
+              (popover, ou inline sem fillHeight), que não tinham o problema. */}
+          {!stretchList ? listFooter : null}
+        </CommandList>
+      </Command>
+    );
+
+    if (variant === 'inline') {
+      return (
+        <div
+          className={cn(
+            stretchList ? 'flex min-h-0 flex-1 flex-col gap-2' : 'grid gap-2',
+            className
+          )}
+        >
+          {label ? (
+            <Label
+              data-error={Boolean(currentErrorMessage)}
+              className="data-[error=true]:text-destructive"
+            >
+              {label}
+            </Label>
+          ) : null}
+
+          <div
+            className={cn(
+              'flex w-full min-w-0 flex-col rounded-md border',
+              stretchList && 'min-h-0 flex-1',
+              buttonClassName
+            )}
+          >
+            {/* Só este quadro interno recorta (overflow-hidden) — a lista fica limitada
+                à sua própria altura (ver CommandGroup acima), então o rodapé abaixo dele
+                nunca corre risco de ser cortado junto, mesmo que o quadro externo receba
+                menos altura do que o esperado de algum ancestral. */}
+            <div
+              className={cn(
+                'min-w-0',
+                stretchList && 'flex min-h-0 flex-1 flex-col overflow-hidden'
+              )}
+            >
+              {commandContent}
+            </div>
+            {stretchList ? listFooter : null}
+          </div>
+
+          {currentErrorMessage ? (
+            <p className="text-destructive text-sm">{currentErrorMessage}</p>
+          ) : null}
+        </div>
+      );
+    }
+
     return (
       <div className={cn('grid gap-2', className)}>
         {label ? (
@@ -791,146 +1185,7 @@ export function EntityPicker<
               className="p-0"
               style={{ width: 'var(--radix-popover-trigger-width)' }}
             >
-              <Command shouldFilter={false}>
-                {searchable ? (
-                  <CommandInput
-                    placeholder={resolvedSearchPlaceholder}
-                    value={search}
-                    onValueChange={(nextValue) => {
-                      setSearch(nextValue);
-                      setVisibleCount(visibleCountStep);
-                    }}
-                  />
-                ) : null}
-                <CommandList onWheel={(event) => event.stopPropagation()}>
-                  <CommandEmpty>
-                    {isLoadingOptions ? (
-                      loadingLabel
-                    ) : (
-                      <div className="space-y-2 p-2 text-center">
-                        <p className="text-sm text-muted-foreground">
-                          {emptyStateDescription || noResultsLabel}
-                        </p>
-                        {showCreateButton &&
-                        (onCreate || renderCreateContent) ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={(event) => {
-                              captureParentScrollPosition(event.currentTarget);
-                              openCreateSheet(search.trim());
-                            }}
-                          >
-                            {resolvedCreateActionLabel}
-                          </Button>
-                        ) : null}
-                      </div>
-                    )}
-                  </CommandEmpty>
-
-                  <CommandGroup>
-                    {allowEmptySelection ? (
-                      <CommandItem
-                        value="__empty__"
-                        onSelect={() => {
-                          setCurrentValue(
-                            valueType === 'number' ? null : '',
-                            null
-                          );
-                          setSelectedLabel('');
-                          setSearch('');
-                          setOpen(false);
-                        }}
-                      >
-                        {emptySelectionLabel ?? resolvedEmptyLabel}
-                      </CommandItem>
-                    ) : null}
-
-                    {visibleOptions.map((option) => {
-                      const optionValue = optionValueResolver(option);
-                      const isSelected =
-                        String(optionValue) === normalizedValue;
-                      const optionDisabled =
-                        isOptionDisabled?.(option) ?? false;
-
-                      return (
-                        <CommandItem
-                          key={optionKeyResolver(option)}
-                          value={optionSearchTextResolver(option)}
-                          disabled={optionDisabled}
-                          onSelect={() => {
-                            // Defensive guard: cmdk's CommandItem (see
-                            // command.tsx) already refuses to invoke
-                            // `onSelect` at all when `disabled` is set
-                            // (verified by the "não seleciona opção
-                            // desabilitada" test below, which never reaches
-                            // this closure for a disabled item), so this
-                            // early return can't be exercised through any
-                            // user interaction with the real cmdk library.
-                            /* v8 ignore next 3 */
-                            if (optionDisabled) {
-                              return;
-                            }
-                            setCurrentValue(optionValue ?? null, option);
-                            setSelectedLabel(optionLabelResolver(option));
-                            setSearch(optionLabelResolver(option));
-                            setOpen(false);
-                          }}
-                        >
-                          {renderOption ? (
-                            renderOption({
-                              option,
-                              isSelected,
-                              isDisabled: optionDisabled,
-                            })
-                          ) : (
-                            <div className="min-w-0">
-                              <div className="truncate">
-                                {optionLabelResolver(option)}
-                              </div>
-                              {optionDescriptionResolver(option) ? (
-                                <div className="truncate text-xs text-muted-foreground">
-                                  {optionDescriptionResolver(option)}
-                                </div>
-                              ) : null}
-                            </div>
-                          )}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-
-                  {filteredOptions.length > visibleCount || hasMore ? (
-                    <div className="border-t p-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="w-full"
-                        disabled={isLoadingOptions || isLoadingMoreOptions}
-                        onClick={() => {
-                          if (loadOptions && hasMore) {
-                            void loadRemoteOptions(
-                              currentPage + 1,
-                              debouncedSearch,
-                              false
-                            );
-                            return;
-                          }
-
-                          setVisibleCount(
-                            (current) => current + visibleCountStep
-                          );
-                        }}
-                      >
-                        {isLoadingOptions || isLoadingMoreOptions
-                          ? `${loadMoreLabel}...`
-                          : loadMoreLabel}
-                      </Button>
-                    </div>
-                  ) : null}
-                </CommandList>
-              </Command>
+              {commandContent}
             </PopoverContent>
           </Popover>
 

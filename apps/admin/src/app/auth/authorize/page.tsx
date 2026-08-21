@@ -46,6 +46,9 @@ function AuthorizeApp() {
   const scope = searchParams.get('scope') ?? '';
   const codeChallenge = searchParams.get('code_challenge') ?? '';
   const codeChallengeMethod = searchParams.get('code_challenge_method') ?? '';
+  // Optional hint (e.g. from a mobile app): pre-select a social provider so the
+  // login page starts it automatically. The consent step doesn't use it.
+  const providerHint = searchParams.get('provider') ?? '';
 
   const [info, setInfo] = useState<AuthorizeInfo | null>(null);
   const [invalid, setInvalid] = useState(false);
@@ -107,8 +110,8 @@ function AuthorizeApp() {
 
     redirectedRef.current = true;
     setUrlAfterLogin(`/auth/authorize?${searchParams.toString()}`);
-    router.replace('/login');
-  }, [accessToken, invalid, router, searchParams, setUrlAfterLogin]);
+    router.replace(providerHint ? `/login?provider=${encodeURIComponent(providerHint)}` : '/login');
+  }, [accessToken, invalid, providerHint, router, searchParams, setUrlAfterLogin]);
 
   async function handleAuthorize() {
     setLoading(true);

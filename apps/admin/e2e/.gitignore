@@ -1,6 +1,5 @@
 # Estado de autenticação persistido e artefatos do Playwright.
 .auth/
 
-# Specs copiadas de libraries/*/hedhog/frontend/e2e por generate-specs.mjs.
-# Sao saida gerada: dependem de quais libraries estao instaladas no projeto.
+# Specs gerados a partir de libraries/*/hedhog/frontend/e2e (generate-specs.mjs).
 generated/

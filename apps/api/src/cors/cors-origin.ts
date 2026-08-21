@@ -4,8 +4,8 @@
  * Two allowlist mechanisms are combined (an origin is allowed if EITHER matches):
  * - CORS_ALLOWED_ORIGINS: exact origins (scheme + host), e.g. "http://localhost:3200".
  * - CORS_ALLOWED_DOMAINS: trusted base domains; any subdomain AND the apex are allowed,
- *   e.g. "example.com,example.org" permits https://app.example.com,
- *   https://partners.example.com, https://example.org, etc.
+ *   e.g. "hcode.com.br,hcode.training" permits https://class.hcode.com.br,
+ *   https://partners.hcode.com.br, https://hcode.training, etc.
  *
  * This module intentionally has no NestJS imports or side effects so the matching
  * logic can be unit-tested without booting the application from main.ts.
@@ -46,6 +46,24 @@ export function getCorsOrigins(
   return [];
 }
 
+/**
+ * Origens vindas do setting `cors-allowed-origins` (tabela `setting`, editável
+ * pelo painel), normalizadas para o mesmo formato do allowlist do ambiente.
+ *
+ * O valor chega como array quando o setting é do tipo `array`, mas um banco
+ * semeado à mão ou um valor editado fora do componente pode devolver a string
+ * crua — daí os dois caminhos. Entrada inválida vira lista vazia e não exceção:
+ * um setting mal preenchido deve custar uma origem recusada, não a queda do
+ * middleware de CORS em toda requisição.
+ */
+export function parseSettingOrigins(value: unknown): string[] {
+  const list = Array.isArray(value)
+    ? value.map((item) => normalizeOrigin(String(item)))
+    : parseOriginList(typeof value === 'string' ? value : '');
+
+  return Array.from(new Set(list.filter(Boolean)));
+}
+
 export function normalizeDomain(value?: string | null): string {
   return String(value ?? '')
     .trim()
@@ -80,7 +98,7 @@ function getOriginHost(normalizedOrigin: string): string {
 /**
  * True when `host` is the base `domain` itself or one of its subdomains.
  * The leading dot in the suffix check prevents lookalike bypasses such as
- * "evilexample.com" or "example.com.attacker.com" matching "example.com".
+ * "evilhcode.com.br" or "hcode.com.br.attacker.com" matching "hcode.com.br".
  */
 export function isHostUnderDomain(host: string, domain: string): boolean {
   if (!host || !domain) return false;

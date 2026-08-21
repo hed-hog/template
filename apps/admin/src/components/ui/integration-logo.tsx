@@ -1,5 +1,5 @@
+import { logoIcons, type LogoSlug } from '@/generated/integration-logos';
 import { cn } from '@/lib/utils';
-import { icons as logosSet } from '@iconify-json/logos';
 import {
   HardDrive,
   Mail,
@@ -35,25 +35,17 @@ const oauthToProvider: Record<string, string> = {
   'linkedin-oauth': 'linkedin',
 };
 
-type IconifySet = {
-  icons: Record<string, { body: string; width?: number; height?: number }>;
-  width?: number;
-  height?: number;
-};
-
 /**
- * Renders a colored logo from the offline `@iconify-json/logos` package as an
- * inline `<svg>` (without depending on `@iconify/react`'s `<Icon>`), preserving
- * the icon's aspect ratio. Keeps this file server-safe, since the helpers
- * exported here are also used by server components.
+ * Renders a colored logo from the generated `logos` subset as an inline `<svg>`
+ * (without depending on `@iconify/react`'s `<Icon>`), preserving the icon's
+ * aspect ratio. Keeps this file server-safe, since the helpers exported here are
+ * also used by server components.
+ *
+ * The subset is written by `scripts/generate-icon-subset.mjs`; importing
+ * `@iconify-json/logos` directly here shipped all 2.091 logos to the browser.
  */
-function iconifyLogo(slug: string, size: number): ReactNode | null {
-  const set: IconifySet = logosSet;
-  const entry = set.icons[slug];
-  if (!entry) return null;
-  /* v8 ignore next 2 -- the trailing `?? 256` is a defensive fallback: @iconify-json/logos always defines a top-level width/height (256/256), so `set.width`/`set.height` are never nullish in practice */
-  const w = entry.width ?? set.width ?? 256;
-  const h = entry.height ?? set.height ?? 256;
+function iconifyLogo(slug: LogoSlug, size: number): ReactNode {
+  const { body, width: w, height: h } = logoIcons[slug];
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +53,7 @@ function iconifyLogo(slug: string, size: number): ReactNode | null {
       height={size}
       width={Math.round((size * w) / h)}
       aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: entry.body }}
+      dangerouslySetInnerHTML={{ __html: body }}
     />
   );
 }
@@ -72,13 +64,17 @@ function iconifyLogo(slug: string, size: number): ReactNode | null {
  * suitable icon — wordmarks (stripe, gemini), monochrome ones (github, openai)
  * or without an equivalent (microsoft-entra-id, mercado-pago, evolution-api) —
  * use a custom SVG in `providerPresentations` instead.
+ *
+ * Every slug here must exist in the generated subset — that is what `LogoSlug`
+ * enforces. Adding one without running `pnpm generate:icons` fails typecheck.
  */
-const providerLogoIcons: Record<string, { slug: string; label: string }> = {
+const providerLogoIcons: Record<string, { slug: LogoSlug; label: string }> = {
   google: { slug: 'google-icon', label: 'Google' },
   microsoft: { slug: 'microsoft-icon', label: 'Microsoft' },
   facebook: { slug: 'facebook', label: 'Facebook' },
   linkedin: { slug: 'linkedin-icon', label: 'LinkedIn' },
   claude: { slug: 'claude-icon', label: 'Claude' },
+  deepseek: { slug: 'deepseek-icon', label: 'DeepSeek' },
   'whatsapp-official': { slug: 'whatsapp-icon', label: 'WhatsApp' },
   gmail: { slug: 'google-gmail', label: 'Gmail' },
   ses: { slug: 'aws-ses', label: 'Amazon SES' },
@@ -87,6 +83,7 @@ const providerLogoIcons: Record<string, { slug: string; label: string }> = {
   'azure-blob': { slug: 'microsoft-azure', label: 'Azure Blob' },
   digitalocean: { slug: 'digital-ocean-icon', label: 'DigitalOcean' },
   kubernetes: { slug: 'kubernetes', label: 'Kubernetes' },
+  'google-play': { slug: 'google-play-icon', label: 'Google Play Billing' },
   recaptcha: { slug: 'recaptcha', label: 'Google reCAPTCHA' },
   'cloudflare-turnstile': {
     slug: 'cloudflare-icon',
@@ -343,6 +340,20 @@ export function getIntegrationLogoTheme(provider: string): {
       dotClassName: 'bg-[#00a4ef]',
       titleClassName: 'text-[#0078D4]',
       buttonClassName: 'bg-[#00a4ef] text-white hover:bg-[#0088cb]',
+    };
+  }
+
+  // Azuis do próprio logo do Entra, distintos do `#00a4ef`/`#0078D4` da
+  // Microsoft clássica: as duas telas de callback existem lado a lado e
+  // representam fluxos diferentes (conta pessoal vs. tenant corporativo).
+  if (normalized === 'microsoft-entra-id') {
+    return {
+      cardClassName: 'border border-slate-100',
+      iconContainerClassName: 'bg-white',
+      spinnerTopClassName: 'border-t-[#0294e4]',
+      dotClassName: 'bg-[#0294e4]',
+      titleClassName: 'text-[#074793]',
+      buttonClassName: 'bg-[#0294e4] text-white hover:bg-[#074793]',
     };
   }
 

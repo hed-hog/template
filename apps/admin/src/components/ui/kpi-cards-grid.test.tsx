@@ -48,7 +48,7 @@ describe('KpiCardsGrid', () => {
     // first item has no itemClassName -> only cardClassName
     expect(cards[0]).toHaveAttribute('data-class', 'card-class');
     // second item merges cardClassName with its own itemClassName
-    expect(cards[1].getAttribute('data-class')).toContain('card-class');
-    expect(cards[1].getAttribute('data-class')).toContain('item-specific');
+    expect(cards[1]!.getAttribute('data-class')).toContain('card-class');
+    expect(cards[1]!.getAttribute('data-class')).toContain('item-specific');
   });
 });

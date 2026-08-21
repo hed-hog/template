@@ -314,7 +314,7 @@ export class PaginationService {
               ).join(', ')}`,
             );
           } else {
-            // Field exists in the locale table - needs to use raw query
+            // Campo existe na tabela locale - precisa usar raw query
             localeTableName = `${(model as any).name}_locale`;
             localeSortField = sortField;
             needsRawQueryOrdering = true;
@@ -368,7 +368,7 @@ export class PaginationService {
         delete (customQuery as any).where.OR;
       }
 
-      // Always count the total with regular Prisma
+      // Contar total sempre com Prisma normal
       const sanitizedWhere = this.sanitizeWhereForModel(
         (customQuery as any)?.where || {},
         model,
@@ -386,7 +386,7 @@ export class PaginationService {
           where: sanitizedWhere,
         };
 
-        // Use raw query for ordering by a related table field
+        // Usar raw query para ordenação por campo de tabela relacionada
         data = await this.paginateWithLocaleOrdering(
           model,
           localeTableName,
@@ -397,7 +397,7 @@ export class PaginationService {
           localeOrderQuery,
         );
       } else {
-        // Use regular Prisma
+        // Usar Prisma normal
         const query: any = {
           select: selectCondition,
           where: sanitizedWhere,
@@ -443,8 +443,8 @@ export class PaginationService {
   }
 
   /**
-   * Helper method for pagination with ordering by locale table fields
-   * Uses raw query for ordering, but keeps Prisma's nested structure
+   * Método auxiliar para paginação com ordenação por campos de tabela locale
+   * Usa raw query para ordenação, mas mantém estrutura aninhada do Prisma
    */
   private async paginateWithLocaleOrdering(
     model: any,
@@ -459,13 +459,13 @@ export class PaginationService {
       const tableName = (model as any).name;
       const db = await this.getDb(model);
       
-      // Detect locale code from include (if available)
+      // Detectar locale code do include (se disponível)
       let localeCode = 'en'; // fallback
       if (customQuery?.include?.[localeTableName]?.where?.locale?.code) {
         localeCode = customQuery.include[localeTableName].where.locale.code;
       }
 
-      // Build the raw query's WHERE clause
+      // Construir WHERE clause da raw query
       const whereConditions: string[] = [];
       let whereParams: any[] = [];
       let paramIndex = 1;
@@ -482,7 +482,7 @@ export class PaginationService {
         paramIndex = nextIndex;
       }
 
-      // Add locale filter
+      // Adicionar filtro de locale
       whereConditions.push(`l.code = $${paramIndex}`);
       whereParams.push(localeCode);
       paramIndex++;
@@ -491,7 +491,7 @@ export class PaginationService {
         ? `WHERE ${whereConditions.join(' AND ')}` 
         : '';
 
-      // Query to fetch ordered IDs
+      // Query para buscar IDs ordenados
       const orderDirection = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
       const orderByClause = `ORDER BY tl.${db.escapeIdentifier(sortField)} ${orderDirection}`;
       
@@ -507,7 +507,7 @@ export class PaginationService {
 
       whereParams.push(take, skip);
 
-      // Execute raw query to get ordered IDs
+      // Executar raw query para obter IDs ordenados
       const orderedIds = await db.queryRaw(rawQuery, whereParams);
       
       if (!orderedIds || orderedIds.length === 0) {
@@ -516,7 +516,7 @@ export class PaginationService {
 
       const ids = orderedIds.map((row: any) => row.id);
 
-      // Fetch full data with Prisma while keeping the nested structure
+      // Buscar dados completos com Prisma mantendo estrutura aninhada
       const query: any = {
         where: {
           id: { in: ids },
@@ -534,7 +534,7 @@ export class PaginationService {
 
       const data = await model.findMany(query);
 
-      // Reorder data to keep the raw query's order
+      // Reordenar dados para manter a ordem da raw query
       const orderedData = ids
         .map(id => data.find((item: any) => item.id === id))
         .filter(Boolean);
@@ -550,7 +550,7 @@ export class PaginationService {
   }
 
   /**
-   * Builds the WHERE clause for raw queries
+   * Constrói cláusula WHERE para raw queries
    */
   private buildWhereClause(
     where: any,
@@ -564,13 +564,13 @@ export class PaginationService {
 
     for (const key in where) {
       if (key === 'OR' || key === 'AND') {
-        continue; // Simplification: ignore OR/AND for now
+        continue; // Simplificação: ignorar OR/AND por enquanto
       }
 
       const value = where[key];
 
       if (typeof value === 'object' && value !== null) {
-        // Special Prisma operators
+        // Operadores especiais do Prisma
         if ('in' in value) {
           const placeholders = value.in.map(() => `$${paramIndex++}`).join(', ');
           conditions.push(`t.${db.escapeIdentifier(key)} IN (${placeholders})`);
@@ -585,7 +585,7 @@ export class PaginationService {
           paramIndex++;
         }
       } else {
-        // Simple value
+        // Valor simples
         conditions.push(`t.${db.escapeIdentifier(key)} = $${paramIndex}`);
         params.push(value);
         paramIndex++;

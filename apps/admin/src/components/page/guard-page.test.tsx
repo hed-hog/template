@@ -16,6 +16,11 @@ vi.mock('./loading-page', () => ({
 vi.mock('./forbbiden-page', () => ({
   ForbiddenPage: () => <div data-testid="forbidden-page-stub" />,
 }));
+vi.mock('@/components/impersonation/impersonation-no-access-page', () => ({
+  ImpersonationNoAccessPage: () => (
+    <div data-testid="impersonation-no-access-stub" />
+  ),
+}));
 
 const { navState } = vi.hoisted(() => ({
   navState: {
@@ -38,6 +43,7 @@ const { appState } = vi.hoisted(() => ({
     accessToken: 'token-123',
     setUrlAfterLogin: vi.fn(),
     user: null as { requires_password_reset?: boolean } | null,
+    impersonation: null as { target?: { name?: string } } | null,
   },
 }));
 vi.mock('@hed-hog/next-app-provider', async () => {
@@ -79,6 +85,7 @@ describe('GuardPage', () => {
     appState.accessToken = 'token-123';
     appState.setUrlAfterLogin = vi.fn();
     appState.user = null;
+    appState.impersonation = null;
     Object.defineProperty(navigator, 'onLine', {
       value: true,
       configurable: true,
@@ -113,6 +120,23 @@ describe('GuardPage', () => {
     await waitFor(() =>
       expect(screen.getByTestId('forbidden-page-stub')).toBeInTheDocument()
     );
+  });
+
+  it('numa simulação sem acesso admin, mostra a tela dedicada e não o Forbidden genérico', async () => {
+    // O Forbidden genérico só oferece "ir para o login", que numa aba simulada
+    // não faz sentido — o operador ficaria preso sem como encerrar.
+    appState.impersonation = { target: { name: 'Aluna' } };
+    appState.request = vi.fn().mockResolvedValue({
+      data: { roles: [{ slug: 'user' }] },
+    });
+    renderGuard();
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('impersonation-no-access-stub')
+      ).toBeInTheDocument()
+    );
+    expect(screen.queryByTestId('forbidden-page-stub')).not.toBeInTheDocument();
   });
 
   it('renderiza os children quando existe role com slug iniciando em "admin"', async () => {

@@ -22,8 +22,8 @@ function setNativeValue(el: HTMLInputElement, value: string) {
 
 type NameInputProps = React.ComponentProps<'input'> & {
   /**
-   * Pessoa jurídica não é normalizada: "ACME TECNOLOGIA LTDA" viraria
-   * "Acme Tecnologia Ltda", degradando sigla e razão social corretas. Repassar o mesmo
+   * Pessoa jurídica não é normalizada: "HCODE TECNOLOGIA LTDA" viraria
+   * "Hcode Tecnologia Ltda", degradando sigla e razão social corretas. Repassar o mesmo
    * `type === 'company'` do formulário aqui evita que o campo mostre, antes de salvar,
    * um formato que o backend não vai gravar (packages/api-prisma/src/format-person-name.ts
    * já faz a mesma distinção pelo lado do servidor).

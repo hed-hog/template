@@ -40,7 +40,21 @@ export type SearchBarDateControl = SearchBarControlBase & {
   label?: string;
 };
 
-export type SearchBarControl = SearchBarSelectControl | SearchBarDateControl;
+/**
+ * Escape hatch for a facet the bar has no primitive for — a tag popover, a
+ * key/value pair. Keeps such filters on the same row as the selects instead of
+ * pushing the page to build a second filter bar.
+ */
+export type SearchBarCustomControl = {
+  id: string;
+  type: 'custom';
+  render: () => ReactNode;
+};
+
+export type SearchBarControl =
+  | SearchBarSelectControl
+  | SearchBarDateControl
+  | SearchBarCustomControl;
 
 export type SearchBarProps = {
   searchQuery: string;
@@ -62,6 +76,10 @@ export type SearchBarProps = {
 };
 
 function renderControl(control: SearchBarControl, filterPlaceholder: string) {
+  if (control.type === 'custom') {
+    return control.render();
+  }
+
   if (control.type === 'date') {
     if (control.label) {
       return (

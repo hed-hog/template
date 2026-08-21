@@ -1,41 +1,41 @@
 # API E2E Tests
 
-This directory contains the API's end-to-end (E2E) tests using Supertest.
+Este diretório contém os testes end-to-end (E2E) da API usando Supertest.
 
-## Test Structure
+## Estrutura de Testes
 
-The tests are organized by feature:
+Os testes estão organizados por funcionalidade:
 
-- **[app.e2e-spec.ts](app.e2e-spec.ts)** - General application tests
-- **[health.e2e-spec.ts](health.e2e-spec.ts)** - Health check tests
-- **[auth.e2e-spec.ts](auth.e2e-spec.ts)** - Authentication and authorization tests
-- **[settings.e2e-spec.ts](settings.e2e-spec.ts)** - System settings tests
-- **[locale.e2e-spec.ts](locale.e2e-spec.ts)** - Internationalization tests
+- **[app.e2e-spec.ts](app.e2e-spec.ts)** - Testes gerais da aplicação
+- **[health.e2e-spec.ts](health.e2e-spec.ts)** - Testes de health check
+- **[auth.e2e-spec.ts](auth.e2e-spec.ts)** - Testes de autenticação e autorização
+- **[settings.e2e-spec.ts](settings.e2e-spec.ts)** - Testes de configurações do sistema
+- **[locale.e2e-spec.ts](locale.e2e-spec.ts)** - Testes de internacionalização
 
-## Running the Tests
+## Executando os Testes
 
-### Locally
+### Localmente
 
 ```bash
-# Run all E2E tests
+# Execute todos os testes E2E
 pnpm test:e2e
 
-# Run tests in watch mode
+# Execute testes com watch mode
 pnpm test:watch
 
-# Run a specific file
+# Execute um arquivo específico
 pnpm test:e2e -- health.e2e-spec.ts
 ```
 
-### In CI/CD (GitHub Actions)
+### No CI/CD (GitHub Actions)
 
-Tests run automatically in the `.github/workflows/test.yaml` workflow when:
-- There's a push to the `main` or `develop` branches
-- There's a pull request targeting the `main` or `develop` branches
+Os testes são executados automaticamente no workflow `.github/workflows/test.yaml` quando:
+- Há push nas branches `main` ou `develop`
+- Há pull request para as branches `main` ou `develop`
 
-## Test Pattern
+## Padrão de Testes
 
-All tests follow this pattern:
+Todos os testes seguem este padrão:
 
 ```typescript
 import { Test, TestingModule } from '@nestjs/testing';
@@ -71,36 +71,36 @@ describe('Feature (e2e)', () => {
 });
 ```
 
-## Adding New Tests
+## Adicionando Novos Testes
 
-To add tests for a new feature:
+Para adicionar testes de uma nova funcionalidade:
 
-1. Create a `feature.e2e-spec.ts` file in this directory
-2. Follow the pattern above
-3. Test success and failure scenarios
-4. Test with and without authentication where applicable
-5. Test input data validation
+1. Crie um arquivo `feature.e2e-spec.ts` neste diretório
+2. Siga o padrão acima
+3. Teste cenários de sucesso e falha
+4. Teste com e sem autenticação quando aplicável
+5. Teste validação de dados de entrada
 
-## Test Environment
+## Ambiente de Testes
 
-The E2E tests use:
-- **PostgreSQL 18 database** (via Docker in CI or locally)
-- **Test environment variables** (defined in `.github/workflows/test.yaml`)
-- **Prisma migrations** applied via `prisma:deploy`
+Os testes E2E utilizam:
+- **Banco de dados PostgreSQL 18** (via Docker no CI ou local)
+- **Variáveis de ambiente de teste** (definidas em `.github/workflows/test.yaml`)
+- **Migrations do Prisma** aplicadas via `prisma:deploy`
 
-## Test Credentials (CI)
+## Credenciais de Teste (CI)
 
 ```env
 DATABASE_URL=postgresql://hedhog_test:test_password@localhost:5432/hedhog_test
-JWT_SECRET=<generate-me>
-ENCRYPTION_SECRET=<generate-me>
+JWT_SECRET=5fba2ef81e3121c215cb1a022ef0119e1b245c95a6c15640c06f4763cdc51626
+ENCRYPTION_SECRET=RDBJYWY2UXZWQVVJeHJ2MDREWXQwVEJVQkp6am9qbzdGUFlmSUczQllyTQ==
 ```
 
-## Best Practices
+## Boas Práticas
 
-- Use `beforeAll` for one-time setup (faster than `beforeEach`)
-- Always close the application in `afterAll`
-- Test error cases (401, 400, 404, etc.)
-- Validate response structure with `expect(res.body).toHaveProperty()`
-- Group related tests with nested `describe`
-- Use descriptive names for tests
+- Use `beforeAll` para setup único (mais rápido que `beforeEach`)
+- Sempre feche a aplicação em `afterAll`
+- Teste casos de erro (401, 400, 404, etc.)
+- Valide estrutura de resposta com `expect(res.body).toHaveProperty()`
+- Agrupe testes relacionados com `describe` aninhado
+- Use nomes descritivos para os testes

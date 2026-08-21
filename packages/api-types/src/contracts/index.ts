@@ -1,11 +1,12 @@
 /**
- * Request/response contracts shared between backend and frontend.
+ * Contratos de request/response compartilhados entre backend e frontend.
  *
- * Unlike the other files in this package (table-row-shaped types generated
- * by database introspection), this submodule is hand-written and describes
- * the API CONTRACTS (response envelopes and error format) using zod, serving
- * as the single source of truth for contract tests on both sides. Re-exported
- * by the main entry point: `import { paginationEnvelope } from '@hed-hog/api-types'`.
+ * Diferente dos demais arquivos deste pacote (tipos com formato de linha de
+ * tabela, gerados por introspecção do banco), este submódulo é escrito à mão e
+ * descreve os CONTRATOS DE API (envelopes de resposta e formato de erro) usando
+ * zod, servindo como fonte única de verdade para os testes de contrato dos dois
+ * lados. Reexportado pela entrada principal: `import { paginationEnvelope } from '@hed-hog/api-types'`.
  */
 export * from './pagination';
 export * from './error';
+export * from './crypto';
