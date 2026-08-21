@@ -15,7 +15,11 @@ overrides:
   body-parser: '>=2.2.1'
   tmp: '>=0.2.4'
   jsonwebtoken: '>=9.0.2'
-  '@smithy/core': 3.24.6
+  # >=3.29.0, nao o pin do hub: `makeBuilder` (usado pelo @aws-sdk/client-s3
+  # que o core carrega em file.service) so existe a partir dessa versao. Com
+  # 3.24.6 a API do projeto gerado morre no boot com "makeBuilder is not a
+  # function".
+  '@smithy/core': '>=3.29.0'
   '@smithy/types': 4.14.3
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
