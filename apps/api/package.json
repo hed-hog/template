@@ -7,6 +7,8 @@
     "dev": "pnpm start:dev",
     "prebuild": "pnpm prisma:update",
     "build": "nest build",
+    "build:docker": "pnpm --dir ../.. run build:libs && nest build && pnpm run copy:core-assets",
+    "copy:core-assets": "node -e \"const fs=require('fs');const path=require('path');const tplSrc='../../libraries/core/src/file/templates';const tplDest='dist/libraries/core/src/file/templates';if(fs.existsSync(tplSrc)){fs.mkdirSync(tplDest,{recursive:true});fs.cpSync(tplSrc,tplDest,{recursive:true});}const root='../../libraries';if(fs.existsSync(root)){for(const lib of fs.readdirSync(root)){const src=path.join(root,lib,'src','language');if(fs.existsSync(src)){const dest=path.join('dist','libraries',lib,'src','language');fs.mkdirSync(dest,{recursive:true});fs.cpSync(src,dest,{recursive:true});}}}\" --",
     "start": "nest start",
     "start:dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/main.ts",
     "start:debug": "nest start --debug --watch",
