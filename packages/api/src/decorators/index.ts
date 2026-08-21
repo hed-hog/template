@@ -1,3 +1,4 @@
+export * from "./impersonation.decorator";
 export * from "./no-role.decorator";
 export * from "./public.decorator";
 export * from "./role.decorator";
