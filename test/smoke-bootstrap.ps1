@@ -413,6 +413,21 @@ try {
   Write-Ok 'API compilada'
 
   # =========================================================================
+  Write-Step 'Buildando o admin'
+  # =========================================================================
+  # Nenhum outro gate compila o Next: o ci.yml nao builda o admin e o
+  # `turbo run test` so roda vitest. Um import que nao resolve — um package do
+  # hub que nunca foi vendorizado em `packages/*`, um `@/generated/*` que so
+  # existe la — passa por tudo e explode na primeira pagina do projeto gerado.
+  # Foi assim que `@hed-hog/next-build-skew` chegou ao usuario em 21/08/2026.
+  $AdminPath = Join-Path $ProjectPath 'apps/admin'
+  $env:NODE_OPTIONS = '--max-old-space-size=4096'
+  Invoke-Native -File 'pnpm' -WorkingDirectory $AdminPath -What 'next build' `
+    -Arguments @('run', 'build')
+  Remove-Item Env:\NODE_OPTIONS -ErrorAction SilentlyContinue
+  Write-Ok 'Admin compilado'
+
+  # =========================================================================
   Write-Step 'Aplicando migrations'
   # =========================================================================
   Invoke-Native -File 'pnpm' -WorkingDirectory $ApiPath -What 'pnpm prisma:deploy' `
