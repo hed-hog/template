@@ -553,6 +553,9 @@ importers:
       '@hed-hog/api-locale':
         specifier: workspace:*
         version: link:../../packages/api-locale
+      '@hed-hog/api-mail':
+        specifier: workspace:*
+        version: link:../../packages/api-mail
       '@hed-hog/api-pagination':
         specifier: workspace:*
         version: link:../../packages/api-pagination

@@ -25,6 +25,7 @@
     "@hed-hog/api": "workspace:*",
     "@hed-hog/api-healthy": "workspace:*",
     "@hed-hog/api-locale": "workspace:*",
+    "@hed-hog/api-mail": "workspace:*",
     "@hed-hog/api-pagination": "workspace:*",
     "@hed-hog/api-prisma": "workspace:*",
     "@hed-hog/api-types": "workspace:*",
