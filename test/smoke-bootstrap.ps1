@@ -358,13 +358,17 @@ try {
       $EnvMap[$k] = New-Secret
     }
   }
+  # Sem isto o -ApiPort so mudava onde o health era consultado: a API le PORT
+  # do .env e cairia na 3100 fixa, colidindo com o servidor de dev de quem
+  # roda o teste (EADDRINUSE, depois de bootar inteira).
+  $EnvMap['PORT']                 = "$ApiPort"
   $EnvMap['DATABASE_URL']         = "postgresql://${DbUser}:${DbPassword}@${DbHost}:${DbPort}/${DbName}"
   $EnvMap['REDIS_URL']            = "redis://${DbHost}:${RedisPort}"
   $EnvMap['JWT_EXPIRES_IN']       = '7d'
   $EnvMap['CORS_ALLOWED_ORIGINS'] = 'http://localhost:3200'
   ($EnvMap.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) |
     Set-Content -Path $EnvPath -Encoding utf8
-  Write-Ok "apps/api/.env normalizado (db $DbPort, redis $RedisPort)"
+  Write-Ok "apps/api/.env normalizado (api $ApiPort, db $DbPort, redis $RedisPort)"
 
   # A suite E2E faz muitos logins seguidos e bateria no rate limit de /auth
   # (mesma razao do ci.yml). Nunca usar em producao.
