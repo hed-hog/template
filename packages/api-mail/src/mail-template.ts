@@ -1,4 +1,86 @@
-const BRAND_NAME = 'HedHog';
+import {
+  BrandAssetBases,
+  isPublicAssetUrl,
+  resolveBrandAssetUrl,
+} from './brand-asset';
+
+export const DEFAULT_BRAND_NAME = 'HedHog';
+
+/** Fallback quando a setting `theme-primary-light` nao pode ser lida. */
+export const DEFAULT_PRIMARY_COLOR = '#111827';
+/** Fallback quando a setting `theme-primary-foreground-light` nao pode ser lida. */
+export const DEFAULT_PRIMARY_FOREGROUND = '#ffffff';
+
+/**
+ * Resolve uma URL potencialmente relativa (ex.: `/logo.svg`, como salvo pela
+ * setting `image-url`) para uma URL absoluta.
+ *
+ * Alias de {@link resolveBrandAssetUrl}, mantido porque o pacote e publicado no
+ * npm e a assinatura antiga recebia a base da API como string.
+ */
+export function resolveMailAssetUrl(
+  url: string,
+  bases: BrandAssetBases | string,
+): string {
+  return resolveBrandAssetUrl(url, bases);
+}
+
+/**
+ * Layout base aplicado a todo e-mail transacional.
+ *
+ * `wrapper` e o documento HTML completo (estrutura + CSS) e por isso NAO e
+ * traduzivel. `header` e `footer` sao fragmentos por idioma.
+ *
+ * Tokens reconhecidos:
+ *  - `{{{content}}}`         corpo do template ja interpolado (wrapper)
+ *  - `{{{header}}}`          fragmento de cabecalho (wrapper)
+ *  - `{{{footer}}}`          fragmento de rodape (wrapper)
+ *  - `{{subject}}`           assunto, com escape de HTML
+ *  - `{{brandName}}`         setting `system-name`, com escape de HTML
+ *  - `{{{brandMark}}}`       logo (setting `image-url`) ou selo de texto com o brandName, ja como HTML
+ *  - `{{primaryColor}}`      setting `theme-primary-light`
+ *  - `{{primaryForeground}}` setting `theme-primary-foreground-light`
+ *  - `{{year}}`              ano corrente
+ *  - `{{lang}}`              codigo do locale
+ */
+export type MailLayout = {
+  wrapper?: string | null;
+  header?: string | null;
+  footer?: string | null;
+};
+
+export type RenderMailTemplateInput = {
+  subject?: string;
+  body?: string;
+  /** Ausente ou null => DEFAULT_MAIL_LAYOUT. */
+  layout?: MailLayout | null;
+  brandName?: string;
+  lang?: string;
+  /** URL absoluta do logo (setting `image-url`). Ausente => selo de texto com o brandName. */
+  logoUrl?: string;
+  /** Cor de marca (setting `theme-primary-light`). Ausente => DEFAULT_PRIMARY_COLOR. */
+  primaryColor?: string;
+  /** Contraste sobre a cor de marca (setting `theme-primary-foreground-light`). Ausente => DEFAULT_PRIMARY_FOREGROUND. */
+  primaryForeground?: string;
+};
+
+/** Selo do cabecalho: logo quando configurado, senao um badge de texto com o brandName. */
+function buildBrandMark(input: {
+  logoUrl?: string;
+  brandName: string;
+  primaryColor: string;
+  primaryForeground: string;
+}): string {
+  const logoUrl = input.logoUrl?.trim();
+
+  // Sem URL publica o <img> chega quebrado e o destinatario ve so o alt. O selo
+  // de texto usa a cor da marca e sempre renderiza. Ver isPublicAssetUrl.
+  if (logoUrl && isPublicAssetUrl(logoUrl)) {
+    return `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(input.brandName)}" height="32" style="height:32px;max-height:32px;width:auto;display:block;border:0;outline:none;" />`;
+  }
+
+  return `<div class="brand" style="background:${escapeHtml(input.primaryColor)};color:${escapeHtml(input.primaryForeground)};">${escapeHtml(input.brandName)}</div>`;
+}
 
 function escapeHtml(value: string) {
   return value
@@ -13,32 +95,46 @@ function isFullHtmlDocument(value: string) {
   return /<!doctype\s+html|<html[\s>]/i.test(value);
 }
 
-export function renderMailTemplate({
-  subject,
-  body,
-}: {
-  subject?: string;
-  body?: string;
-}) {
-  const safeSubject = escapeHtml(subject?.trim() || BRAND_NAME);
-  const content = body?.trim() || '';
-
-  if (!content) {
-    return '';
+/**
+ * Substituicao literal de token.
+ *
+ * Usa split/join de proposito: `String.replace(string, string)` troca apenas a
+ * primeira ocorrencia E interpreta `$&`, `` $` ``, `$'` e `$1` no texto de
+ * substituicao. Header, footer e content sao HTML arbitrario do usuario e podem
+ * conter esses padroes (um preco "$1,00", por exemplo), o que corromperia a
+ * saida silenciosamente.
+ */
+function substitute(source: string, token: string, value: string): string {
+  if (!source.includes(token)) {
+    return source;
   }
+  return source.split(token).join(value);
+}
 
-  if (isFullHtmlDocument(content)) {
-    return content;
-  }
+/** Aceita tanto `{{{token}}}` quanto `{{token}}`. */
+function substituteToken(source: string, name: string, value: string): string {
+  return substitute(substitute(source, `{{{${name}}}}`, value), `{{${name}}}`, value);
+}
 
-  return `<!DOCTYPE html>
-<html lang="en">
+function applyScalars(
+  source: string,
+  scalars: Record<string, string>,
+): string {
+  return Object.entries(scalars).reduce(
+    (acc, [name, value]) => substituteToken(acc, name, value),
+    source,
+  );
+}
+
+export const DEFAULT_MAIL_LAYOUT: MailLayout = {
+  wrapper: `<!DOCTYPE html>
+<html lang="{{lang}}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
     <meta name="supported-color-schemes" content="light" />
-    <title>${safeSubject}</title>
+    <title>{{subject}}</title>
     <style>
       body {
         margin: 0;
@@ -52,9 +148,7 @@ export function renderMailTemplate({
       }
       .page {
         width: 100%;
-        background:
-          radial-gradient(circle at top, rgba(245, 158, 11, 0.14), transparent 32%),
-          linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+        background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
         padding: 32px 16px;
       }
       .shell {
@@ -65,12 +159,21 @@ export function renderMailTemplate({
       .hero {
         padding: 0 0 18px;
       }
+      .brand-mark {
+        margin: 0 0 16px;
+      }
+      .brand-mark img {
+        display: block;
+        height: 32px;
+        max-height: 32px;
+        width: auto;
+      }
       .brand {
         display: inline-block;
         padding: 8px 14px;
         border-radius: 999px;
-        background: #111827;
-        color: #ffffff;
+        background: {{primaryColor}};
+        color: {{primaryForeground}};
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.08em;
@@ -92,7 +195,7 @@ export function renderMailTemplate({
       }
       .panel-accent {
         height: 6px;
-        background: linear-gradient(90deg, #f59e0b 0%, #f97316 45%, #ea580c 100%);
+        background: {{primaryColor}};
       }
       .content {
         padding: 36px 34px 28px;
@@ -124,7 +227,7 @@ export function renderMailTemplate({
         margin-top: 8px;
       }
       .content a {
-        color: #c2410c;
+        color: {{primaryColor}};
         font-weight: 600;
         text-decoration: none;
       }
@@ -133,10 +236,10 @@ export function renderMailTemplate({
       }
       .content blockquote {
         padding: 14px 16px;
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid {{primaryColor}};
         border-radius: 0 14px 14px 0;
-        background: #fff7ed;
-        color: #7c2d12;
+        background: #f8fafc;
+        color: #334155;
       }
       .content hr {
         margin: 24px 0;
@@ -175,23 +278,22 @@ export function renderMailTemplate({
           <table role="presentation" width="100%" class="shell">
             <tr>
               <td class="hero">
-                <div class="brand">${BRAND_NAME}</div>
-                <div class="subject">${safeSubject}</div>
+                {{{header}}}
               </td>
             </tr>
             <tr>
               <td>
                 <div class="panel">
-                  <div class="panel-accent"></div>
+                  <div class="panel-accent" style="background:{{primaryColor}};"></div>
                   <div class="content">
-                    ${content}
+                    {{{content}}}
                   </div>
                 </div>
               </td>
             </tr>
             <tr>
               <td class="footer">
-                Esta mensagem foi enviada automaticamente pela plataforma ${BRAND_NAME}.
+                {{{footer}}}
               </td>
             </tr>
           </table>
@@ -199,5 +301,68 @@ export function renderMailTemplate({
       </tr>
     </table>
   </body>
-</html>`;
+</html>`,
+  header: `<div class="brand-mark">{{{brandMark}}}</div>
+<div class="subject">{{subject}}</div>`,
+  footer: `Esta mensagem foi enviada automaticamente pela plataforma {{brandName}}.`,
+};
+
+export function renderMailTemplate(input: RenderMailTemplateInput): string {
+  const { subject, body, layout, brandName, lang, logoUrl, primaryColor, primaryForeground } = input;
+
+  const content = body?.trim() || '';
+
+  if (!content) {
+    return '';
+  }
+
+  // Corpo que ja e um documento completo passa direto: envolve-lo produziria
+  // HTML aninhado invalido. Vale para campanhas e HTML importado de fora.
+  if (isFullHtmlDocument(content)) {
+    return content;
+  }
+
+  const resolvedBrand = brandName?.trim() || DEFAULT_BRAND_NAME;
+  const resolvedPrimaryColor = primaryColor?.trim() || DEFAULT_PRIMARY_COLOR;
+  const resolvedPrimaryForeground = primaryForeground?.trim() || DEFAULT_PRIMARY_FOREGROUND;
+
+  // Layout ausente => padrao embutido por inteiro. Layout presente => usado como
+  // veio: um header vazio salvo pelo admin e uma escolha valida, nao um buraco a
+  // preencher com o padrao.
+  const resolved = layout ?? DEFAULT_MAIL_LAYOUT;
+  const wrapper = resolved.wrapper || '';
+
+  // Sem wrapper nao ha o que envolver.
+  if (!wrapper.trim()) {
+    return content;
+  }
+
+  const scalars: Record<string, string> = {
+    subject: escapeHtml(subject?.trim() || resolvedBrand),
+    brandName: escapeHtml(resolvedBrand),
+    brandMark: buildBrandMark({
+      logoUrl,
+      brandName: resolvedBrand,
+      primaryColor: resolvedPrimaryColor,
+      primaryForeground: resolvedPrimaryForeground,
+    }),
+    primaryColor: escapeHtml(resolvedPrimaryColor),
+    primaryForeground: escapeHtml(resolvedPrimaryForeground),
+    year: String(new Date().getFullYear()),
+    lang: lang?.trim() || 'en',
+  };
+
+  // A ordem abaixo importa. Escalares primeiro, em cada fragmento isoladamente,
+  // depois header/footer no wrapper e o conteudo POR ULTIMO: assim o corpo (que
+  // ja passou pelo Handlebars e e texto do usuario) nunca e reexaminado em busca
+  // de tokens.
+  const header = applyScalars(resolved.header || '', scalars);
+  const footer = applyScalars(resolved.footer || '', scalars);
+
+  let html = applyScalars(wrapper, scalars);
+  html = substituteToken(html, 'header', header);
+  html = substituteToken(html, 'footer', footer);
+  html = substituteToken(html, 'content', content);
+
+  return html;
 }

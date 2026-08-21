@@ -1,5 +1,6 @@
 import { HttpModule } from '@nestjs/axios';
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import {
   MailModuleAsyncOptions,
   MailModuleOptions,
@@ -14,7 +15,7 @@ export class MailModule {
   static forRoot(options: MailModuleOptions): DynamicModule {
     return {
       module: MailModule,
-      imports: [HttpModule, PrismaModule],
+      imports: [HttpModule, PrismaModule, ConfigModule],
       providers: [
         MailService,
         {
@@ -29,7 +30,7 @@ export class MailModule {
   static forRootAsync(options: MailModuleAsyncOptions): DynamicModule {
     return {
       module: MailModule,
-      imports: [...(options.imports || []), HttpModule, PrismaModule],
+      imports: [...(options.imports || []), HttpModule, PrismaModule, ConfigModule],
       providers: [MailService, this.createAsyncOptionsProvider(options)],
       exports: [MailService],
     };

@@ -78,7 +78,7 @@ export function resolveBrandAssetUrl(
 
 /**
  * Um cliente de e-mail busca a imagem de fora da nossa rede: so URL absoluta e
- * publica funciona. `http://localhost:3100/logo.svg`, `http://api:3100/...`
+ * publica funciona. `http://localhost:3100/logo.svg`, `http://hub-api:3100/...`
  * (Service do cluster) ou caminho relativo chegam quebrados, e o destinatario
  * ve apenas o `alt`.
  *
@@ -108,7 +108,7 @@ export function isPublicAssetUrl(url?: string | null): boolean {
     return false;
   }
 
-  // Hostname sem ponto e nome interno: `localhost`, `api`, `admin`.
+  // Hostname sem ponto e nome interno: `localhost`, `hub-api`, `admin`.
   if (!host.includes('.')) {
     return false;
   }

@@ -387,6 +387,10 @@ export class LocaleService {
         },
       });
 
+      if (!model) {
+        return null;
+      }
+
       return this.mapLocaleData(model, modelName);
     } catch (error: any) {
       this.handleError(error);
@@ -426,6 +430,10 @@ export class LocaleService {
           },
         },
       });
+
+      if (!model) {
+        return null;
+      }
 
       return this.mapLocaleData(model, modelName);
     } catch (error: any) {
