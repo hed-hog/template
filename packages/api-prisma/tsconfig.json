@@ -1,0 +1,8 @@
+{
+  "extends": "@hed-hog/typescript-config/library.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  }
+}

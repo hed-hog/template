@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
+  },
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts",
+    "../../libraries/*/src/**/*.spec.ts",
+    "../../packages/*/src/**/*.spec.ts",
+    "../../libraries/*/src/dashboard/widgets/**/*"
+  ]
+}

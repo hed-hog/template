@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "incremental": false,
+    "isolatedModules": true,
+    "lib": [
+      "es2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "moduleResolution": "NodeNext",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "paths": {
+      "@/*": [
+        "../../apps/admin/src/*"
+      ],
+      "@": [
+        "../../apps/admin/src"
+      ],
+      "@api/*": [
+        "../../apps/api/src/*"
+      ],
+      "@api": [
+        "../../apps/api/src"
+      ],
+      "@hed-hog/next-app-provider": [
+        "../../packages/next-app-provider/src"
+      ],
+      "@hed-hog/next-app-provider/*": [
+        "../../packages/next-app-provider/src/*"
+      ],
+      "@hed-hog/api-types": [
+        "../../packages/api-types/dist"
+      ],
+      "@hed-hog/api-types/*": [
+        "../../packages/api-types/dist/*"
+      ]
+    }
+  }
+}

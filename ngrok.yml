@@ -1,0 +1,5 @@
+version: "3"
+tunnels:
+  api:
+    addr: host.docker.internal:3100
+    proto: http

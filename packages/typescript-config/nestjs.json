@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "composite": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": false,
+    "incremental": true,
+    "module": "commonjs",
+    "moduleResolution": "Node10",
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strictNullChecks": false,
+    "strictBindCallApply": false,
+    "baseUrl": ".",
+    "paths": {
+      "@prisma/client": ["../api-prisma/node_modules/.prisma/client"],
+      "@prisma/client/*": ["../api-prisma/node_modules/.prisma/client/*"],
+      "@hed-hog/api": ["../api/src"],
+      "@hed-hog/api/*": ["../api/src/*"],
+      "@hed-hog/api-locale": ["../api-locale/src"],
+      "@hed-hog/api-locale/*": ["../api-locale/src/*"],
+      "@hed-hog/api-mail": ["../api-mail/src"],
+      "@hed-hog/api-mail/*": ["../api-mail/src/*"],
+      "@hed-hog/api-pagination": ["../api-pagination/src"],
+      "@hed-hog/api-pagination/*": ["../api-pagination/src/*"],
+      "@hed-hog/api-prisma": ["../api-prisma/src"],
+      "@hed-hog/api-prisma/*": ["../api-prisma/src/*"],
+
+      "@hed-hog/core": ["../core/src"],
+      "@hed-hog/core/*": ["../core/src/*"]
+    }
+  }
+}

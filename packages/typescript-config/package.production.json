@@ -1,0 +1,54 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node"],
+    "composite": true,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "removeComments": true,
+    "strictBindCallApply": false,
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "moduleResolution": "NodeNext",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "paths": {
+      "@prisma/client": [
+        "../../node_modules/.prisma/client",
+        "../../packages/api-prisma/node_modules/.prisma/client"
+      ],
+      "@prisma/client/*": [
+        "../../node_modules/.prisma/client/*",
+        "../../packages/api-prisma/node_modules/.prisma/client/*"
+      ],
+      "@hed-hog/api": ["../../packages/api/dist"],
+      "@hed-hog/api/*": ["../../packages/api/dist/*"],
+      "@hed-hog/api-locale": ["../../packages/api-locale/dist"],
+      "@hed-hog/api-locale/*": ["../../packages/api-locale/dist/*"],
+      "@hed-hog/api-mail": ["../../packages/api-mail/dist"],
+      "@hed-hog/api-mail/*": ["../../packages/api-mail/dist/*"],
+      "@hed-hog/api-pagination": ["../../packages/api-pagination/dist"],
+      "@hed-hog/api-pagination/*": ["../../packages/api-pagination/dist/*"],
+      "@hed-hog/api-prisma": ["../../packages/api-prisma/dist"],
+      "@hed-hog/api-prisma/*": ["../../packages/api-prisma/dist/*"],
+      "@hed-hog/api-healthy": ["../../packages/api-healthy/dist"],
+      "@hed-hog/api-healthy/*": ["../../packages/api-healthy/dist/*"],
+      "@hed-hog/core": ["../../libraries/core/dist"],
+      "@hed-hog/core/*": ["../../libraries/core/dist/*"]
+    }
+  }
+}

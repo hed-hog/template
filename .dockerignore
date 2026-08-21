@@ -1,0 +1,69 @@
+# Node and package manager caches
+node_modules/
+**/node_modules/
+.pnpm-store/
+**/.pnpm-store/
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts and caches
+.turbo/
+**/.turbo/
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+out/
+**/out/
+coverage/
+**/coverage/
+.nyc_output/
+**/.nyc_output/
+
+# Tests
+test/
+tests/
+**/*.test.ts
+**/*.spec.ts
+
+# Environment and local configs
+.env
+.env.local
+.env.*.local
+
+# IDE/OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Git metadata
+.git/
+.gitignore
+.gitattributes
+
+# Docs and misc artifacts
+docs/
+*.md
+backup/
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+
+# CI and infra files not needed to build API image
+.github/
+.gitlab-ci.yml
+.circleci/
+k8s/
+helm/
+
+# Keep pnpm-lock.yaml (required for reproducible installs)
+package-lock.json
+yarn.lock

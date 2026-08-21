@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "declaration": true,
+    "declarationMap": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@hed-hog/next-app-provider": [
+        "../../packages/next-app-provider/src"
+      ],
+      "@hed-hog/next-app-provider/*": [
+        "../../packages/next-app-provider/src/*"
+      ],
+      "@hed-hog/api-types": [
+        "../../packages/api-types/dist"
+      ],
+      "@hed-hog/api-types/*": [
+        "../../packages/api-types/dist/*"
+      ]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

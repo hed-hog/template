@@ -1,0 +1,41 @@
+{
+  "name": "@hed-hog/api-prisma",
+  "version": "0.0.6",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "predev": "pnpm run prisma:update",
+    "_dev": "pnpm build --watch",
+    "prebuild": "pnpm run prisma:update && pnpm --dir ../.. exec ts-node ./scripts/build-dependencies.ts packages/api-prisma",
+    "build": "tsc --project tsconfig.production.json",
+    "prisma:generate": "pnpm run prisma:update",
+    "patch": "npx ts-node ../../scripts/patch.ts packages/api-prisma",
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prisma:update": "prisma generate --schema=./../../apps/api/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@loancrate/prisma-schema-parser": "^3.0.0",
+    "@nestjs/common": "*",
+    "@prisma/client": "6.18.0"
+  },
+  "devDependencies": {
+    "prisma": "6.18.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));const p=d.tool_input&&(d.tool_input.file_path||'');if(/apps[\\\\/]admin[\\\\/]src[\\\\/]app[\\\\/]\\(app\\)[\\\\/]\\(libraries\\)|apps[\\\\/]admin[\\\\/]messages/.test(p)){process.stderr.write('REMINDER: You edited a file under apps/admin/(libraries) or apps/admin/messages. Run hedhog dev assets-to-library <library> before finishing.\\n');}\""
+          }
+        ]
+      }
+    ]
+  }
+}

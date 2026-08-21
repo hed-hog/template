@@ -1,0 +1,9 @@
+{
+  "validation": {
+    "slugMustBeString": "O slug deve ser uma string.",
+    "maxLength": "O comprimento máximo é de {max} caracteres.",
+    "stringRequired": "Este campo deve ser uma string.",
+    "booleanRequired": "Este campo deve ser um booleano.",
+    "numberRequired": "Este campo deve ser um número."
+  }
+}

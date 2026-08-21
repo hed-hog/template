@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "incremental": false,
+    "isolatedModules": true,
+    "lib": [
+      "es2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "moduleResolution": "NodeNext",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "paths": {
+      "@prisma/client": [
+        "../../packages/api-prisma/node_modules/.prisma/client"
+      ],
+      "@prisma/client/*": [
+        "../../packages/api-prisma/node_modules/.prisma/client/*"
+      ],
+      "@hed-hog-pro/address": [
+        "../../libraries/address/src"
+      ],
+      "@hed-hog-pro/address/*": [
+        "../../libraries/address/src/*"
+      ],
+      "@hed-hog-pro/agent": [
+        "../../libraries/agent/src"
+      ],
+      "@hed-hog-pro/agent/*": [
+        "../../libraries/agent/src/*"
+      ],
+      "@hed-hog-pro/campaign": [
+        "../../libraries/campaign/src"
+      ],
+      "@hed-hog-pro/campaign/*": [
+        "../../libraries/campaign/src/*"
+      ],
+      "@hed-hog-pro/category": [
+        "../../libraries/category/src"
+      ],
+      "@hed-hog-pro/category/*": [
+        "../../libraries/category/src/*"
+      ],
+      "@hed-hog-pro/cms": [
+        "../../libraries/cms/src"
+      ],
+      "@hed-hog-pro/cms/*": [
+        "../../libraries/cms/src/*"
+      ],
+      "@hed-hog-pro/commerce": [
+        "../../libraries/commerce/src"
+      ],
+      "@hed-hog-pro/commerce/*": [
+        "../../libraries/commerce/src/*"
+      ],
+      "@hed-hog/core": [
+        "../../libraries/core/src"
+      ],
+      "@hed-hog/core/*": [
+        "../../libraries/core/src/*"
+      ],
+      "@hed-hog-pro/crm": [
+        "../../libraries/crm/src"
+      ],
+      "@hed-hog-pro/crm/*": [
+        "../../libraries/crm/src/*"
+      ],
+      "@hed-hog-pro/finance": [
+        "../../libraries/finance/src"
+      ],
+      "@hed-hog-pro/finance/*": [
+        "../../libraries/finance/src/*"
+      ],
+      "@hed-hog-pro/inbox": [
+        "../../libraries/inbox/src"
+      ],
+      "@hed-hog-pro/inbox/*": [
+        "../../libraries/inbox/src/*"
+      ],
+      "@hed-hog-pro/lms": [
+        "../../libraries/lms/src"
+      ],
+      "@hed-hog-pro/lms/*": [
+        "../../libraries/lms/src/*"
+      ],
+      "@hed-hog-pro/operations": [
+        "../../libraries/operations/src"
+      ],
+      "@hed-hog-pro/operations/*": [
+        "../../libraries/operations/src/*"
+      ],
+      "@hed-hog-pro/queue": [
+        "../../libraries/queue/src"
+      ],
+      "@hed-hog-pro/queue/*": [
+        "../../libraries/queue/src/*"
+      ],
+      "@hed-hog-pro/tag": [
+        "../../libraries/tag/src"
+      ],
+      "@hed-hog-pro/tag/*": [
+        "../../libraries/tag/src/*"
+      ],
+      "@hed-hog/api": [
+        "../../packages/api/src"
+      ],
+      "@hed-hog/api/*": [
+        "../../packages/api/src/*"
+      ],
+      "@hed-hog/api-healthy": [
+        "../../packages/api-healthy/src"
+      ],
+      "@hed-hog/api-healthy/*": [
+        "../../packages/api-healthy/src/*"
+      ],
+      "@hed-hog/api-locale": [
+        "../../packages/api-locale/src"
+      ],
+      "@hed-hog/api-locale/*": [
+        "../../packages/api-locale/src/*"
+      ],
+      "@hed-hog/api-mail": [
+        "../../packages/api-mail/src"
+      ],
+      "@hed-hog/api-mail/*": [
+        "../../packages/api-mail/src/*"
+      ],
+      "@hed-hog/api-pagination": [
+        "../../packages/api-pagination/src"
+      ],
+      "@hed-hog/api-pagination/*": [
+        "../../packages/api-pagination/src/*"
+      ],
+      "@hed-hog/api-prisma": [
+        "../../packages/api-prisma/src"
+      ],
+      "@hed-hog/api-prisma/*": [
+        "../../packages/api-prisma/src/*"
+      ],
+      "@hed-hog/api-types": [
+        "../../packages/api-types/src"
+      ],
+      "@hed-hog/api-types/*": [
+        "../../packages/api-types/src/*"
+      ],
+      "@hed-hog/next-app-provider": [
+        "../../packages/next-app-provider/src"
+      ],
+      "@hed-hog/next-app-provider/*": [
+        "../../packages/next-app-provider/src/*"
+      ],
+      "@hed-hog/ui": [
+        "../../packages/ui/src"
+      ],
+      "@hed-hog/ui/*": [
+        "../../packages/ui/src/*"
+      ]
+    }
+  }
+}
