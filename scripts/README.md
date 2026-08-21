@@ -15,6 +15,7 @@ Development and operations utilities for the monorepo. Most run via `pnpm exec t
 | `create-types.ts`                | `create:types`                                                                              | Generates the shared types package                                                                                                                 |
 | `promote-production.js`          | `promote:production`, `production`, `production:core`, `production:api`, `production:admin` | Deploy/promotion script for production (accepts a list of apps as an argument, e.g. `api,admin`)                                                   |
 | `sync-changed-files.ts`          | `sync:changed-files`                                                                        | Syncs changed files between libraries                                                                                                              |
+| `sync-from-hub.mjs`              | `sync:bootstrap`, `sync:bootstrap:check`                                                    | Pulls baseline changes from the working project (hub) into this template via `hedhog dev update-bootstrap`; `:check` is a dry-run                  |
 
 ## Not referenced in `package.json` (manual use)
 

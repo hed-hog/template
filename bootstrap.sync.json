@@ -70,9 +70,7 @@
     "DASHBOARD_*.md",
     "WIDGETS_*.md",
     "app.json",
-    ".easignore",
-    "apps/api/src/app.module.ts",
-    "apps/api/package.json"
+    ".easignore"
   ],
   "preserve": [
     "bootstrap.sync.json",
@@ -92,6 +90,8 @@
     "apps/api/test/jest-e2e.json": "jestModuleMapper",
     "apps/api/prisma/schema.prisma": "prismaSchemaStub",
     "package.json": "libraryDependencies",
-    "apps/admin/package.json": "libraryDependencies"
+    "apps/admin/package.json": "libraryDependencies",
+    "apps/api/package.json": "libraryDependencies",
+    "apps/api/src/app.module.ts": "appModule"
   }
 }

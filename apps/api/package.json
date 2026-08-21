@@ -30,6 +30,7 @@
     "@hed-hog/api-prisma": "workspace:*",
     "@hed-hog/api-types": "workspace:*",
     "@nestjs/common": "^11",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11",
     "@nestjs/event-emitter": "^3.1.0",
     "@nestjs/platform-express": "^11",
