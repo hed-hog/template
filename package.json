@@ -11,6 +11,7 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "test:bootstrap": "pwsh -NoProfile -File ./test/smoke-bootstrap.ps1",
     "lint": "turbo run lint",
     "security": "pnpm audit --audit-level=high",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

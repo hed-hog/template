@@ -1,0 +1,44 @@
+# Infra efêmera exclusiva do smoke test de bootstrap (test/smoke-bootstrap.ps1).
+#
+# Propositalmente separada do docker-compose.yaml da raiz:
+#   - project name isolado (`-p hedhog-smoke`), para que `down -v` nunca toque
+#     nos containers do stack de desenvolvimento;
+#   - portas altas, para não colidir com 5444/6379/1025/8025/4040 caso o stack
+#     de dev esteja no ar ao mesmo tempo;
+#   - sem volumes nomeados: o estado morre junto com os containers, então cada
+#     execução começa de um banco vazio (o que também evita o prompt de
+#     "banco já existente" do `hedhog new`).
+#
+# Uso:
+#   docker compose -p hedhog-smoke -f test/docker-compose.smoke.yaml up -d --wait
+#   docker compose -p hedhog-smoke -f test/docker-compose.smoke.yaml down -v
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: hedhog
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: hedhog
+    ports:
+      - 55432:5432
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U hedhog
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - 56379:6379
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 5s
+      retries: 12

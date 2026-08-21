@@ -16,6 +16,7 @@ API (docker-compose + `.env`), also see [TESTING.md](../TESTING.md).
 | **E2E — API**                 | Routes respond with correct auth and shape                 | **Jest + supertest** (live server)        | `apps/api/test`                   |
 | **Typecheck**                 | No type errors                                             | `tsc --noEmit`                            | apps                              |
 | **Gate (CI)**                 | Everything above runs on every PR                          | **GitHub Actions + Turbo**                | .github/workflows                 |
+| **Bootstrap**                 | `hedhog new` still yields a working project from this code | **PowerShell + Docker + the real CLI**    | `test/smoke-bootstrap.ps1`        |
 
 ---
 
@@ -209,6 +210,20 @@ until it stabilizes; it can later move to `pull_request`.
 
 `pnpm audit --audit-level=high` (_report-only_ — there is pre-existing debt,
 mostly in transitive tooling) + **CodeQL** (JS/TS) for static analysis.
+
+### Not covered by any workflow: the bootstrap
+
+Every workflow above starts from `actions/checkout` — they test **this
+repository as a checkout**, never as the seed of a new project. Nothing in CI
+runs `hedhog new`, so a change that breaks project creation (or a regression in
+the published `@hed-hog/cli` / `@hed-hog/core`) passes the whole gate and only
+surfaces when a user creates a project.
+
+That gap is covered locally, on demand, by `pnpm test:bootstrap`
+([`test/smoke-bootstrap.ps1`](../test/smoke-bootstrap.ps1)) — run it before
+pushing. See [TESTING.md](../TESTING.md#testing-the-bootstrap-before-pushing)
+for how it redirects the CLI's hardcoded clone URL to your local tree and why it
+cannot dirty the repo.
 
 ---
 
