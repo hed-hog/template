@@ -1,0 +1,9 @@
+# pnpm config used only inside Docker builds (CI).
+# Network resilience so flaky registry connections retry instead of stalling.
+# Does NOT contain auth tokens — the root .npmrc is intentionally not copied into images.
+fetch-retries=5
+fetch-retry-mintimeout=20000
+fetch-retry-maxtimeout=120000
+fetch-timeout=600000
+# Shared content-addressable store, mounted as a BuildKit cache in the install layer.
+store-dir=/pnpm/store

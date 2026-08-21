@@ -1,0 +1,9 @@
+# Arquivos escritos por gerador. Reformatá-los faria o `pnpm generate:icons:check`
+# do CI acusar divergência a cada `pnpm format`.
+**/generated/**
+
+# Build e dependências.
+**/node_modules/**
+**/.next/**
+**/dist/**
+**/coverage/**
