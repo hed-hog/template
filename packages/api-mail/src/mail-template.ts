@@ -91,7 +91,7 @@ function escapeHtml(value: string) {
     .replace(/'/g, '&#39;');
 }
 
-function isFullHtmlDocument(value: string) {
+export function isFullHtmlDocument(value: string) {
   return /<!doctype\s+html|<html[\s>]/i.test(value);
 }
 

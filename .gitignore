@@ -102,4 +102,8 @@ infra/digitalocean/do-k8s/k8s/umami/umami.yaml
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+# O arquivo de plano (`terraform plan -out=...`) embute os valores das variáveis,
+# inclusive o token do provedor — mesmo motivo das linhas acima.
+tfplan
+*.tfplan
 crash.log

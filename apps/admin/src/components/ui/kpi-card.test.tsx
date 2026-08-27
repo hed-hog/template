@@ -112,7 +112,16 @@ describe('KpiCard', () => {
 
   it('renderiza no layout compacto', () => {
     render(<KpiCard title="Total" value={1} layout="compact" />);
-    expect(screen.getByText('Total')).toBeInTheDocument();
+    expect(screen.getByText('Total')).toHaveClass('text-[10px]');
+  });
+
+  it('encolhe título, valor e ícone no layout denso', () => {
+    const { container } = render(
+      <KpiCard title="Total" value={1} icon={TrendingUp} layout="dense" />,
+    );
+    expect(screen.getByText('Total')).toHaveClass('text-[9px]');
+    expect(container.querySelector('.text-base')).toBeInTheDocument();
+    expect(container.querySelector('svg')).toHaveClass('size-3.5');
   });
 
   it('mescla className, contentClassName, valueClassName e descriptionClassName', () => {

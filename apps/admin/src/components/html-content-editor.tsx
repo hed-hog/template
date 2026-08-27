@@ -194,6 +194,17 @@ export function HtmlContentEditor({
   const showSplit = layout === 'split' && canSplit;
 
   const hasComplexHtml = showEditorTab && isComplexHtml(value);
+  // Um HTML complexo (com <style>/<head>/<script>) que cai na aba "Editor" é
+  // reparseado pelo schema do TipTap e sai com essas tags descartadas — daí o
+  // "quebra ao abrir no editor" quando outra tela (ex.: Templates) carrega um
+  // conteúdo assim direto na aba visual. Sai da aba Editor assim que detecta
+  // isso, antes que o usuário chegue a editar (e persistir) a versão mutilada.
+  useEffect(() => {
+    if (hasComplexHtml && tab === 'editor') {
+      setTab(showCodeTab ? 'code' : 'preview');
+    }
+  }, [hasComplexHtml, tab, showCodeTab]);
+
   // Enquanto a renderização do servidor não chega, mostra o próprio conteúdo em
   // vez de "sem conteúdo" — evita um piscar de estado vazio a cada digitação.
   const resolvedPreview = previewHtml || value;
@@ -341,13 +352,11 @@ export function HtmlContentEditor({
 
       {showSplit ? (
         <div className="flex flex-1 flex-col gap-2 overflow-hidden">
-          <div className="relative flex h-9 shrink-0 items-center rounded-t-md border-b bg-muted/30 px-3">
+          <div className="flex h-9 shrink-0 items-center justify-between gap-2 rounded-t-md border-b bg-muted/30 px-3">
             <span className="text-xs font-medium text-muted-foreground">
               {t('splitViewLabel')}
             </span>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              {toolbarActions}
-            </div>
+            {toolbarActions}
           </div>
           <div className="grid flex-1 gap-3 overflow-hidden lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
             <div className="flex min-h-64 flex-col overflow-hidden rounded-lg border">
@@ -379,15 +388,20 @@ export function HtmlContentEditor({
         <Tabs
           value={tab}
           onValueChange={(v) => setTab(v as HtmlContentEditorTab)}
-          className="flex flex-1 flex-col gap-2 overflow-hidden"
+          className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden"
         >
-          <div className="relative">
-            <TabsList className="w-full">
+          <div className="flex items-center gap-2">
+            <TabsList className="min-w-0 flex-1">
               <TabsTrigger value="preview" className="flex-1">
                 {t('tabPreview')}
               </TabsTrigger>
               {showEditorTab && (
-                <TabsTrigger value="editor" className="flex-1">
+                <TabsTrigger
+                  value="editor"
+                  className="flex-1"
+                  disabled={hasComplexHtml}
+                  title={hasComplexHtml ? t('complexHtmlTabDisabled') : undefined}
+                >
                   {t('tabEditor')}
                 </TabsTrigger>
               )}
@@ -397,19 +411,20 @@ export function HtmlContentEditor({
                 </TabsTrigger>
               )}
             </TabsList>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              {toolbarActions}
-            </div>
+            <div className="flex shrink-0 items-center">{toolbarActions}</div>
           </div>
 
-          <TabsContent value="preview" className="mt-0 flex-1 overflow-hidden">
+          <TabsContent
+            value="preview"
+            className="mt-0 min-h-0 flex-1 overflow-hidden"
+          >
             {previewPanel}
           </TabsContent>
 
           {showEditorTab && (
             <TabsContent
               value="editor"
-              className="mt-0 flex flex-1 flex-col overflow-hidden"
+              className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               {hasComplexHtml && (
                 <div className="mb-2 flex items-start gap-2 rounded-lg border border-amber-400/30 bg-amber-50 p-2.5 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
@@ -433,7 +448,10 @@ export function HtmlContentEditor({
           )}
 
           {showCodeTab && (
-            <TabsContent value="code" className="mt-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="code"
+              className="mt-0 min-h-0 flex-1 overflow-hidden"
+            >
               <div className="h-full min-h-64 overflow-hidden rounded-lg border">
                 {codePanel}
               </div>

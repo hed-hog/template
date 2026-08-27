@@ -23,7 +23,9 @@
     "dev": "tsc --project ./tsconfig.json --watch",
     "clean": "rimraf dist",
     "patch": "pnpm exec ts-node ../../scripts/patch.ts packages/api-locale",
-    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks"
+    "prod": "pnpm run patch && pnpm run build && pnpm publish --access public --no-git-checks",
+    "typecheck": "tsc --noEmit --project ./tsconfig.json",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
@@ -32,7 +34,8 @@
     "eslint": "^9.38.0",
     "next": "16.2.6",
     "rimraf": "^6.1.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@bprogress/next": "^3.2.12",

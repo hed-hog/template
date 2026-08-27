@@ -42,10 +42,18 @@ vi.mock('@/components/ui/tabs', () => ({
   TabsTrigger: ({
     children,
     value,
+    disabled,
+    title,
   }: {
     children: ReactNode;
     value: string;
-  }) => <button data-testid={`tab-${value}`}>{children}</button>,
+    disabled?: boolean;
+    title?: string;
+  }) => (
+    <button data-testid={`tab-${value}`} disabled={disabled} title={title}>
+      {children}
+    </button>
+  ),
   TabsContent: ({
     children,
     value,
@@ -117,6 +125,20 @@ describe('HtmlContentEditor', () => {
     expect(screen.queryByTestId('tab-editor')).not.toBeInTheDocument();
     expect(screen.queryByTestId('rich-editor')).not.toBeInTheDocument();
     expect(screen.getByTestId('code-editor')).toBeInTheDocument();
+  });
+
+  it('desabilita a aba Editor (com tooltip) quando o HTML é complexo', () => {
+    const { rerender } = render(
+      <HtmlContentEditor value="<p>a</p>" onChange={vi.fn()} />
+    );
+    expect(screen.getByTestId('tab-editor')).not.toBeDisabled();
+
+    rerender(
+      <HtmlContentEditor value="<style>a{}</style>" onChange={vi.fn()} />
+    );
+    const editorTab = screen.getByTestId('tab-editor');
+    expect(editorTab).toBeDisabled();
+    expect(editorTab).toHaveAttribute('title', 'complexHtmlTabDisabled');
   });
 
   it('avisa sobre HTML complexo apenas no modo visual', () => {
@@ -229,6 +251,30 @@ describe('HtmlContentEditor', () => {
 
     expect(renderTabBarActions).toHaveBeenCalledWith('code');
     expect(screen.getByText('ação')).toBeInTheDocument();
+  });
+
+  it('sai automaticamente da aba Editor quando o valor se torna HTML complexo', () => {
+    // Reproduz o bug relatado: um HTML que passou a funcionar no preview de
+    // Campanhas quebra ao cair na aba visual (TipTap) de outra tela, como
+    // Templates de e-mail — o componente deve sair dessa aba por conta própria.
+    const renderTabBarActions = vi.fn(() => <button>ação</button>);
+    const { rerender } = render(
+      <HtmlContentEditor
+        value="<p>a</p>"
+        onChange={vi.fn()}
+        renderTabBarActions={renderTabBarActions}
+      />
+    );
+    expect(renderTabBarActions).toHaveBeenLastCalledWith('editor');
+
+    rerender(
+      <HtmlContentEditor
+        value="<style>a{}</style>"
+        onChange={vi.fn()}
+        renderTabBarActions={renderTabBarActions}
+      />
+    );
+    expect(renderTabBarActions).toHaveBeenLastCalledWith('code');
   });
 
   it('aiEdit: sucesso propaga o HTML, limpa a instrução, volta para preview e avisa', async () => {

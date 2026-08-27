@@ -20,7 +20,7 @@ describe('LoadingPage', () => {
       'w-screen',
       'items-center',
       'justify-center',
-      'bg-gray-100'
+      'bg-background'
     );
   });
 });

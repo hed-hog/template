@@ -111,6 +111,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -682,6 +683,10 @@
         },
         {
           "method": "GET",
+          "url": "/person/metadata-options"
+        },
+        {
+          "method": "GET",
           "url": "/person/tags"
         },
         {
@@ -709,6 +714,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -952,6 +958,10 @@
         },
         {
           "method": "GET",
+          "url": "/person/metadata-options"
+        },
+        {
+          "method": "GET",
           "url": "/person/tags"
         },
         {
@@ -1039,6 +1049,10 @@
         },
         {
           "method": "GET",
+          "url": "/person/metadata-options"
+        },
+        {
+          "method": "GET",
           "url": "/person/tags"
         },
         {
@@ -1120,6 +1134,10 @@
         {
           "method": "GET",
           "url": "/person"
+        },
+        {
+          "method": "GET",
+          "url": "/person/metadata-options"
         },
         {
           "method": "GET",
@@ -1207,6 +1225,10 @@
         {
           "method": "GET",
           "url": "/person"
+        },
+        {
+          "method": "GET",
+          "url": "/person/metadata-options"
         },
         {
           "method": "GET",
@@ -1503,6 +1525,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -1603,6 +1626,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -2255,7 +2279,8 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/category-icon.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/layout-preview.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
-        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/status-badges.tsx"
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/status-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/translate-page-dialog.tsx"
       ],
       "loc": 6,
       "i18nNamespaces": [
@@ -2278,6 +2303,7 @@
         "cms.Settings",
         "cms.Status",
         "cms.Status.cache",
+        "cms.Translate",
         "cms.Types"
       ],
       "endpoints": [
@@ -2938,6 +2964,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
@@ -4360,6 +4387,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/configurations/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/discussions/moderation/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/queue/scaling/page.tsx"
       ],
       "hasChildren": false
@@ -5116,7 +5144,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/mail/template/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/mail/template",
       "components": [],
-      "loc": 1332,
+      "loc": 1394,
       "i18nNamespaces": [
         "core.MailPage"
       ],
@@ -5753,6 +5781,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -6137,6 +6166,7 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/crm/person",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/delete-person-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/crm/person/_components/merge-direction-panels.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/merge-person-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-field-with-create.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-form-sheet.tsx",
@@ -6225,6 +6255,10 @@
         {
           "method": "POST",
           "url": "/person/merge"
+        },
+        {
+          "method": "GET",
+          "url": "/person/merge-preview"
         },
         {
           "method": "GET",
@@ -6676,6 +6710,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -8118,6 +8153,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -8307,6 +8343,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -8519,6 +8556,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -8539,7 +8577,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/achievements/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/achievements",
       "components": [],
-      "loc": 875,
+      "loc": 1231,
       "i18nNamespaces": [
         "lms.AchievementsPage"
       ],
@@ -8567,6 +8605,14 @@
         {
           "method": "PATCH",
           "url": "/lms/achievements/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/bitcode-rewards/rules"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/bitcode-rewards/rules/:id/tiers"
         },
         {
           "method": "GET",
@@ -8706,7 +8752,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/bulk-upload-sessions/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/bulk-upload-sessions",
       "components": [],
-      "loc": 2101,
+      "loc": 2171,
       "i18nNamespaces": [],
       "endpoints": [
         {
@@ -8760,6 +8806,10 @@
         {
           "method": "GET",
           "url": "/lms/courses/:courseId/structure"
+        },
+        {
+          "method": "GET",
+          "url": "/setting/group/lms"
         },
         {
           "method": "GET",
@@ -9085,6 +9135,7 @@
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/achievements/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/manual-issue-certificate-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/test-emission-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/course-scheduled-classes-tab.tsx",
@@ -9119,7 +9170,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/add-class-students-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/create-lms-person-sheet.tsx"
       ],
-      "loc": 5918,
+      "loc": 6076,
       "i18nNamespaces": [
         "lms.ClassesPage",
         "lms.ClassesPage.DetailPage",
@@ -9533,6 +9584,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/path-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/achievements/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-course-create-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/exams/page.tsx",
@@ -9915,7 +9967,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-avatar.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/student-detail-sheet.tsx"
       ],
-      "loc": 1302,
+      "loc": 1608,
       "i18nNamespaces": [
         "lms.DiscussionsPage"
       ],
@@ -9931,6 +9983,10 @@
         {
           "method": "GET",
           "url": "/lms/admin/discussions/:selectedTopicId"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/admin/discussions/:selectedTopicId/notify-preview"
         },
         {
           "method": "POST",
@@ -10046,6 +10102,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-detail-constants.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-detail-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-detail-utils.ts",
+        "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-exams-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-mocks.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-notify-access-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-overview-analytics.tsx",
@@ -10070,9 +10127,10 @@
         "lms.EnterpriseDetailPage",
         "lms.EnterpriseDetailPage.relatedClasses",
         "lms.EnterpriseDetailPage.relatedCourses",
+        "lms.EnterpriseDetailPage.relatedExams",
         "lms.EnterpriseDetailPage.relatedLearningPaths",
         "lms.EnterprisePage",
-        "lms.EnterprisePage.notifyAccess",
+        "lms.EnterprisePage.adminCreate",
         "lms.EnterprisePage.resetPassword",
         "lms.EnterprisePage.sheet"
       ],
@@ -10143,6 +10201,18 @@
         },
         {
           "method": "GET",
+          "url": "/lms/enterprise/:enterpriseId/exams"
+        },
+        {
+          "method": "POST",
+          "url": "/lms/enterprise/:enterpriseId/exams"
+        },
+        {
+          "method": "DELETE",
+          "url": "/lms/enterprise/:enterpriseId/exams/:examId"
+        },
+        {
+          "method": "GET",
           "url": "/lms/enterprise/:enterpriseId/learning-paths"
         },
         {
@@ -10202,6 +10272,14 @@
           "url": "/lms/enterprise/:enterpriseId/users/:userId"
         },
         {
+          "method": "POST",
+          "url": "/lms/enterprise/:enterpriseId/users/invite"
+        },
+        {
+          "method": "POST",
+          "url": "/lms/enterprise/:enterpriseId/users/notify-access"
+        },
+        {
           "method": "DELETE",
           "url": "/lms/enterprise/:id"
         },
@@ -10212,6 +10290,10 @@
         {
           "method": "PATCH",
           "url": "/lms/enterprise/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/lms/enterprise/:id/activity-model"
         },
         {
           "method": "GET",
@@ -10228,6 +10310,10 @@
         {
           "method": "GET",
           "url": "/lms/enterprise/tags"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams"
         },
         {
           "method": "GET",
@@ -10263,10 +10349,6 @@
         },
         {
           "method": "GET",
-          "url": "/user"
-        },
-        {
-          "method": "POST",
           "url": "/user"
         }
       ],
@@ -10353,7 +10435,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/exams/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/exams",
       "components": [],
-      "loc": 2126,
+      "loc": 2142,
       "i18nNamespaces": [
         "lms.ExamsPage"
       ],
@@ -10426,6 +10508,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/path-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/manual-issue-certificate-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/test-emission-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-exams-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/paths/_components/LearningPathPrerequisitePicker.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/paths/_components/path-sequence-editor.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/paths/page.tsx",
@@ -10444,17 +10527,91 @@
       ],
       "file": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]",
-      "components": [],
-      "loc": 13,
-      "i18nNamespaces": [],
-      "endpoints": [],
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-analytics-colors.ts",
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-attempts-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-overview-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-page-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-question-stats-table.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-questions-tab.tsx"
+      ],
+      "loc": 168,
+      "i18nNamespaces": [
+        "lms.ExamAttemptsPage",
+        "lms.ExamPage",
+        "lms.ExamPage.overview",
+        "lms.ExamPage.overview.questions",
+        "lms.QuestionsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/lms/exams/"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId"
+        },
+        {
+          "method": "PATCH",
+          "url": "/lms/exams/:examId"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId/attempts"
+        },
+        {
+          "method": "DELETE",
+          "url": "/lms/exams/:examId/attempts/:attemptId"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId/attempts/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId/overview"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId/questions"
+        },
+        {
+          "method": "POST",
+          "url": "/lms/exams/:examId/questions"
+        },
+        {
+          "method": "DELETE",
+          "url": "/lms/exams/:examId/questions/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/lms/exams/:examId/questions/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/lms/exams/:examId/questions/order"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId/questions/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/question-subjects"
+        },
+        {
+          "method": "POST",
+          "url": "/lms/exams/question-subjects"
+        }
+      ],
       "features": {
-        "pageHeader": false,
-        "kpis": false,
-        "searchBar": false,
-        "pagination": false,
-        "viewModeToggle": false,
-        "formSheet": false,
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
         "dataTable": false,
         "widgets": false
       },
@@ -10511,6 +10668,78 @@
       "hasChildren": false
     },
     {
+      "route": "/lms/exams/:id/attempts",
+      "library": "lms",
+      "segments": [
+        "lms",
+        "exams",
+        "[id]",
+        "attempts"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/attempts/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/attempts",
+      "components": [],
+      "loc": 19,
+      "i18nNamespaces": [],
+      "endpoints": [],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-attempts-tab.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/lms/exams/:id/attempts/:attemptId",
+      "library": "lms",
+      "segments": [
+        "lms",
+        "exams",
+        "[id]",
+        "attempts",
+        "[attemptId]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/attempts/[attemptId]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/attempts/[attemptId]",
+      "components": [],
+      "loc": 670,
+      "i18nNamespaces": [
+        "lms.ExamAttemptReviewPage"
+      ],
+      "endpoints": [
+        {
+          "method": "DELETE",
+          "url": "/lms/exams/:examId/attempts/:attemptId"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/exams/:examId/attempts/:attemptId"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-attempts-tab.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
       "route": "/lms/exams/:id/questions",
       "library": "lms",
       "segments": [
@@ -10521,68 +10750,22 @@
       ],
       "file": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/questions/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/questions",
-      "components": [
-        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/questions/_components/exam-page-settings-sheet.tsx"
-      ],
-      "loc": 1984,
-      "i18nNamespaces": [
-        "lms.QuestionsPage"
-      ],
-      "endpoints": [
-        {
-          "method": "POST",
-          "url": "/lms/exams/"
-        },
-        {
-          "method": "GET",
-          "url": "/lms/exams/:examId"
-        },
-        {
-          "method": "PATCH",
-          "url": "/lms/exams/:examId"
-        },
-        {
-          "method": "GET",
-          "url": "/lms/exams/:examId/questions"
-        },
-        {
-          "method": "POST",
-          "url": "/lms/exams/:examId/questions"
-        },
-        {
-          "method": "DELETE",
-          "url": "/lms/exams/:examId/questions/:id"
-        },
-        {
-          "method": "PATCH",
-          "url": "/lms/exams/:examId/questions/:id"
-        },
-        {
-          "method": "PATCH",
-          "url": "/lms/exams/:examId/questions/order"
-        },
-        {
-          "method": "GET",
-          "url": "/lms/exams/question-subjects"
-        },
-        {
-          "method": "POST",
-          "url": "/lms/exams/question-subjects"
-        }
-      ],
+      "components": [],
+      "loc": 19,
+      "i18nNamespaces": [],
+      "endpoints": [],
       "features": {
-        "pageHeader": true,
-        "kpis": true,
-        "searchBar": true,
-        "pagination": true,
-        "viewModeToggle": true,
-        "formSheet": true,
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
         "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
-        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/lms/exams/page.tsx"
+        "apps/admin/src/app/(app)/(libraries)/lms/exams/[id]/_components/exam-questions-tab.tsx"
       ],
       "hasChildren": false
     },
@@ -10979,6 +11162,7 @@
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/path-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/achievements/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/manual-issue-certificate-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/test-emission-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-trilhas-tab.tsx",
@@ -11239,6 +11423,50 @@
       "hasChildren": false
     },
     {
+      "route": "/lms/reports/skills",
+      "library": "lms",
+      "segments": [
+        "lms",
+        "reports",
+        "skills"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/lms/reports/skills",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_components/coverage-card.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_components/skill-usage-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_components/supply-demand-card.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_lib/format.ts",
+        "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_lib/types.ts"
+      ],
+      "loc": 838,
+      "i18nNamespaces": [
+        "lms.ReportsSkillsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/lms/reports/skills"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/reports/skills/usage"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [],
+      "hasChildren": false
+    },
+    {
       "route": "/lms/reports/students",
       "library": "lms",
       "segments": [
@@ -11452,8 +11680,10 @@
       ],
       "file": "apps/admin/src/app/(app)/(libraries)/lms/xp/areas/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/xp/areas",
-      "components": [],
-      "loc": 938,
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/lms/xp/_components/xp-card-preview-panel.tsx"
+      ],
+      "loc": 1049,
       "i18nNamespaces": [
         "lms.XpAreasPage"
       ],
@@ -11492,12 +11722,14 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
       },
-      "referencedBy": [],
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/lms/achievements/page.tsx"
+      ],
       "hasChildren": false
     },
     {
@@ -11564,8 +11796,10 @@
       ],
       "file": "apps/admin/src/app/(app)/(libraries)/lms/xp/skills/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/xp/skills",
-      "components": [],
-      "loc": 1046,
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/lms/xp/_components/xp-card-preview-panel.tsx"
+      ],
+      "loc": 1167,
       "i18nNamespaces": [
         "lms.XpSkillsPage"
       ],
@@ -11608,12 +11842,14 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
       },
-      "referencedBy": [],
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/lms/achievements/page.tsx"
+      ],
       "hasChildren": false
     },
     {
@@ -11655,6 +11891,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -11800,6 +12037,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -12515,7 +12753,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/task-ui.ts"
       ],
-      "loc": 1590,
+      "loc": 1583,
       "i18nNamespaces": [
         "operations.Common",
         "operations.MyTasksPage",
@@ -13357,6 +13595,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -14625,6 +14864,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -14884,6 +15124,127 @@
       "hasChildren": false
     },
     {
+      "route": "/studio",
+      "library": "studio",
+      "segments": [
+        "studio"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/studio/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/studio",
+      "components": [],
+      "loc": 8,
+      "i18nNamespaces": [],
+      "endpoints": [],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
+        "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/api/dev/scaffold/context/route.ts",
+        "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
+        "apps/admin/src/lib/scaffold/validate.ts"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/studio/recordings",
+      "library": "studio",
+      "segments": [
+        "studio",
+        "recordings"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/studio/recordings/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/studio/recordings",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/studio/_lib/format.ts"
+      ],
+      "loc": 407,
+      "i18nNamespaces": [
+        "studio.RecordingsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/studio/recordings"
+        },
+        {
+          "method": "GET",
+          "url": "/studio/recordings/stats"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/page.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/studio/recordings/:id",
+      "library": "studio",
+      "segments": [
+        "studio",
+        "recordings",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/studio/recordings/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/studio/recordings/[id]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/studio/_lib/format.ts"
+      ],
+      "loc": 372,
+      "i18nNamespaces": [
+        "studio.RecordingDetailPage",
+        "studio.RecordingsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/studio/recordings/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/studio/upload/tracks/:id/url"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/studio/recordings/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
       "route": "/tag",
       "library": "tag",
       "segments": [
@@ -14938,6 +15299,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -15158,6 +15520,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
@@ -16367,6 +16730,265 @@
       "hasChildren": false
     },
     {
+      "route": "/video",
+      "library": "video",
+      "segments": [
+        "video"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/video/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/video",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/video/_components/hls-player.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/pipeline-steps.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-types.ts"
+      ],
+      "loc": 10,
+      "i18nNamespaces": [
+        "video.VideoDetail",
+        "video.VideoForm"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/video/videos"
+        },
+        {
+          "method": "PATCH",
+          "url": "/video/videos/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/source"
+        }
+      ],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
+        "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/api/dev/scaffold/context/route.ts",
+        "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
+        "apps/admin/src/lib/scaffold/validate.ts"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/video/processing",
+      "library": "video",
+      "segments": [
+        "video",
+        "processing"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/video/processing/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/video/processing",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/video/_components/pipeline-steps.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-types.ts"
+      ],
+      "loc": 690,
+      "i18nNamespaces": [
+        "video.VideoDetail",
+        "video.VideoProcessing",
+        "video.VideosPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/video/processing"
+        },
+        {
+          "method": "POST",
+          "url": "/video/processing/retry-failed"
+        },
+        {
+          "method": "GET",
+          "url": "/video/processing/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/video/settings"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/process"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:videoId/process/:kind"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/video/videos",
+      "library": "video",
+      "segments": [
+        "video",
+        "videos"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/video/videos/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/video/videos",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-types.ts"
+      ],
+      "loc": 448,
+      "i18nNamespaces": [
+        "video.VideoForm",
+        "video.VideosPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/video/videos"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos"
+        },
+        {
+          "method": "PATCH",
+          "url": "/video/videos/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/source"
+        },
+        {
+          "method": "GET",
+          "url": "/video/videos/stats"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/processing/page.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/video/videos/:id",
+      "library": "video",
+      "segments": [
+        "video",
+        "videos",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/video/videos/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/video/videos/[id]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/video/_components/hls-player.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/pipeline-steps.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/_components/video-types.ts"
+      ],
+      "loc": 453,
+      "i18nNamespaces": [
+        "video.VideoDetail",
+        "video.VideoForm",
+        "video.VideosPage"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/video/videos"
+        },
+        {
+          "method": "GET",
+          "url": "/video/videos/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/video/videos/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/video/videos/:id/assets"
+        },
+        {
+          "method": "GET",
+          "url": "/video/videos/:id/captions"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/cover"
+        },
+        {
+          "method": "GET",
+          "url": "/video/videos/:id/frames"
+        },
+        {
+          "method": "GET",
+          "url": "/video/videos/:id/pipeline"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/process"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/process/:kind"
+        },
+        {
+          "method": "POST",
+          "url": "/video/videos/:id/source"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/video/processing/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/video/videos/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
       "route": "/whatsapp",
       "library": "whatsapp",
       "segments": [
@@ -16392,6 +17014,7 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",

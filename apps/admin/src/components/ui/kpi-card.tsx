@@ -12,7 +12,7 @@ import {
   type ReactNode,
 } from 'react';
 
-export type KpiCardLayout = 'compact' | 'default';
+export type KpiCardLayout = 'compact' | 'default' | 'dense';
 
 export interface KpiCardProps {
   title: ReactNode;
@@ -225,6 +225,7 @@ const layoutStyles: Record<
     value: string;
     description: string;
     iconContainer: string;
+    icon: string;
   }
 > = {
   default: {
@@ -235,6 +236,7 @@ const layoutStyles: Record<
     value: 'mt-1 text-2xl font-semibold tracking-tight sm:mt-2 sm:text-3xl',
     description: 'mt-1 text-xs text-muted-foreground sm:text-sm',
     iconContainer: 'rounded-xl p-2 sm:rounded-2xl sm:p-3',
+    icon: 'size-4 sm:size-5',
   },
   compact: {
     content:
@@ -244,6 +246,20 @@ const layoutStyles: Record<
     value: 'mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl',
     description: 'mt-1 text-xs text-muted-foreground sm:text-sm',
     iconContainer: 'rounded-xl p-2 sm:rounded-2xl sm:p-2.5',
+    icon: 'size-4 sm:size-5',
+  },
+  // Para linhas de 7-8 KPIs. O que mais estoura numa coluna estreita nao e o
+  // numero, e o titulo em caixa alta: por isso aqui o tracking encolhe junto
+  // com a fonte, senao "PRECISAM DE ATENCAO" vira quatro linhas.
+  dense: {
+    content:
+      'mt-0 flex items-start justify-between gap-1.5 px-3 py-2 sm:gap-2 sm:px-3.5 sm:py-3',
+    title:
+      'text-[9px] uppercase tracking-[0.12em] text-muted-foreground sm:text-[10px] sm:tracking-[0.14em]',
+    value: 'mt-0.5 text-base font-semibold tracking-tight sm:mt-1 sm:text-xl',
+    description: 'mt-0.5 text-[10px] text-muted-foreground sm:text-xs',
+    iconContainer: 'rounded-lg p-1.5 sm:rounded-xl sm:p-2',
+    icon: 'size-3.5 sm:size-4',
   },
 };
 
@@ -348,7 +364,7 @@ export function KpiCard({
               iconContainerClassName ?? fallbackKpiIconContainerClassName
             )}
           >
-            <Icon className="size-4 sm:size-5" />
+            <Icon className={styles.icon} />
           </div>
         ) : null}
       </CardContent>

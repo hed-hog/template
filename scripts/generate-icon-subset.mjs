@@ -97,6 +97,42 @@ const TARGETS = [
     collection: 'flag',
     filter: (key) => key.endsWith('-4x3'),
   },
+  {
+    out: 'apps/class/lib/generated/file-type-icons.ts',
+    collection: 'vscode-icons',
+    // apps/class/components/file-type-icon.tsx -> EXTENSION_SLUGS
+    slugs: [
+      'default-file',
+      'file-type-ai',
+      'file-type-audio',
+      'file-type-binary',
+      'file-type-css',
+      'file-type-epub',
+      'file-type-excel',
+      'file-type-font',
+      'file-type-html',
+      'file-type-image',
+      'file-type-java',
+      'file-type-light-js',
+      'file-type-light-json',
+      'file-type-markdown',
+      'file-type-pdf2',
+      'file-type-photoshop',
+      'file-type-php',
+      'file-type-powerpoint',
+      'file-type-python',
+      'file-type-shell',
+      'file-type-sql',
+      'file-type-svg',
+      'file-type-text',
+      'file-type-typescript',
+      'file-type-video',
+      'file-type-webp',
+      'file-type-word',
+      'file-type-xml',
+      'file-type-zip',
+    ],
+  },
 ];
 
 /** Slugs de navegador e sistema operacional, compartilhados por admin e training. */
@@ -131,6 +167,11 @@ function BROWSER_OS_SLUGS() {
 const COLLECTIONS = {
   logos: { pkg: '@iconify-json/logos', exportName: 'logoIcons', typeName: 'LogoSlug' },
   flag: { pkg: '@iconify-json/flag', exportName: 'flagIcons', typeName: 'FlagSlug' },
+  'vscode-icons': {
+    pkg: '@iconify-json/vscode-icons',
+    exportName: 'fileTypeIcons',
+    typeName: 'FileTypeSlug',
+  },
 };
 
 const cache = new Map();

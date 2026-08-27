@@ -26,25 +26,34 @@ export function ConfirmEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('core.ConfirmEmailPage');
-  const [status, setStatus] = useState<Status>('checking');
-  const [error, setError] = useState<string | null>(null);
 
   const token = searchParams.get('token') || '';
+  // Link sem token ja nasce invalido: da para decidir na renderizacao, sem passar
+  // pelo "checking" e sem um setState dentro do efeito.
+  const [status, setStatus] = useState<Status>(token ? 'checking' : 'invalid');
+  const [error, setError] = useState<string | null>(null);
+
   // O StrictMode monta o efeito duas vezes em dev; a confirmacao e idempotente,
   // mas nao ha motivo para bater duas vezes na API.
   const requestedRef = useRef(false);
 
+  // `getErrorMessage` e recriado a cada render do AppProvider, entao mante-lo no
+  // array de dependencias re-executava este efeito a qualquer re-render. Lido por
+  // ref, ele sai das dependencias e o efeito so responde ao token.
+  const getErrorMessageRef = useRef(getErrorMessage);
   useEffect(() => {
-    if (!token) {
-      setStatus('invalid');
-      return;
-    }
+    getErrorMessageRef.current = getErrorMessage;
+  }, [getErrorMessage]);
+
+  useEffect(() => {
+    if (!token) return;
 
     if (requestedRef.current) return;
     requestedRef.current = true;
 
-    let active = true;
-
+    // Sem flag de cancelamento no cleanup de proposito: o guard acima impede uma
+    // segunda requisicao, entao desligar os handlers desta na re-execucao do efeito
+    // deixava a unica resposta em voo sem destino e a tela presa em "checking".
     request<ConfirmEmailResponse>({
       method: 'POST',
       url: '/auth/confirm-email',
@@ -52,19 +61,13 @@ export function ConfirmEmailPage() {
       showErrors: false,
     })
       .then(({ data }) => {
-        if (!active) return;
         setStatus(data.alreadyConfirmed ? 'alreadyConfirmed' : 'confirmed');
       })
       .catch((err) => {
-        if (!active) return;
-        setError(getErrorMessage(err));
+        setError(getErrorMessageRef.current(err));
         setStatus('invalid');
       });
-
-    return () => {
-      active = false;
-    };
-  }, [token, request, getErrorMessage]);
+  }, [token, request]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background transition-colors">

@@ -31,6 +31,9 @@ import {
     isNetworkError,
     NETWORK_ERROR_MESSAGE,
 } from './network-error';
+import { createRefreshGate, isSessionRejection } from './refresh-policy';
+import { attachRequestMarks, isSameOriginTarget } from './request-marks';
+import { resolveStoredRefreshToken } from './session-tokens';
 
 
 // Export QueryClient for external use
@@ -150,6 +153,25 @@ export type ForbiddenErrorState = {
 	statusCode?: number;
 };
 
+/**
+ * Mensagens amigáveis para erros de autenticação conhecidos. No escopo do módulo
+ * porque `getErrorMessage` a consome dentro de um `useCallback` sem dependências.
+ */
+const KNOWN_AUTH_ERROR_PATTERNS: Array<{ pattern: RegExp; friendly: string }> = [
+	{
+		pattern: /too many|rate limit|muitas solicita/i,
+		friendly: 'Você atingiu o limite de tentativas. Aguarde alguns minutos e tente novamente.',
+	},
+	{
+		pattern: /invalid.*expired|inv[aá]lido.*expirou/i,
+		friendly: 'Este link expirou ou já foi utilizado. Solicite um novo link para continuar.',
+	},
+	{
+		pattern: /user not found|usu[aá]rio n[aã]o encontrado/i,
+		friendly: 'Não encontramos uma conta com esses dados. Verifique se digitou corretamente.',
+	},
+];
+
 const emptyForbiddenErrorState: ForbiddenErrorState = {
 	show: false,
 	message: '',
@@ -187,6 +209,17 @@ type AppContextType = {
 		error?: any,
 	) => void;
 	setAccessToken: Dispatch<SetStateAction<string>>;
+	/**
+	 * Grava a sessão devolvida por um fluxo de autenticação (login, MFA, OAuth,
+	 * checkout): access token E refresh token, de uma vez.
+	 *
+	 * Use isto, e não `setAccessToken`, sempre que a resposta trouxer sessão nova —
+	 * sem o refresh token guardado a aba morre quando o access token vence, e nem
+	 * todo app tem o cookie `rt` para cair de pé (só quem fala direto com a API).
+	 * `setAccessToken` continua sendo o certo para quem apenas rotaciona o access
+	 * token de uma sessão que já existe.
+	 */
+	applySession: (tokens: { accessToken: string; refreshToken?: string }) => void;
 	getUrlAfterLogin: () => string;
 	setUrlAfterLogin: Dispatch<SetStateAction<string>>;
 	getErrorMessage: (error: any) => string;
@@ -218,6 +251,16 @@ type AppContextType = {
 	startImpersonationSession: (state: ImpersonationState) => void;
 	/** Encerra a simulação sem tocar na sessão do operador. */
 	stopImpersonation: () => Promise<void>;
+	/**
+	 * Renova a sessão pelo mesmo single-flight que o interceptor usa, para quem
+	 * fala com a API fora do `request()` — o cliente SSE, por exemplo, que usa
+	 * `fetch` cru e por isso nunca passou por interceptor nenhum.
+	 *
+	 * `failedAccessToken` é o token que acabou de levar 401: se o localStorage já
+	 * tem outro, outra requisição renovou nesse meio-tempo e ele volta direto, sem
+	 * gastar uma rotação.
+	 */
+	refreshSession: (failedAccessToken?: string) => Promise<string>;
 };
 
 export const AppContext = createContext<AppContextType>({
@@ -232,6 +275,7 @@ export const AppContext = createContext<AppContextType>({
 	request: () => new Promise(() => {}),
 	showToastHandler: () => {},
 	setAccessToken: () => {},
+	applySession: () => {},
 	getUrlAfterLogin: () => '',
 	setUrlAfterLogin: () => {},
 	getErrorMessage: () => '',
@@ -256,6 +300,7 @@ export const AppContext = createContext<AppContextType>({
 	impersonation: null,
 	startImpersonationSession: () => {},
 	stopImpersonation: () => Promise.resolve(),
+	refreshSession: () => Promise.resolve(''),
 });
 
 type RequestLoginType = {
@@ -452,40 +497,33 @@ function AppContextProvider({
 	const router = useRouter();
 
 	// Use refs to persist refresh state across re-renders
-	const isRefreshingRef = useRef(false);
+	/**
+	 * Single-flight da renovação nesta aba. Enquanto há uma em voo, todo 401
+	 * espera por ELA em vez de abrir outra; entre abas, quem serializa é o Web
+	 * Lock em `runRefresh`. A regra e o porquê estão em `refresh-policy.ts`.
+	 */
+	const refreshGateRef = useRef(createRefreshGate());
 	const hasShownSessionExpiredRef = useRef(false);
 	const isRedirectingToLoginRef = useRef(false);
-	const failedQueueRef = useRef<Array<{
-		resolve: (value?: any) => void;
-		reject: (reason?: any) => void;
-	}>>([]);
 	const forbiddenQueueRef = useRef<ForbiddenErrorState[]>([]);
 	const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
-	const KNOWN_AUTH_ERROR_PATTERNS: Array<{ pattern: RegExp; friendly: string }> = [
-		{
-			pattern: /too many|rate limit|muitas solicita/i,
-			friendly: 'Você atingiu o limite de tentativas. Aguarde alguns minutos e tente novamente.',
-		},
-		{
-			pattern: /invalid.*expired|inv[aá]lido.*expirou/i,
-			friendly: 'Este link expirou ou já foi utilizado. Solicite um novo link para continuar.',
-		},
-		{
-			pattern: /user not found|usu[aá]rio n[aã]o encontrado/i,
-			friendly: 'Não encontramos uma conta com esses dados. Verifique se digitou corretamente.',
-		},
-	];
 
-	const getErrorMessage = (error: any) => {
+
+	// Identidade ESTÁVEL, pelo mesmo motivo de `request` (ver o comentário lá
+	// embaixo): consumidores põem `getErrorMessage` em array de dependência de
+	// efeito, e uma identidade nova a cada render re-executava o efeito no meio da
+	// requisição — o que já prendeu a página de confirmação de e-mail no "checking".
+	// A função não depende de estado, então nada aqui precisa de ref.
+	const getErrorMessage = useCallback((error: any) => {
 		if (isNetworkError(error)) return NETWORK_ERROR_MESSAGE;
 		const raw = getRawErrorMessage(error);
 		if (!raw) return 'Não foi possível concluir a solicitação. Tente novamente.';
 		const known = KNOWN_AUTH_ERROR_PATTERNS.find(({ pattern }) => pattern.test(raw));
 		return known ? known.friendly : raw;
-	};
+	}, []);
 
-	const handleError = (error: any) => {
+	const handleError = useCallback((error: any) => {
 		const rawMessage = getRawErrorMessage(error);
 		if (rawMessage.includes('Invalid file type: ')) {
 			toaster.error('O tipo de arquivo enviado não é permitido.');
@@ -494,18 +532,7 @@ function AppContextProvider({
 		} else {
 			toaster.error(getErrorMessage(error));
 		}
-	};
-
-	const processQueue = useCallback((error: any, token: string | null = null) => {
-		failedQueueRef.current.forEach(prom => {
-			if (token) {
-				prom.resolve(token);
-			} else {
-				prom.reject(error);
-			}
-		});
-		failedQueueRef.current = [];
-	}, []);
+	}, [toaster, getErrorMessage]);
 
 	const isTokenErrorMessage = useCallback((message: unknown) => {
 		if (typeof message !== 'string') return false;
@@ -554,47 +581,100 @@ function AppContextProvider({
 		[],
 	);
 
-	const refreshTokenRequest = useCallback(async (): Promise<string | null> => {
+	/**
+	 * A chamada crua ao `/auth/refresh`.
+	 *
+	 * **Propaga o erro.** A versão anterior engolia qualquer exceção e devolvia
+	 * `null`, o que tornava "a rede caiu" indistinguível de "o refresh token foi
+	 * rejeitado" — e o chamador deslogava nos dois casos. Quem decide o que fazer
+	 * com a falha é `isSessionRejection`, lá no interceptor.
+	 */
+	const refreshTokenRequest = useCallback(async (): Promise<string> => {
 		// Ponto unico por onde todo refresh passa. Ver a nota em `isImpersonating`.
 		if (isImpersonating) {
-			return null;
+			// Sem `response`: cai como falha transitória e a aba simulada não é
+			// arrastada para o fluxo de logout — quem a encerra é `clearImpersonation`.
+			throw new Error('Refresh is disabled during an access simulation.');
 		}
 
-		try {
-			const browserId = getBrowserId();
-			const refreshInstance = axios.create({
-				baseURL: apiBaseUrl,
-				withCredentials: true,
-				headers: {
-					'Accept-Language': currentLocaleCode ?? 'en',
-					...(browserId ? { 'X-Browser-ID': browserId } : {}),
-				},
-			});
-			refreshInstance.defaults.withCredentials = true;
+		const browserId = getBrowserId();
+		const refreshInstance = axios.create({
+			baseURL: apiBaseUrl,
+			withCredentials: true,
+			headers: {
+				'Accept-Language': currentLocaleCode ?? 'en',
+				...(browserId ? { 'X-Browser-ID': browserId } : {}),
+			},
+		});
+		refreshInstance.defaults.withCredentials = true;
 
-			// Always read the freshest refresh token from localStorage to handle cross-tab rotation.
-			// The closure value may be stale if another tab rotated the token before this request fired.
-			const tokenToSend = typeof window !== 'undefined'
-				? readLocalStorageToken(LocalStorageKeys.RefreshToken) || refreshToken
-				: refreshToken;
+		// Always read the freshest refresh token from localStorage to handle cross-tab rotation.
+		// The closure value may be stale if another tab rotated the token before this request fired.
+		const tokenToSend = typeof window !== 'undefined'
+			? readLocalStorageToken(LocalStorageKeys.RefreshToken) || refreshToken
+			: refreshToken;
 
-			const response = await refreshInstance.post<{
-				accessToken: string;
-				refreshToken?: string;
-			}>('/auth/refresh', tokenToSend ? { refreshToken: tokenToSend } : {});
+		const response = await refreshInstance.post<{
+			accessToken: string;
+			refreshToken?: string;
+		}>('/auth/refresh', tokenToSend ? { refreshToken: tokenToSend } : {});
 
-			if (response.data?.refreshToken) {
-				setRefreshToken(response.data.refreshToken);
-			}
-
-			return response.data?.accessToken || null;
-		} catch (error) {
-			if (typeof window !== 'undefined') {
-				console.debug('[auth] refresh failed', error);
-			}
-			return null;
+		if (response.data?.refreshToken) {
+			setRefreshToken(response.data.refreshToken);
 		}
+
+		const newAccessToken = response.data?.accessToken;
+
+		if (!newAccessToken) {
+			// 2xx sem token é o servidor quebrando o contrato, não a sessão sendo
+			// rejeitada — sem `response` no erro, cai como transitório.
+			throw new Error('Refresh response did not include an access token.');
+		}
+
+		return newAccessToken;
 	}, [apiBaseUrl, currentLocaleCode, refreshToken, setRefreshToken, isImpersonating]);
+
+	/**
+	 * Renovação com single-flight em duas camadas: a promise cobre a aba, o Web
+	 * Lock cobre a origem. Todo caminho que renova passa por aqui — o 401 do
+	 * interceptor e o refresh proativo do `visibilitychange`, que antes chamava
+	 * `refreshTokenRequest` cru, fora do lock, e podia girar a sessão em paralelo
+	 * com outra aba.
+	 *
+	 * `failedAccessToken` é o token que a requisição levava quando tomou 401: se o
+	 * localStorage já tem outro, outra aba renovou enquanto ela estava em voo e
+	 * basta reaproveitar — sem gastar uma rotação.
+	 */
+	const runRefresh = useCallback((failedAccessToken?: string): Promise<string> => {
+		const doRefresh = async (): Promise<string> => {
+			const latest = typeof window !== 'undefined'
+				? readLocalStorageToken(LocalStorageKeys.AccessToken)
+				: '';
+			if (latest && failedAccessToken && latest !== failedAccessToken) {
+				return latest;
+			}
+			return refreshTokenRequest();
+		};
+
+		return refreshGateRef.current.run(async () => {
+			const newToken = typeof window !== 'undefined' && 'locks' in navigator
+				? await (navigator as any).locks.request('hedhog-auth-refresh', doRefresh)
+				: await doRefresh();
+
+			setAccessToken(newToken);
+
+			// Avisa as outras abas na hora, sem depender do evento `storage`.
+			broadcastChannelRef.current?.postMessage({
+				type: 'TOKEN_REFRESHED',
+				accessToken: newToken,
+				refreshToken: typeof window !== 'undefined'
+					? readLocalStorageToken(LocalStorageKeys.RefreshToken)
+					: '',
+			});
+
+			return newToken;
+		});
+	}, [refreshTokenRequest, setAccessToken]);
 
 	const enqueueForbiddenError = useCallback((forbiddenState: ForbiddenErrorState) => {
 		setForbiddenError(currentForbiddenError => {
@@ -752,6 +832,18 @@ function AppContextProvider({
 					// sai da prop `appName` porque este provider e compartilhado.
 					cnf.headers['X-App-Platform'] = 'web';
 					if (appName) cnf.headers['X-App-Name'] = appName;
+					// O que o cliente mede da propria requisicao, para quando ela morre sem
+					// resposta. E o unico relato confiavel nesse caso: quando o fetch falha,
+					// o browser publica a entrada de Resource Timing com todos os marcos
+					// zerados, e ali "conectou, enviou e ninguem respondeu" fica identico a
+					// "a conexao nem abriu" -- diagnosticos com respostas opostas. Ver
+					// `request-marks.ts`.
+					attachRequestMarks(cnf, {
+						sameOrigin: isSameOriginTarget(
+							cnf,
+							typeof location === 'undefined' ? '' : location.origin
+						),
+					});
 					return cnf;
 				},
 				error => {
@@ -840,93 +932,31 @@ function AppContextProvider({
 					}
 
 					if (isAuthError && !shouldNotRetry) {
-						// If already refreshing, queue this request
-						if (isRefreshingRef.current) {
-							return new Promise((resolve, reject) => {
-								failedQueueRef.current.push({ resolve, reject });
-							})
-								.then(token => {
-									originalRequest.headers['Authorization'] = `Bearer ${token}`;
-									return instance(originalRequest);
-								})
-								.catch(err => {
-									return Promise.reject(err);
-								});
-						}
-
-						// Mark request as retried and start refresh process
+						// Marcado ANTES de esperar: a requisição que sai da espera é
+						// reenviada, e se ela tomar 401 de novo (o token pode ter girado
+						// mais uma vez no meio) precisa desistir, e não virar líder de
+						// outro ciclo de renovação.
 						originalRequest._retry = true;
-						isRefreshingRef.current = true;
 
-						// Snapshot tokens before the attempt so we can detect cross-tab rotation
 						const failedAccessToken = (originalRequest.headers?.['Authorization'] as string)?.replace('Bearer ', '') ?? '';
-						const refreshTokenSnapshot = typeof window !== 'undefined'
-							? readLocalStorageToken(LocalStorageKeys.RefreshToken)
-							: refreshToken;
-
-						// Core refresh logic — runs inside Web Locks when available.
-						// After acquiring the lock, checks if another tab already refreshed before calling the API.
-						const doRefresh = async (): Promise<string | null> => {
-							const latest = typeof window !== 'undefined'
-								? readLocalStorageToken(LocalStorageKeys.AccessToken) || null
-								: null;
-							if (latest && latest !== failedAccessToken && latest !== '') return latest;
-							return refreshTokenRequest();
-						};
 
 						try {
-							// Web Locks API serializes refresh across tabs: only one tab runs doRefresh
-							// at a time; others wait and then reuse the winner's token from localStorage.
-							const newToken = typeof window !== 'undefined' && 'locks' in navigator
-								? await (navigator as any).locks.request('hedhog-auth-refresh', doRefresh)
-								: await doRefresh();
-
-							if (!newToken) {
-								throw error;
-							}
-
-							// Update token in state
-							setAccessToken(newToken);
-
-							// Process all queued requests with the new token
-							processQueue(null, newToken);
-
-							// Notify other tabs immediately so they don't need to wait for the storage event
-							broadcastChannelRef.current?.postMessage({
-								type: 'TOKEN_REFRESHED',
-								accessToken: newToken,
-								refreshToken: typeof window !== 'undefined'
-									? readLocalStorageToken(LocalStorageKeys.RefreshToken)
-									: '',
-							});
+							const newToken = await runRefresh(failedAccessToken);
 
 							originalRequest.headers = originalRequest.headers ?? {};
 							originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
 							return instance(originalRequest);
-
 						} catch (refreshError) {
-							// Fallback for browsers without Web Locks: if localStorage was updated by
-							// another tab while this request was in flight, reuse their tokens.
-							if (typeof window !== 'undefined') {
-								const latestAccessToken = readLocalStorageToken(LocalStorageKeys.AccessToken) || null;
-								const latestRefreshToken = readLocalStorageToken(LocalStorageKeys.RefreshToken) || null;
-
-								if (
-									latestRefreshToken &&
-									latestRefreshToken !== refreshTokenSnapshot &&
-									latestAccessToken
-								) {
-									setAccessToken(latestAccessToken);
-									setRefreshToken(latestRefreshToken);
-									processQueue(null, latestAccessToken);
-
-									originalRequest.headers = originalRequest.headers ?? {};
-									originalRequest.headers['Authorization'] = `Bearer ${latestAccessToken}`;
-									return instance(originalRequest);
+							// Falha transitória — rede, timeout, 5xx, 429 — não é a sessão
+							// sendo rejeitada. Apagar os tokens aqui destruía uma sessão
+							// válida por um soluço de rede, e o `/auth/logout` logo abaixo
+							// ainda a matava no servidor, sem volta.
+							if (!isSessionRejection(refreshError)) {
+								if (typeof window !== 'undefined') {
+									console.debug('[auth] refresh failed (transient, session kept)', refreshError);
 								}
+								return Promise.reject(error);
 							}
-
-							processQueue(refreshError, null);
 
 							try {
 								const logoutInstance = axios.create({
@@ -952,8 +982,6 @@ function AppContextProvider({
 							}
 
 							return Promise.reject(refreshError);
-						} finally {
-							isRefreshingRef.current = false;
 						}
 					}
 
@@ -988,10 +1016,7 @@ function AppContextProvider({
 			accessToken,
 			currentLocaleCode,
 			apiBaseUrl,
-			setAccessToken,
-			setRefreshToken,
-			processQueue,
-			refreshTokenRequest,
+			runRefresh,
 			toaster,
 			isAuthorizationError,
 			isTokenErrorMessage,
@@ -1039,7 +1064,7 @@ function AppContextProvider({
 		: '/placeholder.png';
 	const userAbbr = user?.name?.split(' ').map((word: string) => word.charAt(0).toUpperCase()).join('') || '';
 
-	const parseToken = (token: string) => {
+	const parseToken = useCallback((token: string) => {
 		if (!token) return;
 		try {
 			const parts = token.split('.');
@@ -1050,7 +1075,39 @@ function AppContextProvider({
 		} catch (error) {
 			handleError(error);
 		}
-	};
+	}, [handleError]);
+
+	/**
+	 * Grava a sessão que um fluxo de autenticação acabou de devolver.
+	 *
+	 * Existe porque `setAccessToken` sozinho **não** é uma sessão: sem o refresh
+	 * token guardado, a aba vive só até o access token vencer e o primeiro 401
+	 * seguinte vira logout. Quem sobrevivia a isso era o cookie `rt` — e ele existe
+	 * apenas para o app cujo browser fala DIRETO com a API (o admin). O Class fala
+	 * por rewrite same-origin (`/api`), o `Set-Cookie` de outro domínio é descartado
+	 * pelo navegador, e ali o corpo da resposta é o único portador da sessão.
+	 *
+	 * Todo caminho que emite sessão nova — login, signup, MFA, OAuth, checkout —
+	 * passa por aqui. `setAccessToken` continua valendo para quem só ROTACIONA o
+	 * access token (verificar TOTP, desvincular um provedor): ali não há refresh
+	 * token novo, e o que já está guardado deve ficar como está.
+	 *
+	 * Identidade estável, como `request`: os callbacks de OAuth chamam isto dentro de
+	 * um efeito, e uma identidade nova a cada render reexecutaria a troca do code.
+	 */
+	const applySession = useCallback(
+		({ accessToken: nextAccessToken, refreshToken: nextRefreshToken }: {
+			accessToken: string;
+			refreshToken?: string;
+		}) => {
+			parseToken(nextAccessToken);
+			// A regra de "ausente não é vazio" mora em `session-tokens.ts`, junto do
+			// teste que a trava; aqui fica só o efeito.
+			setRefreshToken(current => resolveStoredRefreshToken(current, nextRefreshToken));
+			setAccessToken(nextAccessToken);
+		},
+		[parseToken, setAccessToken, setRefreshToken],
+	);
 
 	const getUrlAfterLogin = () => {
 		const url = urlAfterLogin;
@@ -1084,11 +1141,7 @@ function AppContextProvider({
 		if (!data.accessToken) throw new Error('Login failed');
 		if (data.hasMfa) return { accessToken: data.accessToken, hasMfa: true };
 
-		parseToken(data.accessToken);
-		if (data.refreshToken) {
-			setRefreshToken(data.refreshToken);
-		}
-		setAccessToken(data.accessToken);
+		applySession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
 		return {
 			accessToken: data.accessToken,
 			hasMfa: false,
@@ -1096,8 +1149,19 @@ function AppContextProvider({
 		};
 	};
 
+	// Os três 400 esperados desta rota — e-mail não cadastrado, conta sem senha
+	// (só SSO) e limite de pedidos — são o caminho normal do formulário, não
+	// defeito. Sem `showErrors: false` eles abriam o modal "Erro na aplicação" e o
+	// toast global em cima da mensagem que a própria tela já mostra: o mesmo erro
+	// três vezes. `login`, `signup` e `resetPassword` já vinham assim; quem decide
+	// o destino de cada erro é o `onError` do app.
 	const forgot = async (email: string) => {
-		await request({ url: '/auth/forgot', method: 'POST', data: { email, app: appName } });
+		await request({
+			url: '/auth/forgot',
+			method: 'POST',
+			data: { email, app: appName },
+			showErrors: false,
+		});
 	};
 
 	const signup = async (data: RegisterForm) => {
@@ -1111,11 +1175,7 @@ function AppContextProvider({
 		if (!response.user) throw new Error('Signup failed');
 		if (response.hasChallenge) return { accessToken: '', hasChallenge: true };
 		if (response.accessToken) {
-			parseToken(response.accessToken);
-			if (response.refreshToken) {
-				setRefreshToken(response.refreshToken);
-			}
-			setAccessToken(response.accessToken);
+			applySession({ accessToken: response.accessToken, refreshToken: response.refreshToken });
 			return { accessToken: response.accessToken, hasChallenge: false };
 		}
 		throw new Error('Signup failed');
@@ -1157,10 +1217,9 @@ function AppContextProvider({
 			throw new Error('Reset password failed');
 		}
 
-		if (data.refreshToken) {
-			setRefreshToken(data.refreshToken);
+		if (data.accessToken) {
+			applySession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
 		}
-		if (data.accessToken) setAccessToken(data.accessToken);
 	};
 
 	const showToastHandler = (type: 'success' | 'error', name: string, action = '', error: any = null) => {
@@ -1314,7 +1373,7 @@ function AppContextProvider({
 
 		const handleVisibilityChange = async () => {
 			if (document.visibilityState !== 'visible') return;
-			if (isRefreshingRef.current) return;
+			if (refreshGateRef.current.pending()) return;
 			// Refresh proativo tambem renovaria com o cookie do operador.
 			if (isImpersonating) return;
 
@@ -1337,31 +1396,23 @@ function AppContextProvider({
 
 			if (!isExpiredOrExpiringSoon) return;
 
-			isRefreshingRef.current = true;
 			try {
-				const newToken = await refreshTokenRequest();
-				if (newToken) {
-					setAccessToken(newToken);
-					processQueue(null, newToken);
-					broadcastChannelRef.current?.postMessage({
-						type: 'TOKEN_REFRESHED',
-						accessToken: newToken,
-						refreshToken: readLocalStorageToken(LocalStorageKeys.RefreshToken),
-					});
-					hasShownSessionExpiredRef.current = false;
-					isRedirectingToLoginRef.current = false;
-				}
+				// Pelo `runRefresh`, e não mais pelo `refreshTokenRequest` cru: assim
+				// este caminho divide a promise e o Web Lock com o reativo. Solto, ele
+				// girava a sessão em paralelo com outra aba, e o perdedor da corrida
+				// levava 401 — que o interceptor traduzia em logout.
+				await runRefresh();
+				hasShownSessionExpiredRef.current = false;
+				isRedirectingToLoginRef.current = false;
 			} catch {
 				// Silent failure — if the refresh token itself is invalid, the next request
 				// will trigger the reactive flow and show the session-expired toast.
-			} finally {
-				isRefreshingRef.current = false;
 			}
 		};
 
 		document.addEventListener('visibilitychange', handleVisibilityChange);
 		return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-	}, [refreshTokenRequest, setAccessToken, processQueue, isImpersonating]);
+	}, [runRefresh, isImpersonating]);
 
 	// A janela simulada nao e renovavel: quando vence, a aba precisa sair da
 	// identidade do alvo por conta propria, sem esperar um 401.
@@ -1401,6 +1452,7 @@ function AppContextProvider({
 				clearUserData: () => clearSessionState(),
 				accessToken,
 				setAccessToken,
+				applySession,
 				request,
 				logout,
 				showToastHandler,
@@ -1428,6 +1480,7 @@ function AppContextProvider({
 				impersonation,
 				startImpersonationSession,
 				stopImpersonation,
+				refreshSession: runRefresh,
 			}}
 		>
 			{children}

@@ -36,17 +36,39 @@ export function markOAuthCallbackAsProcessed(
   }
 }
 
+/**
+ * Motivos que o backend devolve em `oauthReason` para "este código já foi usado".
+ * A chave é estável e independe de idioma — antes dela o match era pela substring
+ * "already processed", que só existe no texto em inglês e portanto nunca disparava
+ * para quem usa o Hub em pt-BR.
+ */
+const ALREADY_PROCESSED_REASONS = ['already_processed', 'callback_consumed'];
+
+/** Fallback para backend anterior ao `oauthReason`, agora nos dois idiomas. */
+const ALREADY_PROCESSED_HINTS = ['already processed', 'já foi processado'];
+
 export function getOAuthCallbackErrorMessage(
   error: unknown,
   alreadyProcessedMessage: string,
   fallbackMessage: string,
 ) {
-  const responseMessage = (error as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
+  const responseData = (
+    error as { response?: { data?: { message?: unknown; oauthReason?: unknown } } }
+  )?.response?.data;
+
+  if (
+    typeof responseData?.oauthReason === 'string' &&
+    ALREADY_PROCESSED_REASONS.includes(responseData.oauthReason)
+  ) {
+    return alreadyProcessedMessage;
+  }
+
+  const responseMessage = responseData?.message;
 
   if (typeof responseMessage === 'string') {
     const normalizedMessage = responseMessage.trim().toLowerCase();
 
-    if (normalizedMessage.includes('already processed')) {
+    if (ALREADY_PROCESSED_HINTS.some((hint) => normalizedMessage.includes(hint))) {
       return alreadyProcessedMessage;
     }
 

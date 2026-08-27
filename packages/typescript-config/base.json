@@ -74,6 +74,12 @@
       "@hed-hog/next-app-provider/*": [
         "../../packages/next-app-provider/src/*"
       ],
+      "@hed-hog/next-build-skew": [
+        "../../packages/next-build-skew/src"
+      ],
+      "@hed-hog/next-build-skew/*": [
+        "../../packages/next-build-skew/src/*"
+      ],
       "@hed-hog/ui": [
         "../../packages/ui/src"
       ],
