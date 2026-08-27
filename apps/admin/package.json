@@ -1,6 +1,6 @@
 {
   "name": "admin",
-  "description": "ERP da Hcode criado com HedHog.",
+  "description": "Admin dashboard criado com HedHog.",
   "version": "0.1.0",
   "private": true,
   "scripts": {
