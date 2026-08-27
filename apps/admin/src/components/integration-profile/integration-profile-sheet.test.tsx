@@ -46,6 +46,53 @@ vi.mock('@/hooks/use-persisted-sheet-width', () => ({
   usePersistedSheetWidth: () => [640, vi.fn()],
 }));
 
+/**
+ * O invólucro do sheet vira marcação simples — o que este arquivo exercita é o
+ * formulário de dentro, não o diálogo.
+ *
+ * Não é preferência de estilo: o Dialog **modal** do Radix combinado com o
+ * `@radix-ui/react-select` 2.3.7 entra em recursão infinita no jsdom assim que
+ * o select abre, e derruba o processo inteiro com "Maximum call stack size
+ * exceeded" seguido de heap out of memory — nenhum teste do arquivo chega ao
+ * fim. Reproduz em 12 linhas (Sheet + Select, abrir o select) e some com
+ * `modal={false}`; no navegador não acontece. Com o 2.1.4 também não acontecia.
+ *
+ * Só o diálogo é substituído: o Select continua sendo o de verdade, então a
+ * cobertura de abrir a lista e escolher a opção segue valendo.
+ */
+vi.mock('@/components/ui/sheet', async () => {
+  const React = await import('react');
+  return {
+    Sheet: ({ open, children }: { open?: boolean; children?: React.ReactNode }) =>
+      open === false ? null : React.createElement(React.Fragment, null, children),
+    SheetHeader: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('div', null, children),
+    SheetTitle: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('h2', null, children),
+    SheetDescription: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('p', null, children),
+    SheetFooter: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('div', null, children),
+    SheetContent: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('div', null, children),
+    SheetClose: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('button', { type: 'button' }, children),
+    SheetTrigger: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('button', { type: 'button' }, children),
+    SheetPortal: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement(React.Fragment, null, children),
+    SheetOverlay: () => null,
+  };
+});
+
+vi.mock('@/components/ui/resizable-sheet-content', async () => {
+  const React = await import('react');
+  return {
+    ResizableSheetContent: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement('div', null, children),
+  };
+});
+
 import { toast } from 'sonner';
 import { makeAppProviderWrapper } from '@/test/test-utils';
 import {
