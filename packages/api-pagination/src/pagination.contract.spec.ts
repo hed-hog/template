@@ -15,6 +15,10 @@ import * as path from 'path';
 
 const LIBS = path.resolve(__dirname, '../../../libraries');
 
+// O template puro (CI do hed-hog/template) não tem `libraries/`: sem nada
+// instalado, não há o que varrer.
+const libraries = () => (fs.existsSync(LIBS) ? fs.readdirSync(LIBS) : []);
+
 function servicos(): string[] {
   const out: string[] = [];
 
@@ -31,7 +35,7 @@ function servicos(): string[] {
     }
   };
 
-  for (const lib of fs.readdirSync(LIBS)) {
+  for (const lib of libraries()) {
     const src = path.join(LIBS, lib, 'src');
     if (fs.existsSync(src)) walk(src);
   }
@@ -55,7 +59,7 @@ function mcpTools(): string[] {
     }
   };
 
-  for (const lib of fs.readdirSync(LIBS)) {
+  for (const lib of libraries()) {
     const src = path.join(LIBS, lib, 'src');
     if (fs.existsSync(src)) walk(src);
   }
