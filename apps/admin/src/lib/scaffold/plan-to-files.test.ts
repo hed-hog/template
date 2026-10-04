@@ -49,6 +49,44 @@ describe('buildScaffoldFiles', () => {
     );
   });
 
+  it('a listagem nasce com ordenação por cabeçalho ligada ao backend', () => {
+    const page = files.find(
+      (file) =>
+        file.path ===
+        'apps/admin/src/app/(app)/(libraries)/crm/service-orders/page.tsx'
+    );
+
+    expect(page).toBeDefined();
+    const contents = page!.contents ?? '';
+
+    // Allowlist tipada: `id` (o default) mais as colunas escalares da listagem.
+    // `person_id` é fk e fica de fora — ordenaria pelo id, não pelo nome.
+    expect(contents).toContain(
+      "type SortField = 'id' | 'title' | 'status';"
+    );
+    expect(contents).toContain('const sort = useTableSort<SortField>({');
+    expect(contents).toContain("onSortChange: () => setPage(1),");
+
+    // Os dois params na requisição E na queryKey — sem a chave, o react-query
+    // serviria o cache da ordem anterior.
+    expect(contents).toContain("params.set('sortField', sort.sortField);");
+    expect(contents).toContain("params.set('sortOrder', sort.sortOrder);");
+    expect(contents).toMatch(/queryKey: \[[\s\S]*sort\.sortField,[\s\S]*\],/);
+
+    expect(contents).toContain("sortProps: sort.getSortProps('title'),");
+    expect(contents).not.toContain("sortProps: sort.getSortProps('person_id'),");
+
+    // A tela nasce com o padrão de tabela do admin: colunas declaradas uma vez,
+    // arrastáveis e ocultáveis, com a escolha do usuário preservada.
+    expect(contents).toContain('const columns = useEntityColumns<ServiceOrder>({');
+    expect(contents).toContain(
+      "storageKey: 'crm-service-order-columns-v1',"
+    );
+    expect(contents).toContain('<EntityTable');
+    // A coluna de ações é a única travada.
+    expect(contents).toContain('hideable: false,');
+  });
+
   it('gera os artefatos de backend da biblioteca', () => {
     expect(paths).toContain('libraries/crm/hedhog/table/service_order.yaml');
     expect(paths).toContain('libraries/crm/src/service-order/service-order.service.ts');

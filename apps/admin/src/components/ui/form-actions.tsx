@@ -20,6 +20,8 @@ type FormActionsProps = {
   statusContent?: React.ReactNode;
   submitDisabled?: boolean;
   submitIcon?: React.ReactNode;
+  /** Mostra spinner no submit e bloqueia clique repetido enquanto o envio acontece. */
+  submitLoading?: boolean;
   submitLabel: React.ReactNode;
   submitSize?: React.ComponentProps<typeof Button>['size'];
   submitTestId?: string;
@@ -39,6 +41,7 @@ function FormActions({
   submitDisabled,
   submitIcon,
   submitLabel,
+  submitLoading,
   submitSize = 'default',
   submitTestId,
   submitType = 'button',
@@ -72,6 +75,7 @@ function FormActions({
           size={submitSize}
           className="w-full sm:min-w-28 sm:w-auto"
           disabled={submitDisabled}
+          loading={submitLoading}
           onClick={onSubmit}
           data-testid={submitTestId ?? (sheet ? 'sheet-submit' : undefined)}
         >

@@ -20,8 +20,18 @@ export type DatabaseInfraErrorKind = 'unreachable' | 'pool';
 /** Banco inalcançável: rede, DNS, servidor fora, conexão fechada no meio da query. */
 const UNREACHABLE_CODES = new Set(['P1001', 'P1002', 'P1008', 'P1017']);
 
-/** Pool esgotado — o Prisma desistiu de esperar uma conexão livre. */
-const POOL_CODES = new Set(['P2024']);
+/**
+ * Pool esgotado — o Prisma desistiu de esperar uma conexão livre.
+ *
+ * São os dois caminhos da MESMA saturação, e é por isso que os dois estão aqui:
+ * `P2024` é a query avulsa que esperou o `pool_timeout`, e `P2028` é a transação
+ * interativa que esperou o `maxWait` e nem chegou a começar. O segundo entra com
+ * o texto genérico "Transaction API error", então sem o código ele cairia no ramo
+ * de erro não tratado do filtro HTTP: 500 com stack em vez de 503 com
+ * `Retry-After`, e sem `dedupeKey` — uma saturação de 30s virava uma issue por
+ * stack distinto em vez de um incidente.
+ */
+const POOL_CODES = new Set(['P2024', 'P2028']);
 
 const UNREACHABLE_MESSAGES = ["Can't reach database server"];
 
@@ -29,6 +39,9 @@ const POOL_MESSAGES = [
   'too many clients',
   'Too many database connections',
   'connection pool',
+  // Texto do P2028 para quando ele chega sem código (erro reembrulhado, engine
+  // que só devolve a mensagem).
+  'Unable to start a transaction in the given time',
 ];
 
 /**

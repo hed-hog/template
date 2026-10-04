@@ -26,14 +26,33 @@ export const getRawErrorMessage = (error: any) => {
 };
 
 /**
+ * Assinatura de falha de transporte na mensagem do erro.
+ *
+ * As quatro primeiras são as redações nativas do `fetch`: `Failed to fetch`
+ * (Chrome), `Load failed` (Safari), `NetworkError when attempting to fetch
+ * resource` (Firefox) e `fetch failed` (undici, quando o erro vem do servidor).
+ * Repare que `'Network Error'` (com espaço) **não** está aqui de propósito —
+ * essa frase vem do axios e já está coberta pelo código `ERR_NETWORK`.
+ *
+ * Exportado porque nem todo consumidor tem um `Error` na mão: o classificador
+ * do `beforeSend` em `apps/class/lib/transport-loss.ts` casa contra
+ * `exception.value` do evento do Sentry, que é string. Sem esta constante ele
+ * precisaria de uma cópia do regex, que é exatamente a divergência que o
+ * cabeçalho deste arquivo existe para impedir.
+ *
+ * Sem flag `g`: `test` não guarda `lastIndex`, então a constante pode ser
+ * compartilhada entre chamadas sem alternar resultado.
+ */
+export const NETWORK_ERROR_PATTERN =
+  /failed to fetch|networkerror|load failed|fetch failed|connection refused/i;
+
+/**
  * Falha de transporte: a requisição não completou o ciclo com o servidor.
  *
  * `ERR_NETWORK` é o portão real para tudo que passa pelo interceptor do axios —
  * é o código que o axios atribui quando o `onerror` do XHR dispara (conexão
  * caiu, aba fechando, DNS/TLS/CORS quebrado). O regex cobre o caso do `fetch`
- * cru, que não passa pelo interceptor e só tem a mensagem: repare que ele
- * **não** casa `'Network Error'` (com espaço) de propósito — essa frase vem do
- * axios e já está coberta pelo código.
+ * cru, que não passa pelo interceptor e só tem a mensagem.
  *
  * Cancelamento (`ERR_CANCELED` / `CanceledError` / `AbortError`) não entra:
  * é a própria tela abortando a requisição, não uma falha. O interceptor já o
@@ -45,10 +64,7 @@ export const getRawErrorMessage = (error: any) => {
  */
 export const isNetworkError = (error: any) => {
   if (error?.code === 'ERR_NETWORK') return true;
-  const raw = getRawErrorMessage(error);
-  return /failed to fetch|networkerror|load failed|fetch failed|connection refused/i.test(
-    raw
-  );
+  return NETWORK_ERROR_PATTERN.test(getRawErrorMessage(error));
 };
 
 /** Mensagem única para falha de transporte — o aluno não precisa do código. */

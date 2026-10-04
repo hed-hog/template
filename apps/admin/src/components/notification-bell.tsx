@@ -21,10 +21,36 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
+import { useRealtime } from '@/components/realtime/realtime-provider';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { toast } from 'sonner';
+
+/** Evento publicado pelo NotificationService (libraries/core). */
+export const NOTIFICATION_REALTIME_EVENT = 'notification:event';
+
+/**
+ * Janela de coalescing dos refetches disparados por push. Um job com barra de
+ * progresso emite dezenas de eventos em sequência, e sem esta janela cada um
+ * viraria duas requisições — trocando um poll previsível por uma rajada pior.
+ */
+const REFETCH_DEBOUNCE_MS = 300;
+
+/**
+ * Rede de segurança enquanto há job em andamento e o socket está conectado. É o
+ * único caso em que um evento perdido trava a interface de forma visível (barra
+ * congelada para sempre); fora dele, o push basta.
+ */
+const CONNECTED_ACTIVE_POLL_MS = 15000;
 
 type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'progress';
 type NotificationStatus = 'unread' | 'read';
@@ -53,7 +79,13 @@ interface PaginatedResponse {
 }
 
 type NotificationStreamEvent = {
-  type: 'ready' | 'notification.created' | 'notification.updated';
+  // `reward.granted` é gamificação do aluno e nunca interessa a esta tela, mas
+  // anda no mesmo evento — o funil do backend é um só.
+  type:
+    | 'ready'
+    | 'notification.created'
+    | 'notification.updated'
+    | 'reward.granted';
   notificationId?: number;
   notification?: Notification;
 };
@@ -69,16 +101,31 @@ export interface NotificationsState {
   handleDeleteAll: () => Promise<void>;
 }
 
-export function useNotifications(): NotificationsState {
-  const { request, accessToken } = useApp();
+/**
+ * Estado das notificações, com entrega em tempo real pelo WebSocket
+ * compartilhado (`/realtime`) e polling só como rede de segurança.
+ *
+ * Antes daqui viviam três coisas somadas: um parser de SSE escrito à mão, um
+ * `setInterval` de 30s que rodava mesmo com o stream conectado, e nenhuma
+ * partilha de estado — como isto era um hook comum, cada tela que o chamasse
+ * abria a própria conexão e o próprio intervalo (na tela de cursos do LMS eram
+ * três de cada). Daí o provider: uma conexão, um estado, um fallback.
+ *
+ * O socket entrega o evento; a lista continua vindo do HTTP. A lista é paginada
+ * e o `unreadCount` é um `count` com filtro próprio no servidor — reconstruir os
+ * dois a partir de eventos exigiria reimplementar ordenação, corte de página e a
+ * regra de `auto_remove` aqui, e qualquer evento perdido deixaria o badge errado
+ * sem nada que o corrigisse. Do payload aproveitamos só o que é seguro: o toast
+ * e o patch da barra de progresso de um item já visível.
+ */
+function useNotificationsState(): NotificationsState {
+  const { request } = useApp();
+  const { connected, on } = useRealtime();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const openRef = useRef(open);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const streamAbortRef = useRef<AbortController | null>(null);
-  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const shouldReconnectRef = useRef(true);
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasActiveAsync = notifications.some(
     (n) => n.progress != null && n.progress < 100
@@ -104,180 +151,76 @@ export function useNotifications(): NotificationsState {
     }
   }, [request]);
 
-  const refreshFromStream = useCallback(
-    async (event: NotificationStreamEvent) => {
-      if (event.type === 'notification.created' && event.notification) {
-        if (!openRef.current) {
-          toast(event.notification.title, {
-            description: event.notification.body,
-          });
-        }
-      }
-
-      await fetchAll();
-    },
-    [fetchAll, open]
-  );
-
-  const connectStream = useCallback(async () => {
-    // Both guards are defensive-only: the sole callers are (1) the effect
-    // below, which never calls connectStream() unless accessToken is truthy,
-    // and (2) the reconnect setTimeout, which is always cleared by that same
-    // effect's cleanup before accessToken can change. `window` is likewise
-    // always defined here since this hook only ever runs client-side.
-    /* v8 ignore next 3 */
-    if (!accessToken || typeof window === 'undefined') {
-      return;
-    }
-
-    // Also defensive-only: by the time connectStream() runs again (either
-    // re-invoked synchronously by the effect below, whose own cleanup already
-    // aborts/nulls streamAbortRef first, or via the reconnect timeout, whose
-    // finally-block already nulled streamAbortRef before scheduling), this
-    // ref is always null already.
-    /* v8 ignore next 3 */
-    if (streamAbortRef.current) {
-      streamAbortRef.current.abort();
-    }
-    if (reconnectRef.current) {
-      clearTimeout(reconnectRef.current);
-      reconnectRef.current = null;
-    }
-
-    const controller = new AbortController();
-    streamAbortRef.current = controller;
-
-    const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-    const apiBase = rawBase.replace(/\/$/, '');
-    const url = `${apiBase}/notification/stream`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/event-stream',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok || !response.body) {
-        throw new Error(`notification-stream-unavailable:${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (!controller.signal.aborted) {
-        const { value, done } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const blocks = buffer.split('\n\n');
-        // `String.prototype.split` always returns at least one element, so
-        // `.pop()` here is never actually `undefined`; the `?? ''` is a
-        // type-narrowing fallback only.
-        /* v8 ignore next */
-        buffer = blocks.pop() ?? '';
-
-        for (const block of blocks) {
-          const lines = block.split('\n');
-          const dataText = lines
-            .filter((line) => line.startsWith('data:'))
-            .map((line) => line.slice(5).trim())
-            .join('\n');
-
-          if (!dataText) {
-            continue;
-          }
-
-          let payload: NotificationStreamEvent | null = null;
-          try {
-            payload = JSON.parse(dataText) as NotificationStreamEvent;
-          } catch {
-            continue;
-          }
-
-          if (payload?.type === 'ready') {
-            continue;
-          }
-
-          await refreshFromStream(payload ?? { type: 'notification.updated' });
-        }
-      }
-    } catch {
-      // silent: reconnect below
-    } finally {
-      if (streamAbortRef.current === controller) {
-        streamAbortRef.current = null;
-      }
-
-      if (shouldReconnectRef.current && accessToken) {
-        reconnectRef.current = setTimeout(() => {
-          void connectStream();
-        }, 5000);
-      }
-    }
-  }, [accessToken, refreshFromStream]);
+  const scheduleFetchAll = useCallback(() => {
+    if (refetchTimerRef.current) return;
+    refetchTimerRef.current = setTimeout(() => {
+      refetchTimerRef.current = null;
+      void fetchAll();
+    }, REFETCH_DEBOUNCE_MS);
+  }, [fetchAll]);
 
   useEffect(() => {
     openRef.current = open;
   }, [open]);
 
   useEffect(() => {
+    return () => {
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
   useEffect(() => {
-    shouldReconnectRef.current = Boolean(accessToken);
+    return on(NOTIFICATION_REALTIME_EVENT, (event: NotificationStreamEvent) => {
+      if (event?.type === 'reward.granted') return;
 
-    if (!accessToken) {
-      // Structurally unreachable with a truthy ref: whenever accessToken was
-      // previously truthy, this same effect registered a cleanup (below) that
-      // already aborts the stream and clears the reconnect timer *before*
-      // this body re-runs (React always runs the previous cleanup before a
-      // re-triggered effect). And when accessToken was already falsy on the
-      // prior render, this branch returned early without registering a
-      // cleanup, so the refs were never set in the first place. Kept as a
-      // defensive guard against future refactors of the effect above.
-      /* v8 ignore next 8 -- see explanation above: unreachable given the paired cleanup below always runs first */
-      if (streamAbortRef.current) {
-        streamAbortRef.current.abort();
-        streamAbortRef.current = null;
+      if (
+        event?.type === 'notification.created' &&
+        event.notification &&
+        !openRef.current
+      ) {
+        toast(event.notification.title, {
+          description: event.notification.body,
+        });
       }
-      if (reconnectRef.current) {
-        clearTimeout(reconnectRef.current);
-        reconnectRef.current = null;
-      }
-      return;
-    }
 
-    void connectStream();
+      // Patch otimista de um item que já está na lista: `updateProgress` manda a
+      // linha inteira, e isso mantém a barra fluida sem uma requisição por tick.
+      // Quem reconcilia continua sendo o refetch logo abaixo.
+      const incoming = event?.notification;
+      if (incoming?.id != null) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === incoming.id ? { ...n, ...incoming } : n))
+        );
+      }
 
-    return () => {
-      shouldReconnectRef.current = false;
-      if (streamAbortRef.current) {
-        streamAbortRef.current.abort();
-        streamAbortRef.current = null;
-      }
-      if (reconnectRef.current) {
-        clearTimeout(reconnectRef.current);
-        reconnectRef.current = null;
-      }
-    };
-  }, [accessToken, connectStream]);
+      scheduleFetchAll();
+    });
+  }, [on, scheduleFetchAll]);
+
+  // Re-seed a cada (re)conexão: o que aconteceu enquanto o socket esteve fora do
+  // ar não gerou evento para este cliente, e o servidor não guarda histórico.
+  useEffect(() => {
+    if (connected) void fetchAll();
+  }, [connected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    const delay = hasActiveAsync ? 5000 : 30000;
-    intervalRef.current = setInterval(fetchAll, delay);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [hasActiveAsync, fetchAll]);
+    // Sem socket, a cadência de antes. Com socket, nada — exceto a rede de
+    // segurança enquanto houver job em andamento.
+    const delay = connected
+      ? hasActiveAsync
+        ? CONNECTED_ACTIVE_POLL_MS
+        : null
+      : hasActiveAsync
+        ? 5000
+        : 30000;
+    if (delay == null) return;
+    const id = setInterval(fetchAll, delay);
+    return () => clearInterval(id);
+  }, [connected, hasActiveAsync, fetchAll]);
 
   useEffect(() => {
     if (open) fetchAll();
@@ -361,6 +304,31 @@ export function useNotifications(): NotificationsState {
     handleMarkAllRead,
     handleDeleteAll,
   };
+}
+
+const NotificationsContext = createContext<NotificationsState | null>(null);
+
+/**
+ * Instância única do estado de notificações para todo o app autenticado. Vai
+ * montado dentro do `RealtimeProvider`, de quem depende para o push.
+ */
+export function NotificationsProvider({ children }: { children: ReactNode }) {
+  const value = useNotificationsState();
+  return (
+    <NotificationsContext.Provider value={value}>
+      {children}
+    </NotificationsContext.Provider>
+  );
+}
+
+export function useNotifications(): NotificationsState {
+  const context = useContext(NotificationsContext);
+  // Falha alto de propósito: sem o provider cada consumidor voltaria calado a
+  // ter estado, conexão e polling próprios — exatamente o que ele elimina.
+  if (!context) {
+    throw new Error('useNotifications requires <NotificationsProvider>');
+  }
+  return context;
 }
 
 function isRunning(n: Notification) {
@@ -580,7 +548,7 @@ export function NotificationBell({
           variant="ghost"
           size="icon"
           className="relative h-8 w-8 shrink-0"
-          aria-label={t('title')}
+          tooltip={t('title')}
         >
           <Bell className="size-4" />
           {unreadCount > 0 && (

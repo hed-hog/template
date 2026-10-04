@@ -3,21 +3,18 @@
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 type IconAction = {
   key: string;
   label: ReactNode;
   icon: ReactNode;
-  onClick: () => void;
+  /** Pode retornar Promise: o Button mostra o spinner sozinho até ela resolver. */
+  onClick: () => void | Promise<void>;
   destructive?: boolean;
   disabled?: boolean;
+  /** Força o estado de carregando quando a assincronia não passa pelo onClick. */
+  loading?: boolean;
   side?: 'top' | 'right' | 'bottom' | 'left';
 };
 
@@ -33,46 +30,38 @@ export function IconActionGroup({
   buttonClassName,
 }: IconActionGroupProps) {
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className={cn('flex items-center gap-1', className)}>
-        {actions.map((action) => {
-          const labelText =
-            typeof action.label === 'string' ||
-            typeof action.label === 'number'
-              ? String(action.label)
-              : action.key;
+    <div className={cn('flex items-center gap-1', className)}>
+      {actions.map((action) => {
+        const labelText =
+          typeof action.label === 'string' || typeof action.label === 'number'
+            ? String(action.label)
+            : action.key;
 
-          return (
-            <Tooltip key={action.key}>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    'h-8 w-8',
-                    action.destructive &&
-                      'text-destructive hover:text-destructive',
-                    buttonClassName
-                  )}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    action.onClick();
-                  }}
-                  disabled={action.disabled}
-                  aria-label={labelText}
-                >
-                  {action.icon}
-                  <span className="sr-only">{labelText}</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side={action.side}>
-                {action.label ?? labelText}
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </div>
-    </TooltipProvider>
+        return (
+          <Button
+            key={action.key}
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className={cn(
+              action.destructive && 'text-destructive hover:text-destructive',
+              buttonClassName
+            )}
+            onClick={(event) => {
+              event.stopPropagation();
+              return action.onClick();
+            }}
+            disabled={action.disabled}
+            loading={action.loading}
+            aria-label={labelText}
+            tooltip={action.label ?? labelText}
+            tooltipSide={action.side}
+          >
+            {action.icon}
+            <span className="sr-only">{labelText}</span>
+          </Button>
+        );
+      })}
+    </div>
   );
 }

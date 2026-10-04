@@ -7,6 +7,9 @@ const htmlToPlainText = (html: string): string =>
 const extractProviderMessageId = (result: any): string | null =>
   (MailService as any).extractProviderMessageId(result);
 
+const splitAddresses = (value?: any): string[] =>
+  (MailService as any).splitAddresses(value);
+
 describe('MailService.htmlToPlainText', () => {
   it('converte <br> e fechamento de bloco em quebra de linha', () => {
     expect(htmlToPlainText('<p>Olá</p><p>Tudo bem?</p>')).toBe('Olá\nTudo bem?');
@@ -89,5 +92,45 @@ describe('MailService.extractProviderMessageId', () => {
     expect(extractProviderMessageId({ result: {} })).toBeNull();
     expect(extractProviderMessageId(undefined)).toBeNull();
     expect(extractProviderMessageId(null)).toBeNull();
+  });
+});
+
+describe('MailService.splitAddresses', () => {
+  // O split(';') cru deixava passar o espaco e o SES respondia
+  // "InvalidParameterValue: Local address contains control or whitespace".
+  it('apara o espaco que sobra depois do ponto-e-virgula', () => {
+    expect(splitAddresses('a@x.com; b@x.com')).toEqual(['a@x.com', 'b@x.com']);
+    expect(splitAddresses(' a@x.com ')).toEqual(['a@x.com']);
+  });
+
+  it('separa por virgula tambem, como as pessoas costumam digitar', () => {
+    expect(splitAddresses('a@x.com,b@x.com')).toEqual(['a@x.com', 'b@x.com']);
+    expect(splitAddresses('a@x.com, b@x.com; c@x.com')).toEqual([
+      'a@x.com',
+      'b@x.com',
+      'c@x.com',
+    ]);
+  });
+
+  it('descarta pedacos vazios', () => {
+    expect(splitAddresses('a@x.com;')).toEqual(['a@x.com']);
+    expect(splitAddresses(';;')).toEqual([]);
+    expect(splitAddresses('')).toEqual([]);
+    expect(splitAddresses(undefined)).toEqual([]);
+    expect(splitAddresses(null)).toEqual([]);
+  });
+
+  it('preserva caixa e nome de exibicao, e nao quebra nome com virgula', () => {
+    expect(splitAddresses('Nome <A@X.com>')).toEqual(['Nome <A@X.com>']);
+    expect(splitAddresses('"Hcode, Ltda" <a@x.com>')).toEqual([
+      '"Hcode, Ltda" <a@x.com>',
+    ]);
+  });
+
+  it('aceita array e remove repetidos ignorando a caixa', () => {
+    expect(splitAddresses(['a@x.com', ' A@X.com ', 'b@x.com'])).toEqual([
+      'a@x.com',
+      'b@x.com',
+    ]);
   });
 });

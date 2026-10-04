@@ -64,6 +64,13 @@ export type PageHeaderProps = {
   title?: string | ReactNode;
   description?: string;
   extraContent?: ReactNode;
+  /**
+   * Extra row rendered below the title/extraContent row, full width. Rendered
+   * as-is (no wrapper) so a node that conditionally renders `null` (e.g. a
+   * selector only shown to some users) doesn't leave an empty spacer behind —
+   * the passed content owns its own spacing/border when it has something to show.
+   */
+  subheader?: ReactNode;
 };
 
 export function PageHeader({
@@ -72,6 +79,7 @@ export function PageHeader({
   title,
   description,
   extraContent,
+  subheader,
 }: PageHeaderProps) {
   const isMobile = useIsMobile();
   const t = useTranslations('core.PageHeader');
@@ -150,7 +158,7 @@ export function PageHeader({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
-                              aria-label={t('openBreadcrumbLevels')}
+                              tooltip={t('openBreadcrumbLevels')}
                             >
                               <BreadcrumbEllipsis className="size-7" />
                             </Button>
@@ -214,7 +222,7 @@ export function PageHeader({
                   <Button
                     size="icon-sm"
                     variant="ghost"
-                    aria-label={t('openActionsMenu')}
+                    tooltip={t('openActionsMenu')}
                   >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
@@ -255,6 +263,7 @@ export function PageHeader({
           <div className="py-2">{extraContent}</div>
         </div>
       )}
+      {subheader}
     </header>
   );
 }

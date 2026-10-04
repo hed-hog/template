@@ -9,6 +9,9 @@
   "exclude": [
     "node_modules",
     "dist",
-    ".turbo"
+    ".turbo",
+    "jest.config.ts",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ]
 }

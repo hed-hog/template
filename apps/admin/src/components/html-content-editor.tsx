@@ -27,7 +27,9 @@ const RichTextEditor = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <div className="min-h-48 animate-pulse rounded-md bg-muted" />,
+    loading: () => (
+      <div className="min-h-48 animate-pulse rounded-md bg-muted" />
+    ),
   }
 );
 
@@ -156,7 +158,9 @@ export function HtmlContentEditor({
 }: HtmlContentEditorProps) {
   const t = useTranslations('core.HtmlContentEditor');
   const [tab, setTab] = useState<HtmlContentEditorTab>(
-    previewOnly ? 'preview' : defaultTab ?? (allowRichText ? 'editor' : 'code')
+    previewOnly
+      ? 'preview'
+      : (defaultTab ?? (allowRichText ? 'editor' : 'code'))
   );
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -225,7 +229,9 @@ export function HtmlContentEditor({
     } catch (err: any) {
       const message = aiEdit.getErrorMessage
         ? aiEdit.getErrorMessage(err)
-        : err?.response?.data?.message ?? err?.message ?? t('aiEditErrorDefault');
+        : (err?.response?.data?.message ??
+          err?.message ??
+          t('aiEditErrorDefault'));
       toast.error(message);
     } finally {
       setAiApplying(false);
@@ -268,7 +274,9 @@ export function HtmlContentEditor({
       <Textarea
         value={aiInstruction}
         onChange={(e) => setAiInstruction(e.target.value)}
-        placeholder={aiEdit.instructionPlaceholder ?? t('aiInstructionPlaceholder')}
+        placeholder={
+          aiEdit.instructionPlaceholder ?? t('aiInstructionPlaceholder')
+        }
         disabled={aiApplying}
         className="min-h-16 resize-none bg-background text-sm"
         onKeyDown={(e) => {
@@ -315,7 +323,7 @@ export function HtmlContentEditor({
           size="icon"
           className="h-7 w-7"
           onClick={() => setLayout(showSplit ? 'tabs' : 'split')}
-          title={showSplit ? t('exitSplitView') : t('enterSplitView')}
+          tooltip={showSplit ? t('exitSplitView') : t('enterSplitView')}
         >
           {showSplit ? (
             <Rows3 className="h-3.5 w-3.5" />
@@ -330,7 +338,7 @@ export function HtmlContentEditor({
         size="icon"
         className="h-7 w-7"
         onClick={() => setIsFullscreen((v) => !v)}
-        title={isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
+        tooltip={isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
       >
         {isFullscreen ? (
           <Minimize2 className="h-3.5 w-3.5" />
@@ -400,7 +408,9 @@ export function HtmlContentEditor({
                   value="editor"
                   className="flex-1"
                   disabled={hasComplexHtml}
-                  title={hasComplexHtml ? t('complexHtmlTabDisabled') : undefined}
+                  title={
+                    hasComplexHtml ? t('complexHtmlTabDisabled') : undefined
+                  }
                 >
                   {t('tabEditor')}
                 </TabsTrigger>

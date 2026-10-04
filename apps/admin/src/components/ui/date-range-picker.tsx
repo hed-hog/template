@@ -1,22 +1,46 @@
 'use client';
 
-import { format } from 'date-fns';
+import {
+  addMonths,
+  format,
+  isSameMonth,
+  startOfMonth,
+  subMonths,
+} from 'date-fns';
 import { enUS, ptBR } from 'date-fns/locale';
 import { CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useLocale } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from 'react';
 import type { DateRange } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  applyDateMask,
+  dateToMask,
+  isDateMaskInvalid,
+  isDateMaskPartial,
+  maskToDate,
+  onlyDateDigits,
+} from '@/lib/date-mask';
 import { cn } from '@/lib/utils';
 
-type PresetId =
+export type PresetId =
   | 'today'
   | 'yesterday'
   | 'last7Days'
@@ -28,17 +52,17 @@ type PresetId =
   | 'last90Days'
   | 'thisYear';
 
-const PRESETS: { id: PresetId; label: string }[] = [
-  { id: 'today', label: 'Hoje' },
-  { id: 'yesterday', label: 'Ontem' },
-  { id: 'last7Days', label: 'Últimos 7 dias' },
-  { id: 'thisWeek', label: 'Esta semana' },
-  { id: 'lastWeek', label: 'Semana passada' },
-  { id: 'thisMonth', label: 'Este mês' },
-  { id: 'lastMonth', label: 'Mês passado' },
-  { id: 'last30Days', label: 'Últimos 30 dias' },
-  { id: 'last90Days', label: 'Últimos 90 dias' },
-  { id: 'thisYear', label: 'Este ano' },
+const PRESET_IDS: PresetId[] = [
+  'today',
+  'yesterday',
+  'last7Days',
+  'thisWeek',
+  'lastWeek',
+  'thisMonth',
+  'lastMonth',
+  'last30Days',
+  'last90Days',
+  'thisYear',
 ];
 
 function toISO(date: Date): string {
@@ -55,7 +79,11 @@ function isoToDate(iso: string): Date | undefined {
   return new Date(y, m - 1, d);
 }
 
-function getPresetDates(preset: PresetId): { from: string; to: string } {
+/**
+ * Datas de um preset. Exportado para que uma pagina possa "voltar ao padrao"
+ * (um botao Limpar, por exemplo) sem reimplementar a aritmetica de periodo.
+ */
+export function getPresetDates(preset: PresetId): { from: string; to: string } {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -139,6 +167,123 @@ export function formatDateRangeLabel(
   return `Até ${fmt(toDate)}`;
 }
 
+/**
+ * Período de trás pra frente vira período válido: quem digita 31/08 no "De"
+ * e 01/08 no "Até" quis agosto, não um intervalo impossível. A troca sai na
+ * confirmação — sair do campo ou aplicar — pra não mexer nos valores debaixo
+ * dos dedos de quem ainda está digitando.
+ */
+function normalizeRange(range: DateRange | undefined): DateRange | undefined {
+  if (range?.from && range.to && range.to < range.from) {
+    return { from: range.to, to: range.from };
+  }
+
+  return range;
+}
+
+/**
+ * Qual mês deixar no painel da esquerda depois de uma data digitada: o "De"
+ * vai pro painel da esquerda e o "Até" pro da direita. Mês que já está à
+ * vista não move nada — o calendário não pode dar um pulo a cada data
+ * confirmada — e quando as duas pontas caem no mesmo mês ele fica à
+ * esquerda, senão o "De" sairia da tela.
+ */
+function monthForTypedDate(
+  field: 'from' | 'to',
+  typed: Date,
+  range: DateRange | undefined,
+  current: Date | undefined
+): Date {
+  const target = startOfMonth(typed);
+
+  if (current) {
+    const left = startOfMonth(current);
+
+    if (isSameMonth(target, left) || isSameMonth(target, addMonths(left, 1))) {
+      return left;
+    }
+  }
+
+  if (field === 'from') {
+    return target;
+  }
+
+  if (range?.from && isSameMonth(range.from, typed)) {
+    return target;
+  }
+
+  return subMonths(target, 1);
+}
+
+interface DateFieldProps {
+  id: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  invalid: boolean;
+  invalidMessage: string;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onValueChange: (value: string) => void;
+  onBlur: () => void;
+  onEnter: () => void;
+}
+
+function DateField({
+  id,
+  label,
+  placeholder,
+  value,
+  invalid,
+  invalidMessage,
+  inputRef,
+  onValueChange,
+  onBlur,
+  onEnter,
+}: DateFieldProps) {
+  const errorId = `${id}-error`;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Label htmlFor={id} className="shrink-0 text-xs text-muted-foreground">
+        {label}
+      </Label>
+      <Input
+        id={id}
+        ref={inputRef}
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        spellCheck={false}
+        enterKeyHint="done"
+        maxLength={10}
+        placeholder={placeholder}
+        value={value}
+        aria-invalid={invalid || undefined}
+        aria-describedby={invalid ? errorId : undefined}
+        className="h-8 w-28 px-2 text-center text-sm tabular-nums"
+        onChange={(event) => onValueChange(event.target.value)}
+        // Clicar e digitar sempre substitui: a máscara é da esquerda pra
+        // direita, então editar no meio da string só confunde o cursor.
+        onFocus={(event) => event.currentTarget.select()}
+        onBlur={onBlur}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter') return;
+          // O popover é portalizado, então o campo não pertence ao <form> de
+          // nenhuma tela e não existe submit implícito — o preventDefault
+          // fica de cinto e suspensório.
+          event.preventDefault();
+          onEnter();
+        }}
+      />
+      {invalid && (
+        <span id={errorId} role="alert" className="sr-only">
+          {invalidMessage}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function readStoredRange(key: string): { from: string; to: string } | null {
   /* v8 ignore next -- SSR-only guard, unreachable under jsdom where window is always defined */
   if (typeof window === 'undefined') return null;
@@ -174,6 +319,8 @@ export interface DateRangePickerProps {
   /** Key to persist the applied range in localStorage (rehydrated on load). */
   storageKey?: string;
   className?: string;
+  /** Classes do botão que abre o calendário (ex.: esticar no celular). */
+  triggerClassName?: string;
 }
 
 export function DateRangePicker({
@@ -184,6 +331,7 @@ export function DateRangePicker({
   defaultPreset,
   storageKey,
   className,
+  triggerClassName,
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>(undefined);
@@ -194,8 +342,16 @@ export function DateRangePicker({
   const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(
     undefined
   );
+  const [fromText, setFromText] = useState('');
+  const [toText, setToText] = useState('');
+  const fromRef = useRef<HTMLInputElement>(null);
+  const toRef = useRef<HTMLInputElement>(null);
+  const autoAdvancingRef = useRef(false);
+  const fromFieldId = useId();
+  const toFieldId = useId();
   const initializedRef = useRef(false);
 
+  const t = useTranslations('core.DateRangePicker');
   const locale = useLocale();
   const dateLocale = locale.startsWith('pt') ? ptBR : enUS;
   const monthNames = useMemo(
@@ -240,6 +396,10 @@ export function DateRangePicker({
       setShowYearMonth(false);
       setPickerYear(null);
       setDecadeStart(currentYear - 9);
+      // Semeado por isoToDate, não pela string crua: prop malformada abre com
+      // o campo vazio em vez de mostrar uma data impossível.
+      setFromText(dateToMask(isoToDate(fromDate)));
+      setToText(dateToMask(isoToDate(toDate)));
       setCalendarMonth(isoToDate(fromDate) ?? new Date());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -248,19 +408,140 @@ export function DateRangePicker({
   const hasRange = Boolean(fromDate || toDate);
   const displayText = formatDateRangeLabel(fromDate, toDate);
 
-  const draftLabel = draft?.from
-    ? formatDateRangeLabel(toISO(draft.from), draft.to ? toISO(draft.to) : '')
-    : null;
+  const fromInvalid = isDateMaskInvalid(fromText);
+  const toInvalid = isDateMaskInvalid(toText);
+  const canApply = !fromInvalid && !toInvalid;
+
+  /**
+   * Funil de toda mudança do rascunho que não vem da digitação — calendário,
+   * preset, mês, Limpar. Reescrever os dois textos no mesmo ato dispensa um
+   * buffer de edição, que seria justamente o que brigaria com quem digita.
+   */
+  function commitDraft(next: DateRange | undefined) {
+    const normalized = normalizeRange(next);
+    setDraft(normalized);
+    setFromText(dateToMask(normalized?.from));
+    setToText(dateToMask(normalized?.to));
+  }
+
+  function handleFieldChange(field: 'from' | 'to', raw: string) {
+    const masked = applyDateMask(raw);
+
+    if (field === 'from') {
+      setFromText(masked);
+    } else {
+      setToText(masked);
+    }
+
+    const digits = onlyDateDigits(masked);
+
+    // Campo esvaziado: limpa só aquele lado do rascunho.
+    if (digits.length === 0) {
+      setDraft(
+        field === 'from'
+          ? { from: undefined, to: draft?.to }
+          : { from: draft?.from, to: undefined }
+      );
+      return;
+    }
+
+    // Pela metade: não interpreta. O calendário não pode pular enquanto o ano
+    // ainda está sendo digitado, e "0026" não é o ano 26.
+    if (digits.length < 8) {
+      return;
+    }
+
+    const parsed = maskToDate(masked);
+
+    // 32/08, mês 13, 30 de fevereiro: mantém o texto na tela pra ser
+    // corrigido — o anel vermelho avisa e o Aplicar trava.
+    if (!parsed) {
+      return;
+    }
+
+    const next =
+      field === 'from'
+        ? { from: parsed, to: draft?.to }
+        : { from: draft?.from, to: parsed };
+
+    setDraft(normalizeRange(next));
+    setCalendarMonth((current) =>
+      monthForTypedDate(field, parsed, next, current)
+    );
+
+    if (field === 'from') {
+      // O foco sai daqui na hora, e o blur dispara junto, ainda dentro deste
+      // handler: sem a marca ele reconciliaria o campo com o rascunho do
+      // render anterior — que ainda nao conhece o que acabou de ser digitado —
+      // e apagaria a data. Como o blur e sincrono, a marca se apaga na linha
+      // seguinte e nunca fica presa.
+      autoAdvancingRef.current = true;
+      toRef.current?.focus();
+      autoAdvancingRef.current = false;
+    }
+  }
+
+  /**
+   * Ao sair do campo os textos acertam o passo com o rascunho: par invertido
+   * troca de lugar (o rascunho já trocou durante a digitação) e data pela
+   * metade volta ao que está valendo, pra nenhum campo prometer um filtro que
+   * o Aplicar não vai levar. Texto inválido fica como está — anel vermelho e
+   * Aplicar travado perdem o sentido se o campo se desfizer sozinho.
+   */
+  function handleFieldBlur() {
+    if (autoAdvancingRef.current) return;
+
+    const typedFrom = maskToDate(fromText);
+    const typedTo = maskToDate(toText);
+
+    if (typedFrom && typedTo && typedTo < typedFrom) {
+      setFromText(toText);
+      setToText(fromText);
+      return;
+    }
+
+    if (isDateMaskPartial(fromText)) {
+      setFromText(dateToMask(draft?.from));
+    }
+
+    if (isDateMaskPartial(toText)) {
+      setToText(dateToMask(draft?.to));
+    }
+  }
+
+  function handleFieldEnter() {
+    if (!canApply) return;
+    applyDraft();
+  }
+
+  /**
+   * Número digitado em qualquer lugar do popover começa a preencher a data
+   * inicial. O react-day-picker só intercepta setas, PageUp/Down, Home e End
+   * — dígito nenhum é consumido por ele, então o evento chega até aqui.
+   */
+  function handlePopoverKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.defaultPrevented) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!/^\d$/.test(event.key)) return;
+    // Já está digitando num dos campos: não sequestra.
+    if ((event.target as HTMLElement).tagName === 'INPUT') return;
+
+    event.preventDefault();
+    setFromText(event.key);
+    setDraft({ from: undefined, to: draft?.to });
+    fromRef.current?.focus();
+  }
 
   function applyPreset(preset: PresetId) {
     const { from, to } = getPresetDates(preset);
-    setDraft({ from: isoToDate(from), to: isoToDate(to) });
+    commitDraft({ from: isoToDate(from), to: isoToDate(to) });
     setShowYearMonth(false);
   }
 
   function applyDraft() {
-    const from = draft?.from ? toISO(draft.from) : '';
-    const to = draft?.to ? toISO(draft.to) : '';
+    const normalized = normalizeRange(draft);
+    const from = normalized?.from ? toISO(normalized.from) : '';
+    const to = normalized?.to ? toISO(normalized.to) : '';
     onFromDateChange(from);
     onToDateChange(to);
     if (storageKey) writeStoredRange(storageKey, from, to);
@@ -278,7 +559,7 @@ export function DateRangePicker({
   const yearsList = Array.from({ length: 10 }, (_, index) => decadeEnd - index);
 
   function selectMonth(year: number, monthIndex: number) {
-    setDraft({
+    commitDraft({
       from: new Date(year, monthIndex, 1),
       to: new Date(year, monthIndex + 1, 0),
     });
@@ -298,30 +579,32 @@ export function DateRangePicker({
             variant="outline"
             className={cn(
               'h-9 gap-2 px-3 text-sm font-normal',
-              !hasRange && 'text-muted-foreground'
+              !hasRange && 'text-muted-foreground',
+              triggerClassName
             )}
           >
             <CalendarIcon className="size-4 shrink-0" />
-            <span>{displayText ?? 'Selecionar período'}</span>
+            <span>{displayText ?? t('placeholder')}</span>
           </Button>
         </PopoverTrigger>
 
         <PopoverContent
           className="max-h-[80vh] w-auto overflow-auto p-0"
           align="start"
+          onKeyDown={handlePopoverKeyDown}
         >
           <div className="flex flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0">
             {/* Predefined suggestions */}
             <div className="flex min-w-37 flex-col gap-0.5 p-2">
-              {PRESETS.map((preset) => (
+              {PRESET_IDS.map((presetId) => (
                 <Button
-                  key={preset.id}
+                  key={presetId}
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start text-sm"
-                  onClick={() => applyPreset(preset.id)}
+                  onClick={() => applyPreset(presetId)}
                 >
-                  {preset.label}
+                  {t(`presets.${presetId}`)}
                 </Button>
               ))}
               <div className="my-1 border-t" />
@@ -331,7 +614,7 @@ export function DateRangePicker({
                 className="w-full justify-between text-sm"
                 onClick={() => setShowYearMonth((value) => !value)}
               >
-                Outros anos
+                {t('otherYears')}
                 <ChevronRight className="size-4 shrink-0" />
               </Button>
             </div>
@@ -341,81 +624,83 @@ export function DateRangePicker({
               <div className="flex min-h-72 flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0">
                 {showYearMonth && (
                   <>
-                  {/* Year list with decade navigation */}
-                  <div className="flex min-w-32 flex-col p-2">
-                    <div className="flex items-center justify-between gap-1 px-1 pb-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        onClick={() => setDecadeStart((value) => value - 10)}
-                        aria-label="Década anterior"
-                      >
-                        <ChevronLeft className="size-4" />
-                      </Button>
-                      <span className="text-xs font-medium">
-                        {decadeStart} – {decadeEnd}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        disabled={!canGoNextDecade}
-                        onClick={() =>
-                          setDecadeStart((value) =>
-                            Math.min(value + 10, currentYear - 9)
-                          )
-                        }
-                        aria-label="Próxima década"
-                      >
-                        <ChevronRight className="size-4" />
-                      </Button>
-                    </div>
-                    <div className="flex max-h-72 flex-col gap-0.5 overflow-auto">
-                      {yearsList.map((year) => (
+                    {/* Year list with decade navigation */}
+                    <div className="flex min-w-32 flex-col p-2">
+                      <div className="flex items-center justify-between gap-1 px-1 pb-1">
                         <Button
-                          key={year}
-                          variant={pickerYear === year ? 'secondary' : 'ghost'}
-                          size="sm"
-                          className="w-full justify-start text-sm"
-                          onClick={() => {
-                            setPickerYear(year);
-                            setCalendarMonth(new Date(year, 0, 1));
-                          }}
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          onClick={() => setDecadeStart((value) => value - 10)}
+                          tooltip={t('previousDecade')}
                         >
-                          {year}
+                          <ChevronLeft className="size-4" />
                         </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Months of the selected year */}
-                  {pickerYear !== null && (
-                    <div className="flex max-h-72 min-w-36 flex-col gap-0.5 overflow-auto p-2">
-                      {monthNames.map((label, monthIndex) => (
+                        <span className="text-xs font-medium">
+                          {decadeStart} – {decadeEnd}
+                        </span>
                         <Button
-                          key={label}
-                          variant={
-                            isSelectedMonth(pickerYear, monthIndex)
-                              ? 'default'
-                              : 'ghost'
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          disabled={!canGoNextDecade}
+                          onClick={() =>
+                            setDecadeStart((value) =>
+                              Math.min(value + 10, currentYear - 9)
+                            )
                           }
-                          size="sm"
-                          className="w-full justify-start text-sm"
-                          onClick={() => selectMonth(pickerYear, monthIndex)}
+                          tooltip={t('nextDecade')}
                         >
-                          {label}
+                          <ChevronRight className="size-4" />
                         </Button>
-                      ))}
+                      </div>
+                      <div className="flex max-h-72 flex-col gap-0.5 overflow-auto">
+                        {yearsList.map((year) => (
+                          <Button
+                            key={year}
+                            variant={
+                              pickerYear === year ? 'secondary' : 'ghost'
+                            }
+                            size="sm"
+                            className="w-full justify-start text-sm"
+                            onClick={() => {
+                              setPickerYear(year);
+                              setCalendarMonth(new Date(year, 0, 1));
+                            }}
+                          >
+                            {year}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                  )}
+
+                    {/* Months of the selected year */}
+                    {pickerYear !== null && (
+                      <div className="flex max-h-72 min-w-36 flex-col gap-0.5 overflow-auto p-2">
+                        {monthNames.map((label, monthIndex) => (
+                          <Button
+                            key={label}
+                            variant={
+                              isSelectedMonth(pickerYear, monthIndex)
+                                ? 'default'
+                                : 'ghost'
+                            }
+                            size="sm"
+                            className="w-full justify-start text-sm"
+                            onClick={() => selectMonth(pickerYear, monthIndex)}
+                          >
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
                 <Calendar
                   mode="range"
                   numberOfMonths={2}
                   selected={draft}
-                  onSelect={setDraft}
+                  onSelect={commitDraft}
                   month={calendarMonth}
                   onMonthChange={setCalendarMonth}
                   locale={dateLocale}
@@ -423,21 +708,44 @@ export function DateRangePicker({
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
-                <span className="text-xs text-muted-foreground">
-                  {draftLabel ?? 'Selecione um período'}
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2">
+                <div className="flex items-center gap-3">
+                  <DateField
+                    id={fromFieldId}
+                    label={t('fromLabel')}
+                    placeholder={t('datePlaceholder')}
+                    value={fromText}
+                    invalid={fromInvalid}
+                    invalidMessage={t('invalidDate')}
+                    inputRef={fromRef}
+                    onValueChange={(value) => handleFieldChange('from', value)}
+                    onBlur={handleFieldBlur}
+                    onEnter={handleFieldEnter}
+                  />
+                  <DateField
+                    id={toFieldId}
+                    label={t('toLabel')}
+                    placeholder={t('datePlaceholder')}
+                    value={toText}
+                    invalid={toInvalid}
+                    invalidMessage={t('invalidDate')}
+                    inputRef={toRef}
+                    onValueChange={(value) => handleFieldChange('to', value)}
+                    onBlur={handleFieldBlur}
+                    onEnter={handleFieldEnter}
+                  />
+                </div>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-foreground"
-                    onClick={() => setDraft(undefined)}
+                    onClick={() => commitDraft(undefined)}
                   >
-                    Limpar
+                    {t('clear')}
                   </Button>
-                  <Button size="sm" onClick={applyDraft}>
-                    Aplicar
+                  <Button size="sm" onClick={applyDraft} disabled={!canApply}>
+                    {t('apply')}
                   </Button>
                 </div>
               </div>
@@ -452,7 +760,7 @@ export function DateRangePicker({
           size="icon"
           className="size-9 shrink-0 text-muted-foreground hover:text-foreground"
           onClick={clearRange}
-          aria-label="Limpar período"
+          tooltip={t('clearTooltip')}
         >
           <X className="size-4" />
         </Button>

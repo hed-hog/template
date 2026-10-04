@@ -43,7 +43,21 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const channelCounts = useRef<Map<string, number>>(new Map());
   const listeners = useRef<Map<string, Set<(payload: any) => void>>>(new Map());
 
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/+$/, '');
+  // O socket precisa de origem absoluta. Em produção a própria
+  // `NEXT_PUBLIC_API_BASE_URL` é uma; em dev ela vale `/api`, que é o proxy do
+  // Next — e o rewrite de `next.config.ts` cobre só `/api/:path*`, não
+  // `/socket.io/*`, então `io('/api/realtime')` pediria um namespace que o
+  // servidor não tem. Daí o `NEXT_PUBLIC_REALTIME_URL`, que aponta direto para
+  // a API em desenvolvimento. Valor relativo é descartado de propósito: sem
+  // origem o provider não conecta, `connected` fica falso e quem depende dele
+  // cai no fallback de polling.
+  const rawBaseUrl =
+    process.env.NEXT_PUBLIC_REALTIME_URL?.trim() ||
+    process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
+    '';
+  const baseUrl = /^https?:\/\//i.test(rawBaseUrl)
+    ? rawBaseUrl.replace(/\/+$/, '')
+    : '';
 
   // Attach a single dispatcher per event to the current socket.
   const attachAllListeners = useCallback((socket: Socket) => {

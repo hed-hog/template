@@ -7,6 +7,7 @@ WORKDIR /app
 FROM base AS deps
 # Copy workspace configuration
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
+COPY patches ./patches
 
 # Copy scripts needed for postinstall
 COPY scripts ./scripts
@@ -32,11 +33,20 @@ WORKDIR /app
 # Build with a deterministic placeholder so NEXT_PUBLIC_API_BASE_URL can be
 # replaced at container startup with the real public URL from runtime env vars.
 ENV NEXT_PUBLIC_API_BASE_URL=__RUNTIME_NEXT_PUBLIC_API_BASE_URL__
+# A imagem nao tem `.env`, entao o postinstall da raiz (scripts/init-env.ts)
+# copia `.env.example` e o Next inlina o `http://localhost:3100` de dev no bundle
+# do browser — o socket do RealtimeProvider ia bater no localhost do celular do
+# usuario, que e o que dispara o prompt de Local Network Access do Chrome e
+# impede a conexao. Vazio (e nao ausente) porque o @next/env so aplica o valor do
+# arquivo quando a chave e `undefined` em process.env; assim o provider cai no
+# fallback NEXT_PUBLIC_API_BASE_URL, que em producao ja e a origem publica da API.
+ENV NEXT_PUBLIC_REALTIME_URL=""
 ENV NEXT_STANDALONE=1
 ENV CI=true
 
 # Copy workspace config
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
+COPY patches ./patches
 
 # Same CI pnpm config as deps stage (store-dir). Keeping this consistent stops
 # pnpm from treating the copied node_modules as stale and recreating it offline.
@@ -60,7 +70,17 @@ COPY packages ./packages
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile
 
-# Build the admin app with Turbo
+# Build the admin app with Turbo.
+#
+# O heap padrao do V8 nao aguenta mais o build do Next do admin no runner do CI:
+# "Ineffective mark-compacts near heap limit" seguido de SIGABRT no build worker.
+# O build local passa porque o promote-production exporta --max-old-space-size=8192,
+# que nao chega aqui dentro. 4096 e o teto util no ubuntu-latest de repositorio
+# privado (2 vCPU, 7 GB): deixa folga para o SO, o dockerd e o buildkit. Subir para
+# 8192 passaria da RAM do runner e so trocaria o erro do V8 por um OOM-kill do kernel.
+#
+# O ENV vale so neste estagio de build; o estagio runner comeca de outro FROM.
+ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN pnpm build --filter admin
 
 # Stage 4: Runner (Production)

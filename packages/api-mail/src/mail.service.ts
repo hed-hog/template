@@ -355,25 +355,48 @@ export class MailService implements OnModuleInit {
     }
   }
 
-  private normalizePrimaryRecipientEmails(to: Mail['to']): string[] {
-    const values = Array.isArray(to) ? to : [to];
-    const normalized = new Map<string, string>();
+  /**
+   * Quebra um campo de endereco (`to`, `cc`, `bcc`, `replyTo`) em lista limpa.
+   *
+   * O `split(';')` cru que existia no caminho do SES deixava
+   * `'a@x.com; b@x.com'` virar `' b@x.com'`, e o SES responde a esse espaco com
+   * `InvalidParameterValue: Local address contains control or whitespace`.
+   *
+   * A virgula so separa quando o trecho nao tem `<`: `'Nome, Ltda <a@x.com>'` e
+   * um endereco so, e quebra-lo produziria dois pedacos invalidos. Caixa e nome
+   * de exibicao ficam intactos — minusculizar aqui estragaria o nome.
+   */
+  private static splitAddresses(
+    value?: string | string[] | null,
+  ): string[] {
+    const values = Array.isArray(value) ? value : [value];
+    const result: string[] = [];
+    const seen = new Set<string>();
 
-    for (const value of values) {
-      const parts = String(value)
-        .split(/[;,]/)
-        .map((item) => item.trim())
-        .filter(Boolean);
+    for (const item of values) {
+      if (item === undefined || item === null) continue;
 
-      for (const email of parts) {
-        const key = email.toLowerCase();
-        if (!normalized.has(key)) {
-          normalized.set(key, email);
+      for (const chunk of String(item).split(';')) {
+        const parts = chunk.includes('<') ? [chunk] : chunk.split(',');
+
+        for (const part of parts) {
+          const address = part.trim();
+          if (!address) continue;
+
+          const key = address.toLowerCase();
+          if (seen.has(key)) continue;
+
+          seen.add(key);
+          result.push(address);
         }
       }
     }
 
-    return Array.from(normalized.keys());
+    return result;
+  }
+
+  private normalizePrimaryRecipientEmails(to: Mail['to']): string[] {
+    return MailService.splitAddresses(to).map((email) => email.toLowerCase());
   }
 
   private async resolveRecipientUsers(to: Mail['to']) {
@@ -577,6 +600,7 @@ export class MailService implements OnModuleInit {
             brandName: resolved.brandName,
             primaryColor: resolved.primaryColor,
             primaryForeground: resolved.primaryForeground,
+            accentColor: mail.accentColor,
             logoUrl: resolved.logoUrl,
             lang: mail.locale,
           }),
@@ -918,24 +942,14 @@ export class MailService implements OnModuleInit {
       },
     });
 
-    if (typeof mail.to === 'string') {
-      mail.to = mail.to.split(';');
-    }
-    if (typeof mail.bcc === 'string') {
-      mail.bcc = mail.bcc.split(';');
-    } else if (!mail.bcc) {
-      mail.bcc = [];
-    }
-    if (typeof mail.cc === 'string') {
-      mail.cc = mail.cc.split(';');
-    } else if (!mail.cc) {
-      mail.cc = [];
-    }
-    if (typeof mail.replyTo === 'string') {
-      mail.replyTo = mail.replyTo.split(';');
-    } else if (!mail.replyTo) {
-      mail.replyTo = [];
-    }
+    mail.to = MailService.splitAddresses(mail.to);
+    mail.bcc = MailService.splitAddresses(mail.bcc);
+    mail.cc = MailService.splitAddresses(mail.cc);
+    mail.replyTo = MailService.splitAddresses(mail.replyTo);
+
+    // O remetente vem do perfil de integracao e pode chegar com espaco sobrando;
+    // o SES recusa o `Source` exatamente como recusa um destinatario sujo.
+    const source = MailService.splitAddresses(from)[0] ?? '';
 
     if (mail.attachments instanceof Array && mail.attachments.length > 0) {
       const mailContent = mimemessage.factory({
@@ -943,8 +957,8 @@ export class MailService implements OnModuleInit {
         body: [],
       });
 
-      mailContent.header('From', from);
-      mailContent.header('To', mail.to);
+      mailContent.header('From', source);
+      mailContent.header('To', mail.to.join(', '));
       mailContent.header('Subject', mail.subject);
 
       const alternateEntity = mimemessage.factory({
@@ -1010,7 +1024,7 @@ export class MailService implements OnModuleInit {
           },
         },
         ReplyToAddresses: mail.replyTo,
-        Source: from,
+        Source: source,
       };
 
       const result = await sesClient.send(new SendEmailCommand(params));

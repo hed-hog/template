@@ -1,5 +1,8 @@
 /** @type {import("eslint").Linter.Config} */
-const turboConfig = require("eslint-config-turbo").default;
+// O eslint-config-turbo exporta o objeto de config direto, sem `.default`. Lendo
+// `.default` o require devolvia undefined e o `...turboConfig.extends` abaixo
+// derrubava o carregamento — nenhum pacote do monorepo conseguia rodar o lint.
+const turboConfig = require("eslint-config-turbo");
 
 module.exports = {
   root: true,

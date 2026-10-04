@@ -89,4 +89,85 @@ describe('AppService.getReadiness', () => {
       process.off('unhandledRejection', unhandled);
     }
   });
+
+  /**
+   * A readiness disputa o MESMO pool que esgota. Marcar o pod como degraded por
+   * contenção passageira o tira do Service e joga a carga nas réplicas, que estão no
+   * mesmo banco — a lentidão vira queda. O que separa "pool cheio" de "banco fora" é
+   * ter falado com o banco recentemente, não o formato do erro: os dois se manifestam
+   * como query pendurada.
+   */
+  describe('contenção de pool não tira o pod do Service', () => {
+    beforeEach(() => {
+      jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    });
+
+    const succeedOnce = async () => {
+      prismaService.$queryRaw.mockReturnValue(Promise.resolve([{ '?column?': 1 }]));
+      await service.getReadiness();
+    };
+
+    it('mantém ok no timeout quando houve sucesso recente', async () => {
+      await succeedOnce();
+
+      jest.useFakeTimers();
+      prismaService.$queryRaw.mockReturnValue(new Promise(() => {}));
+
+      const readiness = service.getReadiness();
+      await jest.advanceTimersByTimeAsync(2_100);
+
+      await expect(readiness).resolves.toMatchObject({
+        status: 'ok',
+        database: 'degraded',
+      });
+    });
+
+    it('mantém ok quando o Prisma devolve P2028 e houve sucesso recente', async () => {
+      await succeedOnce();
+
+      const poolError: any = new Error(
+        'Transaction API error: Unable to start a transaction in the given time.',
+      );
+      poolError.code = 'P2028';
+      prismaService.$queryRaw.mockReturnValue(Promise.reject(poolError));
+
+      await expect(service.getReadiness()).resolves.toMatchObject({
+        status: 'ok',
+        database: 'degraded',
+      });
+    });
+
+    it('degrada quando o sucesso mais recente já saiu da janela de graça', async () => {
+      await succeedOnce();
+
+      jest.useFakeTimers();
+      // Passa dos 60s de graça antes de a próxima probe rodar. Contenção que dura
+      // isso tudo não é mais passageira, e aí o pod sai mesmo.
+      jest.setSystemTime(Date.now() + 61_000);
+      prismaService.$queryRaw.mockReturnValue(new Promise(() => {}));
+
+      const readiness = service.getReadiness();
+      await jest.advanceTimersByTimeAsync(2_100);
+
+      await expect(readiness).resolves.toMatchObject({
+        status: 'degraded',
+        database: 'down',
+      });
+    });
+
+    it('degrada num banco inalcançável mesmo com sucesso recente', async () => {
+      await succeedOnce();
+
+      // 'unreachable' é evidência direta de que o banco sumiu: é o caso que a probe
+      // existe para pegar, e a graça não se aplica a ele.
+      prismaService.$queryRaw.mockReturnValue(
+        Promise.reject(new Error("Can't reach database server at `db`:5432")),
+      );
+
+      await expect(service.getReadiness()).resolves.toMatchObject({
+        status: 'degraded',
+        database: 'down',
+      });
+    });
+  });
 });

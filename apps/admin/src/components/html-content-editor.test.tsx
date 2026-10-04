@@ -233,9 +233,9 @@ describe('HtmlContentEditor', () => {
     expect(screen.queryByTestId('tab-code')).not.toBeInTheDocument();
     expect(screen.queryByText('salvar')).not.toBeInTheDocument();
     expect(screen.queryByText('aiEditTitle')).not.toBeInTheDocument();
-    expect(screen.queryByTitle('enterSplitView')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('enterSplitView')).not.toBeInTheDocument();
     // A tela cheia continua disponível mesmo em modo somente-preview.
-    expect(screen.getByTitle('enterFullscreen')).toBeInTheDocument();
+    expect(screen.getByLabelText('enterFullscreen')).toBeInTheDocument();
   });
 
   it('chama renderTabBarActions com a aba ativa', () => {
@@ -327,12 +327,12 @@ describe('HtmlContentEditor', () => {
   it('alterna para tela cheia e trava/restaura o scroll do body', () => {
     render(<HtmlContentEditor value="<p>a</p>" onChange={vi.fn()} />);
 
-    fireEvent.click(screen.getByTitle('enterFullscreen'));
-    expect(screen.getByTitle('exitFullscreen')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('enterFullscreen'));
+    expect(screen.getByLabelText('exitFullscreen')).toBeInTheDocument();
     expect(document.body.style.overflow).toBe('hidden');
 
-    fireEvent.click(screen.getByTitle('exitFullscreen'));
-    expect(screen.getByTitle('enterFullscreen')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('exitFullscreen'));
+    expect(screen.getByLabelText('enterFullscreen')).toBeInTheDocument();
     expect(document.body.style.overflow).toBe('');
   });
 
@@ -345,13 +345,15 @@ describe('HtmlContentEditor', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('enterSplitView'));
+    fireEvent.click(screen.getByLabelText('enterSplitView'));
 
-    expect(screen.getByTitle('exitSplitView')).toBeInTheDocument();
+    expect(screen.getByLabelText('exitSplitView')).toBeInTheDocument();
     expect(screen.queryByTestId('tab-preview')).not.toBeInTheDocument();
     expect(screen.getByTestId('code-editor')).toBeInTheDocument();
     // O editor visual (WYSIWYG) não faz parte da visualização lado a lado.
     expect(screen.queryByTestId('rich-editor')).not.toBeInTheDocument();
-    expect(screen.getByPlaceholderText('aiInstructionPlaceholder')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('aiInstructionPlaceholder')
+    ).toBeInTheDocument();
   });
 });

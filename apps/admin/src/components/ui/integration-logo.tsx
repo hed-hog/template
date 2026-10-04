@@ -20,6 +20,13 @@ const providerAliases: Record<string, string> = {
   apple_oauth: 'apple-oauth',
   linkedin_oauth: 'linkedin-oauth',
   whatsapp_official: 'whatsapp-official',
+  meta_social: 'meta-social',
+  instagram_social: 'instagram-social',
+  linkedin_social: 'linkedin-social',
+  x_social: 'x-social',
+  youtube_social: 'youtube-social',
+  google_business: 'google-business',
+  google_business_social: 'google-business-social',
   evolution_api: 'evolution-api',
   azure_blob: 'azure-blob',
   s3_compatible: 's3-compatible',
@@ -44,7 +51,11 @@ const oauthToProvider: Record<string, string> = {
  * The subset is written by `scripts/generate-icon-subset.mjs`; importing
  * `@iconify-json/logos` directly here shipped all 2.091 logos to the browser.
  */
-function iconifyLogo(slug: LogoSlug, size: number): ReactNode {
+function iconifyLogo(
+  slug: LogoSlug,
+  size: number,
+  monochrome = false
+): ReactNode {
   const { body, width: w, height: h } = logoIcons[slug];
   return (
     <svg
@@ -52,6 +63,9 @@ function iconifyLogo(slug: LogoSlug, size: number): ReactNode {
       viewBox={`0 0 ${w} ${h}`}
       height={size}
       width={Math.round((size * w) / h)}
+      // Logo sem cor propria (o path nao tem fill): segue a cor do texto,
+      // para aparecer no tema claro e no escuro.
+      fill={monochrome ? 'currentColor' : undefined}
       aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: body }}
     />
@@ -68,11 +82,36 @@ function iconifyLogo(slug: LogoSlug, size: number): ReactNode {
  * Every slug here must exist in the generated subset — that is what `LogoSlug`
  * enforces. Adding one without running `pnpm generate:icons` fails typecheck.
  */
-const providerLogoIcons: Record<string, { slug: LogoSlug; label: string }> = {
+const providerLogoIcons: Record<
+  string,
+  { slug: LogoSlug; label: string; monochrome?: boolean }
+> = {
   google: { slug: 'google-icon', label: 'Google' },
   microsoft: { slug: 'microsoft-icon', label: 'Microsoft' },
   facebook: { slug: 'facebook', label: 'Facebook' },
   linkedin: { slug: 'linkedin-icon', label: 'LinkedIn' },
+  instagram: { slug: 'instagram-icon', label: 'Instagram' },
+  // App do HedHog na Meta (modulo social): cobre Facebook e Instagram.
+  'meta-social': { slug: 'meta-icon', label: 'Meta' },
+  // App do HedHog na API do Instagram com login do Instagram (modulo social).
+  'instagram-social': { slug: 'instagram-icon', label: 'Instagram' },
+  // App do HedHog na Community Management API do LinkedIn (modulo social). A
+  // rede do canal (`linkedin`) ja usa o mesmo logo.
+  'linkedin-social': { slug: 'linkedin-icon', label: 'LinkedIn' },
+  // X (modulo social): a rede do canal (`x`) e o app do HedHog na API v2
+  // (`x-social`). O logo e preto, sem fill: usa a cor do texto.
+  x: { slug: 'x', label: 'X', monochrome: true },
+  'x-social': { slug: 'x', label: 'X', monochrome: true },
+  // Redes do Google no modulo social: a rede do canal (youtube, google-business)
+  // e o provider do perfil de integracao (youtube-social, google-business-social).
+  // O Perfil da Empresa nao tem logo proprio no conjunto: usa o do Google Maps.
+  youtube: { slug: 'youtube-icon', label: 'YouTube' },
+  'youtube-social': { slug: 'youtube-icon', label: 'YouTube' },
+  'google-business': { slug: 'google-maps', label: 'Google Business Profile' },
+  'google-business-social': {
+    slug: 'google-maps',
+    label: 'Google Business Profile',
+  },
   claude: { slug: 'claude-icon', label: 'Claude' },
   deepseek: { slug: 'deepseek-icon', label: 'DeepSeek' },
   'whatsapp-official': { slug: 'whatsapp-icon', label: 'WhatsApp' },
@@ -408,7 +447,9 @@ export function IntegrationLogo({
   // 1) Colored Iconify logo (offline data from @iconify-json/logos).
   const logoEntry =
     providerLogoIcons[resolved] ?? providerLogoIcons[normalized];
-  const iconifyNode = logoEntry ? iconifyLogo(logoEntry.slug, size) : null;
+  const iconifyNode = logoEntry
+    ? iconifyLogo(logoEntry.slug, size, logoEntry.monochrome)
+    : null;
 
   // 2/3/4) Remaining custom SVG, categorized Lucide fallback, or dynamic one.
   const presentation = providerPresentations[resolved] ??

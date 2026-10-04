@@ -39,8 +39,10 @@ const DEFAULT_LABELS: FillBlankStatementEditorLabels = {
   blankWord: (n) => `Lacuna ${n}`,
   removeBlank: 'Remover lacuna',
   extraWordsTitle: 'Palavras extras no banco',
-  extraWordsHint: 'Palavras que aparecem no banco de palavras do aluno sem serem a resposta de nenhuma lacuna.',
-  extraWordsPlaceholder: 'Digite uma palavra e pressione Enter (separe várias por vírgula)',
+  extraWordsHint:
+    'Palavras que aparecem no banco de palavras do aluno sem serem a resposta de nenhuma lacuna.',
+  extraWordsPlaceholder:
+    'Digite uma palavra e pressione Enter (separe várias por vírgula)',
   addWord: 'Adicionar',
   removeWord: 'Remover palavra',
 };
@@ -49,7 +51,11 @@ interface FillBlankStatementEditorProps {
   statement: string;
   blanks: FillBlankAnswer[];
   extraWords: string[];
-  onChange: (next: { statement: string; blanks: FillBlankAnswer[]; extraWords: string[] }) => void;
+  onChange: (next: {
+    statement: string;
+    blanks: FillBlankAnswer[];
+    extraWords: string[];
+  }) => void;
   labels?: Partial<FillBlankStatementEditorLabels>;
 }
 
@@ -72,15 +78,15 @@ export function FillBlankStatementEditor({
     () => reconstructFillBlankState(statement, blanks),
     // Initialise once per mount; the sheet remounts per question.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   const [text, setText] = useState(initial.text);
   const [blankIndices, setBlankIndices] = useState<Set<number>>(
-    initial.blankWordIndices,
+    initial.blankWordIndices
   );
   const [alternatives, setAlternatives] = useState<Map<number, string>>(
-    initial.alternativesByWordIndex,
+    initial.alternativesByWordIndex
   );
   const [extraWordList, setExtraWordList] = useState<string[]>(extraWords);
   const [extraWordInput, setExtraWordInput] = useState('');
@@ -105,7 +111,7 @@ export function FillBlankStatementEditor({
     nextText: string,
     nextIndices: Set<number>,
     nextAlternatives: Map<number, string>,
-    nextExtraWords: string[],
+    nextExtraWords: string[]
   ) {
     onChange({
       ...buildFillBlankStatement(nextText, nextIndices, nextAlternatives),
@@ -116,12 +122,14 @@ export function FillBlankStatementEditor({
   function handleTextChange(value: string) {
     setText(value);
     // Drop selections/alternatives that fall outside the new word count.
-    const wordCount = splitStatementSegments(value).filter((s) => s.isWord).length;
+    const wordCount = splitStatementSegments(value).filter(
+      (s) => s.isWord
+    ).length;
     const nextIndices = new Set(
-      [...blankIndices].filter((index) => index < wordCount),
+      [...blankIndices].filter((index) => index < wordCount)
     );
     const nextAlternatives = new Map(
-      [...alternatives].filter(([index]) => index < wordCount),
+      [...alternatives].filter(([index]) => index < wordCount)
     );
     setBlankIndices(nextIndices);
     setAlternatives(nextAlternatives);
@@ -213,7 +221,7 @@ export function FillBlankStatementEditor({
                   'rounded px-1 transition-colors',
                   isBlank
                     ? 'bg-amber-500/20 text-amber-700 underline decoration-dashed underline-offset-4 dark:text-amber-300'
-                    : 'hover:bg-foreground/10',
+                    : 'hover:bg-foreground/10'
                 )}
               >
                 {segment.value}
@@ -250,7 +258,7 @@ export function FillBlankStatementEditor({
                     size="icon"
                     className="size-6 shrink-0"
                     onClick={() => toggleBlank(blank.wordIndex)}
-                    aria-label={labels.removeBlank}
+                    tooltip={labels.removeBlank}
                   >
                     <X className="size-3.5" />
                   </Button>

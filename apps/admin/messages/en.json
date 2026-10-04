@@ -66,7 +66,9 @@
     "subtitle": "{app} wants to access your account.",
     "permissions": "This will allow it to:",
     "scope": {
-      "vaults": "Read and manage your vault items"
+      "vaults": "Read and manage your vault items",
+      "mcp": "Use the Hub tools your account already has access to, on your behalf",
+      "profile": "Read your basic profile information"
     },
     "authorize": "Authorize",
     "cancel": "Cancel",

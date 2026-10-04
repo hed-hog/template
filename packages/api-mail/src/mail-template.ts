@@ -12,6 +12,21 @@ export const DEFAULT_PRIMARY_COLOR = '#111827';
 export const DEFAULT_PRIMARY_FOREGROUND = '#ffffff';
 
 /**
+ * Cor de etapa valida: hexadecimal de 6 digitos, e nada mais.
+ *
+ * O valor e interpolado dentro do bloco `<style>` do wrapper, entao string livre
+ * aqui e injecao de CSS — um remetente poderia fechar a regra e reescrever o
+ * layout inteiro. Fora do padrao, cai na cor da marca.
+ */
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+/** Cor de etapa utilizavel, ou `undefined` para quem chama cair no padrao. */
+export function sanitizeAccentColor(value?: string | null): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed && HEX_COLOR.test(trimmed) ? trimmed : undefined;
+}
+
+/**
  * Resolve uma URL potencialmente relativa (ex.: `/logo.svg`, como salvo pela
  * setting `image-url`) para uma URL absoluta.
  *
@@ -40,6 +55,7 @@ export function resolveMailAssetUrl(
  *  - `{{{brandMark}}}`       logo (setting `image-url`) ou selo de texto com o brandName, ja como HTML
  *  - `{{primaryColor}}`      setting `theme-primary-light`
  *  - `{{primaryForeground}}` setting `theme-primary-foreground-light`
+ *  - `{{accentColor}}`       cor da etapa do e-mail; cai em `primaryColor` quando ausente
  *  - `{{year}}`              ano corrente
  *  - `{{lang}}`              codigo do locale
  */
@@ -62,6 +78,11 @@ export type RenderMailTemplateInput = {
   primaryColor?: string;
   /** Contraste sobre a cor de marca (setting `theme-primary-foreground-light`). Ausente => DEFAULT_PRIMARY_FOREGROUND. */
   primaryForeground?: string;
+  /**
+   * Cor da etapa que o e-mail comunica. Ausente, ou fora do formato `#rrggbb`,
+   * => `primaryColor`, e o e-mail fica com a aparencia de sempre.
+   */
+  accentColor?: string;
 };
 
 /** Selo do cabecalho: logo quando configurado, senao um badge de texto com o brandName. */
@@ -195,7 +216,7 @@ export const DEFAULT_MAIL_LAYOUT: MailLayout = {
       }
       .panel-accent {
         height: 6px;
-        background: {{primaryColor}};
+        background: {{accentColor}};
       }
       .content {
         padding: 36px 34px 28px;
@@ -284,7 +305,7 @@ export const DEFAULT_MAIL_LAYOUT: MailLayout = {
             <tr>
               <td>
                 <div class="panel">
-                  <div class="panel-accent" style="background:{{primaryColor}};"></div>
+                  <div class="panel-accent" style="background:{{accentColor}};"></div>
                   <div class="content">
                     {{{content}}}
                   </div>
@@ -308,7 +329,17 @@ export const DEFAULT_MAIL_LAYOUT: MailLayout = {
 };
 
 export function renderMailTemplate(input: RenderMailTemplateInput): string {
-  const { subject, body, layout, brandName, lang, logoUrl, primaryColor, primaryForeground } = input;
+  const {
+    subject,
+    body,
+    layout,
+    brandName,
+    lang,
+    logoUrl,
+    primaryColor,
+    primaryForeground,
+    accentColor,
+  } = input;
 
   const content = body?.trim() || '';
 
@@ -325,6 +356,7 @@ export function renderMailTemplate(input: RenderMailTemplateInput): string {
   const resolvedBrand = brandName?.trim() || DEFAULT_BRAND_NAME;
   const resolvedPrimaryColor = primaryColor?.trim() || DEFAULT_PRIMARY_COLOR;
   const resolvedPrimaryForeground = primaryForeground?.trim() || DEFAULT_PRIMARY_FOREGROUND;
+  const resolvedAccent = sanitizeAccentColor(accentColor) ?? resolvedPrimaryColor;
 
   // Layout ausente => padrao embutido por inteiro. Layout presente => usado como
   // veio: um header vazio salvo pelo admin e uma escolha valida, nao um buraco a
@@ -348,6 +380,7 @@ export function renderMailTemplate(input: RenderMailTemplateInput): string {
     }),
     primaryColor: escapeHtml(resolvedPrimaryColor),
     primaryForeground: escapeHtml(resolvedPrimaryForeground),
+    accentColor: escapeHtml(resolvedAccent),
     year: String(new Date().getFullYear()),
     lang: lang?.trim() || 'en',
   };

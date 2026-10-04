@@ -51,9 +51,13 @@ vi.mock('@hed-hog/next-app-provider', async () => {
     await vi.importActual<typeof import('@tanstack/react-query')>(
       '@tanstack/react-query'
     );
+  const provider = await vi.importActual<
+    typeof import('@hed-hog/next-app-provider')
+  >('@hed-hog/next-app-provider');
   return {
     useApp: () => appState,
     useQuery: actual.useQuery,
+    getSessionIdentity: provider.getSessionIdentity,
   };
 });
 
@@ -259,6 +263,34 @@ describe('GuardPage', () => {
     await waitFor(() =>
       expect(screen.getByText('conteudo protegido')).toBeInTheDocument()
     );
+  });
+
+  it('não volta a carregar nem refaz /auth/roles quando o token é renovado', async () => {
+    // A renovação troca o access token mas mantém a sessão (`sub` + `sessionId`).
+    // Com o token na chave, a página inteira virava LoadingPage a cada renovação
+    // e o formulário aberto era desmontado.
+    const jwt = (exp: number) =>
+      `h.${btoa(JSON.stringify({ sub: 1, sessionId: 9, exp }))}.s`;
+    appState.accessToken = jwt(1000);
+    appState.request = vi.fn().mockResolvedValue({
+      data: { roles: [{ slug: 'admin' }] },
+    });
+    const { rerender } = renderGuard();
+
+    await waitFor(() =>
+      expect(screen.getByText('conteudo protegido')).toBeInTheDocument()
+    );
+
+    appState.accessToken = jwt(2000);
+    rerender(
+      <GuardPage>
+        <span>conteudo protegido</span>
+      </GuardPage>
+    );
+
+    expect(screen.getByText('conteudo protegido')).toBeInTheDocument();
+    expect(screen.queryByTestId('loading-page-stub')).not.toBeInTheDocument();
+    expect(appState.request).toHaveBeenCalledTimes(1);
   });
 
   it('informa a pathname atual via setUrlAfterLogin', () => {

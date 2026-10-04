@@ -246,7 +246,7 @@ export function TagSelectorSheet({
           className="h-6 w-6"
           onClick={() => setOpen(true)}
           disabled={disabled}
-          aria-label={labels.addTag}
+          tooltip={labels.addTag}
         >
           <Plus className="h-3.5 w-3.5" />
         </Button>

@@ -22,7 +22,16 @@ vi.mock('@bprogress/next', () => ({
 // Stable identity function: some effects in the component depend on `t` in
 // their dependency array, so a fresh arrow function per render (as a naive
 // mock would return) would re-trigger them on every render.
-const identityT = (key: string) => key;
+// The connection-test warning is the only message whose parameter the tests read,
+// and `has` knows the translated warning codes except `unknown_code`.
+const identityT = Object.assign(
+  (key: string, values?: Record<string, unknown>) =>
+    key === 'testConnectionWarning' && values ? `${key}: ${values.warning}` : key,
+  {
+    has: (key: string) =>
+      key.startsWith('testConnectionWarningCodes.') && !key.endsWith('.unknown_code'),
+  },
+);
 vi.mock('next-intl', () => ({
   useTranslations: () => identityT,
 }));
@@ -99,6 +108,7 @@ import {
   IntegrationProfileSheet,
   type IntegrationProfileSheetSavedProfile,
 } from './integration-profile-sheet';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const API = 'http://api.test';
 
@@ -1769,9 +1779,42 @@ describe('IntegrationProfileSheet — testar conexão', () => {
     fireEvent.click(screen.getByTestId('integration-profile-test'));
 
     await waitFor(() =>
-      expect(screen.getByText('testConnectionWarning')).toBeInTheDocument(),
+      expect(
+        screen.getByText('testConnectionWarning: The domain is not verified yet.'),
+      ).toBeInTheDocument(),
     );
     expect(screen.queryByText('testConnectionNotPersisted')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [
+      'traduz o aviso pelos códigos quando a tela conhece todos',
+      ['google_oauth_testing', 'youtube_audit_pending'],
+      'testConnectionWarning: testConnectionWarningCodes.google_oauth_testing testConnectionWarningCodes.youtube_audit_pending',
+    ],
+    [
+      'mostra o texto do backend quando algum código é desconhecido',
+      ['youtube_audit_pending', 'unknown_code'],
+      'testConnectionWarning: Backend warning text.',
+    ],
+  ])('%s', async (_title, codes, expected) => {
+    server.use(
+      http.post(`${API}/integration-profile/test`, () =>
+        HttpResponse.json({
+          success: true,
+          ok: true,
+          info: 'Google OAuth client',
+          warning: 'Backend warning text.',
+          warning_codes: codes,
+          persisted: true,
+        }),
+      ),
+    );
+
+    await fillSmtpForm();
+    fireEvent.click(screen.getByTestId('integration-profile-test'));
+
+    await waitFor(() => expect(screen.getByText(expected)).toBeInTheDocument());
   });
 
   it('limpa o resultado ao trocar de provedor', async () => {
@@ -1807,4 +1850,504 @@ describe('IntegrationProfileSheet — testar conexão', () => {
 
     expect(screen.getByTestId('integration-profile-test')).toBeEnabled();
   });
+});
+
+describe('IntegrationProfileSheet — meta-social (módulo social)', () => {
+  // O bloco da URI usa o CopyButton, que tem Tooltip: precisa do provider.
+  function renderSocialSheet() {
+    return render(
+      <TooltipProvider>
+        <IntegrationProfileSheet open onOpenChange={vi.fn()} onSaved={vi.fn()} />
+      </TooltipProvider>,
+      { wrapper: makeAppProviderWrapper({ apiBaseUrl: API }) },
+    );
+  }
+
+  const SOCIAL_TYPES = [
+    {
+      id: 20,
+      slug: 'social',
+      icon: null,
+      integration_type_locale: [{ name: 'Social', locale: { code: 'en' } }],
+    },
+  ];
+  const SOCIAL_PROVIDERS = [
+    {
+      id: 21,
+      slug: 'meta-social',
+      type_id: 20,
+      integration_provider_locale: [{ name: 'Meta', locale: { code: 'en' } }],
+    },
+  ];
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('mostra os campos do app e a URI de callback do backend do social', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com/');
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('Meta');
+
+    expect(screen.getByLabelText(/fieldLoginConfigId/)).toBeInTheDocument();
+    expect(screen.getByText('metaSocialSectionTitle')).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue(
+        'https://api.example.com/social/public/oauth/meta/callback',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('sem NEXT_PUBLIC_API_BASE_URL a URI fica vazia, com o aviso no placeholder', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '');
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('Meta');
+
+    expect(
+      screen.getByPlaceholderText('metaSocialRedirectUriUnavailable'),
+    ).toHaveValue('');
+  });
+
+  function renderSocialSheetWithSettings(settings: Record<string, unknown>) {
+    return render(
+      <TooltipProvider>
+        <IntegrationProfileSheet open onOpenChange={vi.fn()} onSaved={vi.fn()} />
+      </TooltipProvider>,
+      { wrapper: makeAppProviderWrapper({ apiBaseUrl: API, settings }) },
+    );
+  }
+
+  it('a URI segue a setting api-url (a mesma do backend) e avisa quando a env diverge', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com/');
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheetWithSettings({ 'api-url': 'https://hub-api.example.com/' });
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('Meta');
+
+    expect(
+      screen.getByDisplayValue(
+        'https://hub-api.example.com/social/public/oauth/meta/callback',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/socialRedirectUriMismatch/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'socialGuideLink' })).toHaveAttribute(
+      'target',
+      '_blank',
+    );
+  });
+
+  it('env relativa (dev) não vira URI nem conta como divergência', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '/api');
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheetWithSettings({ 'api-url': 'http://localhost:3100' });
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('Meta');
+
+    expect(
+      screen.getByDisplayValue(
+        'http://localhost:3100/social/public/oauth/meta/callback',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/socialRedirectUriMismatch/)).not.toBeInTheDocument();
+  });
+
+  it('sem api-url e com env relativa, a URI fica vazia', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '/api');
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('Meta');
+
+    expect(
+      screen.getByPlaceholderText('metaSocialRedirectUriUnavailable'),
+    ).toHaveValue('');
+  });
+});
+
+describe('IntegrationProfileSheet — instagram-social (módulo social)', () => {
+  // Mesmo motivo do bloco da Meta: o CopyButton da URI tem Tooltip.
+  function renderSocialSheet() {
+    return render(
+      <TooltipProvider>
+        <IntegrationProfileSheet open onOpenChange={vi.fn()} onSaved={vi.fn()} />
+      </TooltipProvider>,
+      { wrapper: makeAppProviderWrapper({ apiBaseUrl: API }) },
+    );
+  }
+
+  const SOCIAL_TYPES = [
+    {
+      id: 20,
+      slug: 'social',
+      icon: null,
+      integration_type_locale: [{ name: 'Social', locale: { code: 'en' } }],
+    },
+  ];
+  const SOCIAL_PROVIDERS = [
+    {
+      id: 24,
+      slug: 'instagram-social',
+      type_id: 20,
+      integration_provider_locale: [
+        { name: 'Instagram (Instagram Login)', locale: { code: 'en' } },
+      ],
+    },
+  ];
+
+  async function openInstagram() {
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('Instagram (Instagram Login)');
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('mostra os campos do app do Instagram, a URI de callback própria e os passos', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com/');
+    await openInstagram();
+
+    // Rótulos próprios: o ID e a chave são os do app do Instagram, não da Meta.
+    expect(screen.getByLabelText(/fieldInstagramAppId/)).toHaveAttribute(
+      'type',
+      'text',
+    );
+    expect(screen.getByLabelText(/fieldInstagramAppSecret/)).toHaveAttribute(
+      'type',
+      'password',
+    );
+    expect(screen.queryByLabelText(/^fieldAppId/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/fieldGraphApiVersion/)).toHaveAttribute(
+      'placeholder',
+      'v25.0',
+    );
+    expect(screen.getByLabelText(/fieldMode/)).toBeInTheDocument();
+    // Sem Login Configuration (é do app da Meta); o verify token é o do webhook
+    // próprio do app do Instagram (protocolo instagram-social, as DMs).
+    expect(screen.queryByLabelText(/fieldLoginConfigId/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/fieldVerifyToken/)).toHaveAttribute('type', 'password');
+
+    expect(screen.getByText('instagramSocialSectionTitle')).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue(
+        'https://api.example.com/social/public/oauth/instagram/callback',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('instagramSocialStep1')).toBeInTheDocument();
+    expect(screen.getByText('instagramSocialStep5')).toBeInTheDocument();
+    expect(screen.queryByText('metaSocialSectionTitle')).not.toBeInTheDocument();
+    expect(screen.queryByText('googleSocialSectionTitle')).not.toBeInTheDocument();
+  });
+
+  it('sem NEXT_PUBLIC_API_BASE_URL a URI fica vazia, com o aviso no placeholder', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '');
+    await openInstagram();
+
+    expect(
+      screen.getByPlaceholderText('instagramSocialRedirectUriUnavailable'),
+    ).toHaveValue('');
+  });
+});
+
+describe('IntegrationProfileSheet — linkedin-social (módulo social)', () => {
+  // Mesmo motivo do bloco da Meta: o CopyButton da URI tem Tooltip.
+  function renderSocialSheet() {
+    return render(
+      <TooltipProvider>
+        <IntegrationProfileSheet open onOpenChange={vi.fn()} onSaved={vi.fn()} />
+      </TooltipProvider>,
+      { wrapper: makeAppProviderWrapper({ apiBaseUrl: API }) },
+    );
+  }
+
+  const SOCIAL_TYPES = [
+    {
+      id: 20,
+      slug: 'social',
+      icon: null,
+      integration_type_locale: [{ name: 'Social', locale: { code: 'en' } }],
+    },
+  ];
+  const SOCIAL_PROVIDERS = [
+    {
+      id: 25,
+      slug: 'linkedin-social',
+      type_id: 20,
+      integration_provider_locale: [
+        { name: 'LinkedIn (Company Pages)', locale: { code: 'en' } },
+      ],
+    },
+  ];
+
+  async function openLinkedIn() {
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('LinkedIn (Company Pages)');
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('mostra os campos do app do LinkedIn, a URI de callback própria e os passos', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com/');
+    await openLinkedIn();
+
+    expect(screen.getByLabelText(/fieldClientId/)).toHaveAttribute(
+      'type',
+      'text',
+    );
+    expect(screen.getByLabelText(/fieldClientSecret/)).toHaveAttribute(
+      'type',
+      'password',
+    );
+    expect(screen.getByLabelText(/fieldLinkedInApiVersion/)).toHaveAttribute(
+      'placeholder',
+      '202609',
+    );
+    expect(screen.getByLabelText(/fieldMode/)).toBeInTheDocument();
+    // Sem o status do app OAuth do Google.
+    expect(
+      screen.queryByLabelText(/fieldOauthAppStatus/),
+    ).not.toBeInTheDocument();
+
+    expect(screen.getByText('linkedinSocialSectionTitle')).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue(
+        'https://api.example.com/social/public/oauth/linkedin/callback',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('linkedinSocialStep1')).toBeInTheDocument();
+    expect(screen.getByText('linkedinSocialStep5')).toBeInTheDocument();
+    expect(screen.queryByText('googleSocialSectionTitle')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('instagramSocialSectionTitle'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('sem NEXT_PUBLIC_API_BASE_URL a URI fica vazia, com o aviso no placeholder', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '');
+    await openLinkedIn();
+
+    expect(
+      screen.getByPlaceholderText('linkedinSocialRedirectUriUnavailable'),
+    ).toHaveValue('');
+  });
+});
+
+describe('IntegrationProfileSheet — x-social (módulo social)', () => {
+  // Mesmo motivo do bloco da Meta: o CopyButton da URI tem Tooltip.
+  function renderSocialSheet() {
+    return render(
+      <TooltipProvider>
+        <IntegrationProfileSheet open onOpenChange={vi.fn()} onSaved={vi.fn()} />
+      </TooltipProvider>,
+      { wrapper: makeAppProviderWrapper({ apiBaseUrl: API }) },
+    );
+  }
+
+  const SOCIAL_TYPES = [
+    {
+      id: 20,
+      slug: 'social',
+      icon: null,
+      integration_type_locale: [{ name: 'Social', locale: { code: 'en' } }],
+    },
+  ];
+  const SOCIAL_PROVIDERS = [
+    {
+      id: 26,
+      slug: 'x-social',
+      type_id: 20,
+      integration_provider_locale: [{ name: 'X', locale: { code: 'en' } }],
+    },
+  ];
+
+  async function openX() {
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider('X');
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('mostra os campos do app do X, a Callback URI própria e os passos', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com/');
+    await openX();
+
+    expect(screen.getByLabelText(/fieldXClientId/)).toHaveAttribute(
+      'type',
+      'text',
+    );
+    expect(screen.getByLabelText(/fieldXClientSecret/)).toHaveAttribute(
+      'type',
+      'password',
+    );
+    expect(screen.getByLabelText(/fieldMode/)).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(/fieldLinkedInApiVersion/),
+    ).not.toBeInTheDocument();
+
+    expect(screen.getByText('xSocialSectionTitle')).toBeInTheDocument();
+    expect(screen.getByText('xSocialSectionDescription')).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue(
+        'https://api.example.com/social/public/oauth/x/callback',
+      ),
+    ).toBeInTheDocument();
+    for (const step of [1, 2, 3, 4, 5]) {
+      expect(screen.getByText(`xSocialStep${step}`)).toBeInTheDocument();
+    }
+    expect(
+      screen.queryByText('linkedinSocialSectionTitle'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('googleSocialSectionTitle')).not.toBeInTheDocument();
+  });
+
+  it('sem NEXT_PUBLIC_API_BASE_URL a URI fica vazia, com o aviso no placeholder', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '');
+    await openX();
+
+    expect(
+      screen.getByPlaceholderText('xSocialRedirectUriUnavailable'),
+    ).toHaveValue('');
+  });
+});
+
+describe('IntegrationProfileSheet — youtube-social e google-business-social (módulo social)', () => {
+  // Mesmo motivo do bloco da Meta: o CopyButton da URI tem Tooltip.
+  function renderSocialSheet() {
+    return render(
+      <TooltipProvider>
+        <IntegrationProfileSheet open onOpenChange={vi.fn()} onSaved={vi.fn()} />
+      </TooltipProvider>,
+      { wrapper: makeAppProviderWrapper({ apiBaseUrl: API }) },
+    );
+  }
+
+  const SOCIAL_TYPES = [
+    {
+      id: 20,
+      slug: 'social',
+      icon: null,
+      integration_type_locale: [{ name: 'Social', locale: { code: 'en' } }],
+    },
+  ];
+  const SOCIAL_PROVIDERS = [
+    {
+      id: 22,
+      slug: 'youtube-social',
+      type_id: 20,
+      integration_provider_locale: [{ name: 'YouTube', locale: { code: 'en' } }],
+    },
+    {
+      id: 23,
+      slug: 'google-business-social',
+      type_id: 20,
+      integration_provider_locale: [
+        { name: 'Google Business Profile', locale: { code: 'en' } },
+      ],
+    },
+  ];
+  const GOOGLE_CALLBACK = 'https://api.example.com/social/public/oauth/google/callback';
+
+  async function openProvider(name: string) {
+    mockCatalog({ typesBody: SOCIAL_TYPES, providersBody: SOCIAL_PROVIDERS });
+    renderSocialSheet();
+    await waitForTypesLoaded();
+    await chooseType('Social');
+    await chooseProvider(name);
+  }
+
+  function expectGoogleAppFields() {
+    expect(screen.getByLabelText(/fieldClientId/)).toHaveAttribute('type', 'text');
+    expect(screen.getByLabelText(/fieldClientSecret/)).toHaveAttribute(
+      'type',
+      'password',
+    );
+    expect(screen.getByLabelText(/fieldOauthAppStatus/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/fieldMode/)).toBeInTheDocument();
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('YouTube: mostra os campos do app, a URI do callback Google e os passos do YouTube', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com/');
+    await openProvider('YouTube');
+
+    expectGoogleAppFields();
+    expect(screen.getByText('googleSocialSectionTitle')).toBeInTheDocument();
+    expect(screen.getByText('youtubeSocialDescription')).toBeInTheDocument();
+    expect(screen.getByDisplayValue(GOOGLE_CALLBACK)).toBeInTheDocument();
+    expect(screen.getByText('youtubeSocialStep4')).toBeInTheDocument();
+    expect(screen.getByText('googleSocialTestingStep')).toBeInTheDocument();
+    expect(screen.queryByText('googleBusinessSocialStep1')).not.toBeInTheDocument();
+    // Não é provider de login (*-oauth) nem o app da Meta.
+    expect(screen.queryByText('callbackUrlsSectionTitle')).not.toBeInTheDocument();
+    expect(screen.queryByText('metaSocialSectionTitle')).not.toBeInTheDocument();
+  });
+
+  it('YouTube: o status do app oferece teste e produção', async () => {
+    await openProvider('YouTube');
+
+    openSelectByLabel(/fieldOauthAppStatus/);
+    const listbox = await screen.findByRole('listbox');
+    expect(
+      within(listbox).getByText('fieldOauthAppStatusProduction'),
+    ).toBeInTheDocument();
+    const testingOption = within(listbox).getByText('fieldOauthAppStatusTesting');
+    fireEvent.pointerUp(testingOption);
+    fireEvent.click(testingOption);
+
+    expect(screen.getByLabelText(/fieldOauthAppStatus/)).toHaveTextContent(
+      'fieldOauthAppStatusTesting',
+    );
+  });
+
+  it('Perfil da Empresa: mostra os campos do app, a mesma URI e os passos do GBP', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.example.com');
+    await openProvider('Google Business Profile');
+
+    expectGoogleAppFields();
+    expect(screen.getByText('googleSocialSectionTitle')).toBeInTheDocument();
+    expect(screen.getByText('googleBusinessSocialDescription')).toBeInTheDocument();
+    expect(screen.getByDisplayValue(GOOGLE_CALLBACK)).toBeInTheDocument();
+    expect(screen.getByText('googleBusinessSocialStep2')).toBeInTheDocument();
+    expect(screen.getByText('googleSocialTestingStep')).toBeInTheDocument();
+    expect(screen.queryByText('youtubeSocialStep1')).not.toBeInTheDocument();
+    expect(screen.queryByText('callbackUrlsSectionTitle')).not.toBeInTheDocument();
+  });
+
+  it.each(['YouTube', 'Google Business Profile'])(
+    '%s: sem NEXT_PUBLIC_API_BASE_URL a URI fica vazia, com o aviso no placeholder',
+    async (name) => {
+      vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', '');
+      await openProvider(name);
+
+      expect(
+        screen.getByPlaceholderText('googleSocialRedirectUriUnavailable'),
+      ).toHaveValue('');
+      expect(screen.queryByDisplayValue(/oauth\/google\/callback/)).not.toBeInTheDocument();
+    },
+  );
 });

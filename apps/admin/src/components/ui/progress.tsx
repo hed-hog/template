@@ -5,6 +5,12 @@ import * as ProgressPrimitive from "@radix-ui/react-progress"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Divergência proposital do shadcn: o gerador não repassa `value` ao `Root`,
+ * usa o valor só no `transform` do indicador. Sem ele o Radix marca
+ * `data-state="indeterminate"` e omite `aria-valuenow` — a barra pinta certo e
+ * não diz nada a leitor de tela. Reaplicar ao regenerar o componente.
+ */
 function Progress({
   className,
   value,
@@ -17,6 +23,7 @@ function Progress({
         "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full",
         className
       )}
+      value={value}
       {...props}
     >
       <ProgressPrimitive.Indicator

@@ -43,3 +43,36 @@ export interface PaginationEnvelope<T> {
   prev: number | null;
   next: number | null;
 }
+
+/**
+ * Monta o envelope a partir das linhas e do total.
+ *
+ * Existia em três cópias — `libraries/sac/src/common/pagination.util.ts`,
+ * `libraries/inbox/src/common/pagination.util.ts` (byte a byte iguais) e um
+ * método privado em `operations.service.ts` — todas para os serviços que
+ * paginam por conta própria, sem o `PaginationService`. Fica aqui, ao lado do
+ * `PaginationEnvelope<T>` que ele produz.
+ *
+ * `page` e `pageSize` são saneados porque parte dos chamadores os recebe direto
+ * da query string; quem já normalizou antes não perde nada com isso.
+ */
+export function buildPaginationEnvelope<T>(
+  data: T[],
+  total: number,
+  page: number,
+  pageSize: number,
+): PaginationEnvelope<T> {
+  const safePageSize = Math.max(1, Number(pageSize) || 10);
+  const safePage = Math.max(1, Number(page) || 1);
+  const lastPage = Math.max(1, Math.ceil(total / safePageSize));
+
+  return {
+    data,
+    total,
+    page: safePage,
+    pageSize: safePageSize,
+    lastPage,
+    prev: safePage > 1 ? safePage - 1 : null,
+    next: safePage < lastPage ? safePage + 1 : null,
+  };
+}

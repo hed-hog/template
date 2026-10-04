@@ -91,6 +91,8 @@ type TestConnectionResponse = {
   provider?: string;
   info?: string;
   warning?: string;
+  /** Códigos dos avisos, na ordem do `warning`, traduzidos pela tela quando conhecidos. */
+  warning_codes?: string[];
   tested_at?: string;
   /** false quando o perfil ainda não existe (teste durante a criação). */
   persisted?: boolean;
@@ -167,6 +169,13 @@ type IntegrationProfileSheetProps = {
 
 /** Placeholder returned by the backend instead of a stored secret. */
 const SECRET_MASK = '********';
+
+/**
+ * Guia passo a passo dos provedores sociais (Meta, Instagram, YouTube, Perfil
+ * da Empresa e LinkedIn), linkado nos painéis de configuração do perfil.
+ */
+const SOCIAL_SETUP_GUIDE_URL =
+  'https://claude.ai/code/artifact/4d0b858c-a3fb-489f-8814-51ed3d746234';
 
 const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
   smtp: [
@@ -1024,6 +1033,18 @@ const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
       required: true,
       colSpan: true,
     },
+    // Allowlist de origem conferida contra o `hostname` que o siteverify
+    // devolve. Vazio significa "não confira", que é como todo perfil criado
+    // antes deste campo continua funcionando. Nunca inclua `localhost` num
+    // perfil de produção.
+    {
+      key: 'hostnames',
+      labelKey: 'fieldHostnames',
+      type: 'text',
+      required: false,
+      placeholder: 'hcode.com.br, www.hcode.com.br',
+      colSpan: true,
+    },
   ],
   altcha: [
     {
@@ -1250,6 +1271,311 @@ const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
       placeholder: 'my-namespace',
     },
   ],
+  // Frete. As chaves são as que MelhorEnvioProvider.resolveConfig() lê
+  // (libraries/commerce/src/commerce-shipping/melhor-envio.provider.ts): mudar
+  // um nome aqui desliga a cotação em silêncio, sem erro na tela.
+  'melhor-envio': [
+    {
+      key: 'access_token',
+      labelKey: 'fieldAccessToken',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    {
+      // Os três campos do OAuth são o que permite COMPRAR etiqueta: sem eles o
+      // perfil só cota, com o access_token estático, até ele vencer. O
+      // refresh_token rotaciona a cada uso e é reescrito aqui pelo runtime.
+      key: 'client_id',
+      labelKey: 'fieldClientId',
+      type: 'text',
+      required: false,
+      colSpan: true,
+    },
+    {
+      key: 'client_secret',
+      labelKey: 'fieldClientSecret',
+      type: 'password',
+      required: false,
+      colSpan: true,
+    },
+    {
+      key: 'refresh_token',
+      labelKey: 'fieldRefreshToken',
+      type: 'password',
+      required: false,
+      colSpan: true,
+    },
+    {
+      // O Melhor Envio recusa requisição sem User-Agent identificável e pede um
+      // e-mail de contato ali; sem isto o provider manda "HedHog Commerce".
+      key: 'user_agent',
+      labelKey: 'fieldUserAgent',
+      type: 'text',
+      required: false,
+      colSpan: true,
+      placeholder: 'Minha Loja (contato@minhaloja.com.br)',
+    },
+    {
+      key: 'sandbox',
+      labelKey: 'fieldSandbox',
+      type: 'boolean',
+      required: false,
+    },
+  ],
+  // App do HedHog na Meta para o módulo social (libraries/social). As chaves são as
+  // que buildMetaSocialConfig lê. As Páginas e contas Instagram conectadas NÃO
+  // ficam aqui: cada uma é uma linha de social_channel, com o próprio token.
+  'meta-social': [
+    {
+      key: 'app_id',
+      labelKey: 'fieldAppId',
+      type: 'text',
+      required: true,
+    },
+    {
+      key: 'app_secret',
+      labelKey: 'fieldAppSecret',
+      type: 'password',
+      required: true,
+    },
+    {
+      // O Facebook Login for Business pede as permissões pela Login
+      // Configuration (config_id), não pelo parâmetro `scope`. Sem ela o
+      // backend não monta o dialog de conexão, então é obrigatória.
+      key: 'login_config_id',
+      labelKey: 'fieldLoginConfigId',
+      type: 'text',
+      required: true,
+    },
+    {
+      key: 'graph_api_version',
+      labelKey: 'fieldGraphApiVersion',
+      type: 'text',
+      required: false,
+      placeholder: 'v21.0',
+    },
+    {
+      key: 'webhook_verify_token',
+      labelKey: 'fieldVerifyToken',
+      type: 'password',
+      required: false,
+    },
+    {
+      // `sandbox` troca a Graph API por um cliente simulado (recusado em produção):
+      // permite desenvolver o módulo sem o app aprovado pela Meta.
+      key: 'mode',
+      labelKey: 'fieldMode',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'live', labelKey: 'fieldModeProduction' },
+        { value: 'sandbox', labelKey: 'fieldModeSandbox' },
+      ],
+    },
+  ],
+  // App do HedHog na API do Instagram com login do Instagram (libraries/social).
+  // O ID e a chave secreta sao os do app do INSTAGRAM (Instagram > API setup with
+  // Instagram login), diferentes dos do app da Meta; por isso os rotulos sao
+  // proprios. As contas conectadas ficam em social_channel, com o proprio token.
+  'instagram-social': [
+    {
+      key: 'app_id',
+      labelKey: 'fieldInstagramAppId',
+      type: 'text',
+      required: true,
+    },
+    {
+      key: 'app_secret',
+      labelKey: 'fieldInstagramAppSecret',
+      type: 'password',
+      required: true,
+    },
+    {
+      key: 'graph_api_version',
+      labelKey: 'fieldGraphApiVersion',
+      type: 'text',
+      required: false,
+      placeholder: 'v25.0',
+    },
+    {
+      // Webhook proprio do app do Instagram (protocolo instagram-social), que traz
+      // as DMs das contas conectadas pelo login do Instagram.
+      key: 'webhook_verify_token',
+      labelKey: 'fieldVerifyToken',
+      type: 'password',
+      required: false,
+    },
+    {
+      // `sandbox` troca a API do Instagram por um cliente simulado (recusado em
+      // producao), como no meta-social.
+      key: 'mode',
+      labelKey: 'fieldMode',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'live', labelKey: 'fieldModeProduction' },
+        { value: 'sandbox', labelKey: 'fieldModeSandbox' },
+      ],
+    },
+  ],
+  // Projetos do HedHog no Google Cloud para o modulo social, um por rede (a
+  // aprovacao de cada API e separada). As chaves sao as que os configs de
+  // libraries/social leem. Os canais do YouTube e os locais do Perfil da Empresa
+  // NAO ficam aqui: cada um e uma linha de social_channel, com o proprio refresh
+  // token cifrado. Os dois arrays ficam literais (e nao num helper comum) porque
+  // integration-profile.secrets.spec.ts le este mapa como texto.
+  'youtube-social': [
+    {
+      key: 'client_id',
+      labelKey: 'fieldClientId',
+      type: 'text',
+      required: true,
+      colSpan: true,
+    },
+    {
+      key: 'client_secret',
+      labelKey: 'fieldClientSecret',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    {
+      // Em "testing" o Google expira o refresh token em 7 dias: o backend grava
+      // a validade do canal para avisar a reconexao antes de a publicacao falhar.
+      key: 'oauth_app_status',
+      labelKey: 'fieldOauthAppStatus',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'testing', labelKey: 'fieldOauthAppStatusTesting' },
+        { value: 'production', labelKey: 'fieldOauthAppStatusProduction' },
+      ],
+    },
+    {
+      // `sandbox` troca as APIs do Google por um cliente simulado: permite
+      // desenvolver o modulo antes da auditoria da API do YouTube.
+      key: 'mode',
+      labelKey: 'fieldMode',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'live', labelKey: 'fieldModeProduction' },
+        { value: 'sandbox', labelKey: 'fieldModeSandbox' },
+      ],
+    },
+  ],
+  'google-business-social': [
+    {
+      key: 'client_id',
+      labelKey: 'fieldClientId',
+      type: 'text',
+      required: true,
+      colSpan: true,
+    },
+    {
+      key: 'client_secret',
+      labelKey: 'fieldClientSecret',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    {
+      key: 'oauth_app_status',
+      labelKey: 'fieldOauthAppStatus',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'testing', labelKey: 'fieldOauthAppStatusTesting' },
+        { value: 'production', labelKey: 'fieldOauthAppStatusProduction' },
+      ],
+    },
+    {
+      // A Business Profile API nao tem sandbox proprio (cota 0 ate aprovar o
+      // acesso): o modo `sandbox` e o cliente simulado do HedHog.
+      key: 'mode',
+      labelKey: 'fieldMode',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'live', labelKey: 'fieldModeProduction' },
+        { value: 'sandbox', labelKey: 'fieldModeSandbox' },
+      ],
+    },
+  ],
+  // App do HedHog na Community Management API do LinkedIn (paginas de empresa,
+  // libraries/social). E um app proprio, diferente do 'linkedin-oauth' (login):
+  // o LinkedIn exige um app sem outros produtos. As paginas conectadas ficam em
+  // social_channel, com o proprio token cifrado. Array literal porque
+  // integration-profile.secrets.spec.ts le este mapa como texto.
+  'linkedin-social': [
+    {
+      key: 'client_id',
+      labelKey: 'fieldClientId',
+      type: 'text',
+      required: true,
+      colSpan: true,
+    },
+    {
+      key: 'client_secret',
+      labelKey: 'fieldClientSecret',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    {
+      // Versao mensal da API (YYYYMM). Vazio usa a versao padrao do backend.
+      key: 'api_version',
+      labelKey: 'fieldLinkedInApiVersion',
+      type: 'text',
+      required: false,
+      placeholder: '202609',
+    },
+    {
+      // `sandbox` troca a API do LinkedIn por um cliente simulado (recusado em
+      // producao): permite desenvolver antes do nivel Standard.
+      key: 'mode',
+      labelKey: 'fieldMode',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'live', labelKey: 'fieldModeProduction' },
+        { value: 'sandbox', labelKey: 'fieldModeSandbox' },
+      ],
+    },
+  ],
+  // App do HedHog na API v2 do X (OAuth 2.0 com PKCE, cliente confidencial),
+  // cobrada por uso. As contas conectadas ficam em social_channel, com o
+  // proprio token cifrado. Array literal porque
+  // integration-profile.secrets.spec.ts le este mapa como texto.
+  'x-social': [
+    {
+      key: 'client_id',
+      labelKey: 'fieldXClientId',
+      type: 'text',
+      required: true,
+      colSpan: true,
+    },
+    {
+      key: 'client_secret',
+      labelKey: 'fieldXClientSecret',
+      type: 'password',
+      required: true,
+      colSpan: true,
+    },
+    {
+      // `sandbox` troca a API do X por um cliente simulado (recusado em
+      // producao): permite desenvolver antes de comprar creditos.
+      key: 'mode',
+      labelKey: 'fieldMode',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'live', labelKey: 'fieldModeProduction' },
+        { value: 'sandbox', labelKey: 'fieldModeSandbox' },
+      ],
+    },
+  ],
 };
 
 function getLocaleName(locales: LocaleEntry[], code: string): string {
@@ -1297,8 +1623,7 @@ function ChangeSecretButton({
       size="icon"
       className={className}
       onClick={onClick}
-      aria-label={label}
-      title={label}
+      tooltip={label}
     >
       <Pencil className="h-4 w-4" />
     </Button>
@@ -1386,10 +1711,11 @@ export function IntegrationProfileSheet({
     return allowed;
   }, [formTypeProviders, selectedProvider, excludeProviderSlugs]);
 
-  // Every provider slug in PROVIDER_FIELDS' data set (smtp, gmail, ses, openai,
-  // gemini, claude, deepseek, stripe, mercado_pago, local, gcs, recaptcha, altcha,
-  // digitalocean, kubernetes, and every `*-oauth` slug) has an entry, so the
-  // `?? []` fallback is unreachable with the current provider catalog.
+  // Todo slug do catálogo (libraries/core/hedhog/data/integration_provider.yaml)
+  // tem entrada em PROVIDER_FIELDS, então o `?? []` não é alcançado hoje. Mas ele
+  // é a rede de proteção errada: quando `melhor-envio` entrou no catálogo sem
+  // entrada aqui, a seção "Configuração" inteira sumiu da tela — sem campo de
+  // token, sem erro, sem aviso. Provider novo no YAML PRECISA de entrada acima.
   /* v8 ignore next 3 */
   const providerFields = selectedProvider
     ? (PROVIDER_FIELDS[selectedProvider.slug] ?? [])
@@ -1434,6 +1760,91 @@ export function IntegrationProfileSheet({
     ? selectedProvider!.slug.replace(/-oauth$/, '')
     : '';
   const isWhatsappOfficial = selectedProvider?.slug === 'whatsapp-official';
+  const isMetaSocial = selectedProvider?.slug === 'meta-social';
+  // O callback do OAuth de canal é do backend (não do hub /callback do admin):
+  // conectar uma Página não cria sessão, então a troca do code acontece na API.
+  // O backend monta o redirect_uri a partir da setting `api-url`
+  // (libraries/social/src/channel/channel-urls.util.ts), então a URI exibida
+  // segue a mesma setting; a env do admin só entra quando ela está vazia.
+  const envApiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(
+    /\/+$/,
+    ''
+  );
+  const settingApiBaseUrl = String(getSettingValue?.('api-url') ?? '')
+    .trim()
+    .replace(/\/+$/, '');
+  // Em dev a env é relativa (`/api`, via proxy do Next): não serve de redirect
+  // e não conta como divergência.
+  const envApiBaseUrlIsAbsolute = /^https?:\/\//i.test(envApiBaseUrl);
+  const socialApiBaseUrl =
+    settingApiBaseUrl || (envApiBaseUrlIsAbsolute ? envApiBaseUrl : '');
+  const socialApiBaseUrlMismatch =
+    !!settingApiBaseUrl &&
+    envApiBaseUrlIsAbsolute &&
+    settingApiBaseUrl !== envApiBaseUrl;
+  const socialRedirectUri = (callback: string) =>
+    socialApiBaseUrl
+      ? `${socialApiBaseUrl}/social/public/oauth/${callback}/callback`
+      : '';
+  const metaSocialRedirectUri = socialRedirectUri('meta');
+  // O login do Instagram tem callback proprio no backend: o redirect_uri e
+  // cadastrado no app do Instagram, nao no app da Meta.
+  const isInstagramSocial = selectedProvider?.slug === 'instagram-social';
+  const instagramSocialRedirectUri = socialRedirectUri('instagram');
+  // YouTube e Perfil da Empresa usam o mesmo callback do backend: o state do
+  // OAuth diz qual provider iniciou a conexao.
+  const isYoutubeSocial = selectedProvider?.slug === 'youtube-social';
+  const isGoogleBusinessSocial =
+    selectedProvider?.slug === 'google-business-social';
+  const isGoogleSocial = isYoutubeSocial || isGoogleBusinessSocial;
+  const googleSocialRedirectUri = socialRedirectUri('google');
+  // O LinkedIn tem callback proprio: o redirect_uri e cadastrado na aba Auth do
+  // app da Community Management API.
+  const isLinkedInSocial = selectedProvider?.slug === 'linkedin-social';
+  const linkedinSocialRedirectUri = socialRedirectUri('linkedin');
+  // O X tambem tem callback proprio: a Callback URI e cadastrada nas
+  // configuracoes de autenticacao do app no Developer Console.
+  const isXSocial = selectedProvider?.slug === 'x-social';
+  const xSocialRedirectUri = socialRedirectUri('x');
+  // Aviso de base divergente + link do guia, comum aos painéis sociais.
+  const socialSetupFooter = (
+    <>
+      {socialApiBaseUrlMismatch && (
+        <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
+          <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+          {t('socialRedirectUriMismatch', {
+            setting: settingApiBaseUrl,
+            env: envApiBaseUrl,
+          })}
+        </p>
+      )}
+      <a
+        href={SOCIAL_SETUP_GUIDE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline"
+      >
+        {t('socialGuideLink')}
+      </a>
+    </>
+  );
+  const googleSocialStepKeys = isYoutubeSocial
+    ? [
+        'youtubeSocialStep1',
+        'youtubeSocialStep2',
+        'youtubeSocialStep3',
+        'youtubeSocialStep4',
+        'youtubeSocialStep5',
+        'googleSocialTestingStep',
+      ]
+    : [
+        'googleBusinessSocialStep1',
+        'googleBusinessSocialStep2',
+        'googleBusinessSocialStep3',
+        'googleBusinessSocialStep4',
+        'googleBusinessSocialStep5',
+        'googleSocialTestingStep',
+      ];
   const isSes = selectedProvider?.slug === 'ses';
   const isMicrosoftEntra =
     selectedProvider?.slug === 'microsoft-entra-id-oauth';
@@ -1441,6 +1852,14 @@ export function IntegrationProfileSheet({
     selectedProvider?.slug ?? ''
   );
   const paymentGatewaySlug = isPaymentProvider ? selectedProvider!.slug : '';
+  // Combinação que rejeita todo webhook com 401 e some sem deixar rastro na tela:
+  // em `production` sem `webhook_secret` a assinatura não pode ser verificada, e o
+  // handler recusa em vez de processar um evento forjável. Foi assim que um PIX
+  // pago ficou pendente para sempre.
+  const isProductionWithoutWebhookSecret =
+    ['stripe', 'mercado_pago'].includes(paymentGatewaySlug) &&
+    String(formData.config.mode ?? '') === 'production' &&
+    !String(formData.config.webhook_secret ?? '').trim();
   // Passos de configuração por gateway, colados no painel do provedor.
   const paymentWebhookStepKeys: Record<string, string[]> = {
     stripe: [
@@ -2027,6 +2446,15 @@ export function IntegrationProfileSheet({
     Boolean(formData.slug.trim()) &&
     Boolean(formData.name.trim());
 
+  // Traduz pelos códigos só quando a tela conhece todos; senão o texto do backend
+  // vai inteiro, para nenhum aviso sumir.
+  const translateTestWarning = (data: TestConnectionResponse) => {
+    const codes = data.warning_codes ?? [];
+    const keys = codes.map((code) => `testConnectionWarningCodes.${code}`);
+    if (!codes.length || !keys.every((key) => t.has(key))) return data.warning;
+    return keys.map((key) => t(key)).join(' ');
+  };
+
   const handleTestConnection = async () => {
     if (!canTestConnection) {
       return;
@@ -2050,7 +2478,7 @@ export function IntegrationProfileSheet({
       setTestState({
         status: 'ok',
         info: data.info ?? data.destination,
-        warning: data.warning,
+        warning: translateTestWarning(data),
         persisted: data.persisted !== false,
       });
       toast.success(t('testConnectionSuccess'));
@@ -2509,7 +2937,7 @@ export function IntegrationProfileSheet({
                                   [field.key]: !p[field.key],
                                 }))
                               }
-                              aria-label={
+                              tooltip={
                                 isVisible
                                   ? t('hidePassword')
                                   : t('showPassword')
@@ -2588,6 +3016,7 @@ export function IntegrationProfileSheet({
                         setCopiedIndex(index);
                         setTimeout(() => setCopiedIndex(null), 1500);
                       }}
+                      tooltip={t('copyUrl')}
                     >
                       {copiedIndex === index ? (
                         <Check className="h-4 w-4 text-green-500" />
@@ -2602,6 +3031,7 @@ export function IntegrationProfileSheet({
                       onClick={() => removeCallbackUrl(index)}
                       className="shrink-0"
                       disabled={isLoadingProfile}
+                      tooltip={t('removeCallbackUrl')}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -2661,6 +3091,238 @@ export function IntegrationProfileSheet({
                     <li>{t('sesWebhookStep4')}</li>
                   </ol>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {isMetaSocial && (
+            <div className="rounded-lg border">
+              <div className="border-b px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {t('metaSocialSectionTitle')}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t('metaSocialDescription')}
+                </p>
+              </div>
+              <div className="space-y-4 p-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {t('metaSocialRedirectUriLabel')}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={metaSocialRedirectUri}
+                      placeholder={t('metaSocialRedirectUriUnavailable')}
+                      className="font-mono text-sm"
+                    />
+                    <CopyButton
+                      value={metaSocialRedirectUri}
+                      copiedMessage={t('copiedToClipboard')}
+                      className="shrink-0"
+                    />
+                  </div>
+                </div>
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="mb-1.5 text-xs font-semibold">
+                    {t('metaSocialStepsTitle')}
+                  </p>
+                  <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                    <li>{t('metaSocialStep1')}</li>
+                    <li>{t('metaSocialStep2')}</li>
+                    <li>{t('metaSocialStep3')}</li>
+                    <li>{t('metaSocialStep4')}</li>
+                    <li>{t('metaSocialStep5')}</li>
+                  </ol>
+                </div>
+                {socialSetupFooter}
+              </div>
+            </div>
+          )}
+
+          {isInstagramSocial && (
+            <div className="rounded-lg border">
+              <div className="border-b px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {t('instagramSocialSectionTitle')}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t('instagramSocialDescription')}
+                </p>
+              </div>
+              <div className="space-y-4 p-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {t('instagramSocialRedirectUriLabel')}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={instagramSocialRedirectUri}
+                      placeholder={t('instagramSocialRedirectUriUnavailable')}
+                      className="font-mono text-sm"
+                    />
+                    <CopyButton
+                      value={instagramSocialRedirectUri}
+                      copiedMessage={t('copiedToClipboard')}
+                      className="shrink-0"
+                    />
+                  </div>
+                </div>
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="mb-1.5 text-xs font-semibold">
+                    {t('instagramSocialStepsTitle')}
+                  </p>
+                  <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                    <li>{t('instagramSocialStep1')}</li>
+                    <li>{t('instagramSocialStep2')}</li>
+                    <li>{t('instagramSocialStep3')}</li>
+                    <li>{t('instagramSocialStep4')}</li>
+                    <li>{t('instagramSocialStep5')}</li>
+                  </ol>
+                </div>
+                {socialSetupFooter}
+              </div>
+            </div>
+          )}
+
+          {isLinkedInSocial && (
+            <div className="rounded-lg border">
+              <div className="border-b px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {t('linkedinSocialSectionTitle')}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t('linkedinSocialDescription')}
+                </p>
+              </div>
+              <div className="space-y-4 p-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {t('linkedinSocialRedirectUriLabel')}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={linkedinSocialRedirectUri}
+                      placeholder={t('linkedinSocialRedirectUriUnavailable')}
+                      className="font-mono text-sm"
+                    />
+                    <CopyButton
+                      value={linkedinSocialRedirectUri}
+                      copiedMessage={t('copiedToClipboard')}
+                      className="shrink-0"
+                    />
+                  </div>
+                </div>
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="mb-1.5 text-xs font-semibold">
+                    {t('linkedinSocialStepsTitle')}
+                  </p>
+                  <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                    <li>{t('linkedinSocialStep1')}</li>
+                    <li>{t('linkedinSocialStep2')}</li>
+                    <li>{t('linkedinSocialStep3')}</li>
+                    <li>{t('linkedinSocialStep4')}</li>
+                    <li>{t('linkedinSocialStep5')}</li>
+                  </ol>
+                </div>
+                {socialSetupFooter}
+              </div>
+            </div>
+          )}
+
+          {isXSocial && (
+            <div className="rounded-lg border">
+              <div className="border-b px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {t('xSocialSectionTitle')}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t('xSocialSectionDescription')}
+                </p>
+              </div>
+              <div className="space-y-4 p-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {t('xSocialRedirectUriLabel')}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={xSocialRedirectUri}
+                      placeholder={t('xSocialRedirectUriUnavailable')}
+                      className="font-mono text-sm"
+                    />
+                    <CopyButton
+                      value={xSocialRedirectUri}
+                      copiedMessage={t('copiedToClipboard')}
+                      className="shrink-0"
+                    />
+                  </div>
+                </div>
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="mb-1.5 text-xs font-semibold">
+                    {t('xSocialStepsTitle')}
+                  </p>
+                  <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                    <li>{t('xSocialStep1')}</li>
+                    <li>{t('xSocialStep2')}</li>
+                    <li>{t('xSocialStep3')}</li>
+                    <li>{t('xSocialStep4')}</li>
+                    <li>{t('xSocialStep5')}</li>
+                  </ol>
+                </div>
+                {socialSetupFooter}
+              </div>
+            </div>
+          )}
+
+          {isGoogleSocial && (
+            <div className="rounded-lg border">
+              <div className="border-b px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {t('googleSocialSectionTitle')}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t(
+                    isYoutubeSocial
+                      ? 'youtubeSocialDescription'
+                      : 'googleBusinessSocialDescription'
+                  )}
+                </p>
+              </div>
+              <div className="space-y-4 p-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {t('googleSocialRedirectUriLabel')}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={googleSocialRedirectUri}
+                      placeholder={t('googleSocialRedirectUriUnavailable')}
+                      className="font-mono text-sm"
+                    />
+                    <CopyButton
+                      value={googleSocialRedirectUri}
+                      copiedMessage={t('copiedToClipboard')}
+                      className="shrink-0"
+                    />
+                  </div>
+                </div>
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="mb-1.5 text-xs font-semibold">
+                    {t('googleSocialStepsTitle')}
+                  </p>
+                  <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                    {googleSocialStepKeys.map((stepKey) => (
+                      <li key={stepKey}>{t(stepKey)}</li>
+                    ))}
+                  </ol>
+                </div>
+                {socialSetupFooter}
               </div>
             </div>
           )}
@@ -2924,6 +3586,14 @@ export function IntegrationProfileSheet({
                     )}
                   </ol>
                 </div>
+
+                {isProductionWithoutWebhookSecret && (
+                  <div className="rounded-md border border-red-500/40 bg-red-500/5 p-3">
+                    <p className="text-xs text-red-700 dark:text-red-400">
+                      {t('paymentWebhookSecretMissingInProduction')}
+                    </p>
+                  </div>
+                )}
 
                 <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
                   <p className="text-xs text-amber-700 dark:text-amber-400">

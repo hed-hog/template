@@ -1,7 +1,11 @@
 'use client';
 
 import { Role } from '@hed-hog/api-types';
-import { useApp, useQuery } from '@hed-hog/next-app-provider';
+import {
+  getSessionIdentity,
+  useApp,
+  useQuery,
+} from '@hed-hog/next-app-provider';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ImpersonationNoAccessPage } from '@/components/impersonation/impersonation-no-access-page';
@@ -59,7 +63,10 @@ export const GuardPage = ({ children }: GuardPage) => {
       ?.requires_password_reset === true;
 
   const { data, isLoading: isLoadingRoles } = useQuery<{ roles: Role[] }>({
-    queryKey: ['roles', accessToken],
+    // Pela sessão, não pelo token: com o token na chave, cada renovação voltava
+    // a `isLoading` e a `LoadingPage` abaixo desmontava a página inteira — o
+    // formulário em preenchimento junto. Ver `getSessionIdentity`.
+    queryKey: ['roles', getSessionIdentity(accessToken)],
     queryFn: async () => {
       try {
         const response = await request<{ roles: Role[] }>({

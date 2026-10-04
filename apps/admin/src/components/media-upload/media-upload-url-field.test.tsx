@@ -36,6 +36,7 @@ const labels: MediaUploadUrlFieldLabels = {
   uploading: 'uploading',
   uploadError: 'uploadError',
   linkPlaceholder: 'linkPlaceholder',
+  loadError: 'loadError',
 };
 
 function imgFile(name = 'a.png', type = 'image/png') {
@@ -101,11 +102,15 @@ describe('MediaUploadUrlField', () => {
     expect(img.src).toBe('http://x/file/image/5');
   });
 
-  it('volta ao placeholder quando a imagem falha ao carregar', () => {
+  // Antes este caso caía no mesmo texto de "nenhuma imagem selecionada", e quem
+  // editava achava que nunca tinha salvado nada — quando na verdade havia um
+  // link que não carrega. O aviso próprio é o que separa as duas situações.
+  it('avisa que a imagem não carregou, em vez de parecer campo vazio', () => {
     renderField({ value: 'http://broken' });
     const img = screen.getByAltText('Logo');
     fireEvent.error(img);
-    expect(screen.getByText('empty')).toBeInTheDocument();
+    expect(screen.getByText('loadError')).toBeInTheDocument();
+    expect(screen.queryByText('empty')).not.toBeInTheDocument();
   });
 
   it('renderiza a descrição quando informada', () => {

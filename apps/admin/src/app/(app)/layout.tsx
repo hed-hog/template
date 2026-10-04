@@ -1,6 +1,7 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { MaintenanceAlertBanner } from '@/components/maintenance/maintenance-alert-banner';
 import { McpFloatingChat } from '@/components/mcp-floating-chat';
+import { NotificationsProvider } from '@/components/notification-bell';
 import { GuardPage } from '@/components/page/guard-page';
 import { PresenceHeartbeat } from '@/components/presence/presence-heartbeat';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
@@ -20,15 +21,17 @@ export default async function Layout({ children }: LayoutProps) {
   return (
     <GuardPage>
       <RealtimeProvider>
-        <SidebarProvider defaultOpen={defaultOpen}>
-          <AppSidebar />
-          <SidebarInset>
-            <MaintenanceAlertBanner />
-            {children}
-          </SidebarInset>
-          <McpFloatingChat />
-          <PresenceHeartbeat />
-        </SidebarProvider>
+        <NotificationsProvider>
+          <SidebarProvider defaultOpen={defaultOpen}>
+            <AppSidebar />
+            <SidebarInset>
+              <MaintenanceAlertBanner />
+              {children}
+            </SidebarInset>
+            <McpFloatingChat />
+            <PresenceHeartbeat />
+          </SidebarProvider>
+        </NotificationsProvider>
       </RealtimeProvider>
     </GuardPage>
   );

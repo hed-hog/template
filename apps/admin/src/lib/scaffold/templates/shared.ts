@@ -263,3 +263,28 @@ export function cellExpression(column: ScaffoldColumn, variable: string): string
 
   return `${variable}.${column.name} ?? '-'`;
 }
+
+/**
+ * Tipos de coluna que fazem sentido ordenar clicando no cabeçalho.
+ *
+ * Ficam de fora `text` e `jsonb` (ordem alfabética de um parágrafo ou de um
+ * JSON não responde a pergunta nenhuma) e `fk` (ordenaria pelo id numérico do
+ * relacionado, não pelo nome que a célula mostra).
+ *
+ * Colunas traduzíveis nem chegam aqui: `scalarColumns` já as remove da
+ * listagem, porque elas vivem em `<tabela>_locale`.
+ */
+const SORTABLE_COLUMN_TYPES = new Set([
+  'varchar',
+  'slug',
+  'int',
+  'decimal',
+  'date',
+  'datetime',
+  'enum',
+  'boolean',
+]);
+
+export function isSortableColumn(column: ScaffoldColumn): boolean {
+  return SORTABLE_COLUMN_TYPES.has(column.type);
+}

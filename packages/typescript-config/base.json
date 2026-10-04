@@ -80,6 +80,12 @@
       "@hed-hog/next-build-skew/*": [
         "../../packages/next-build-skew/src/*"
       ],
+      "@hed-hog/studio-edit-core": [
+        "../../packages/studio-edit-core/src"
+      ],
+      "@hed-hog/studio-edit-core/*": [
+        "../../packages/studio-edit-core/src/*"
+      ],
       "@hed-hog/ui": [
         "../../packages/ui/src"
       ],

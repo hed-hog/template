@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox, CheckboxMark } from '@/components/ui/checkbox';
 import {
   EntityPicker,
   type EntityPickerLoadResult,
@@ -762,7 +762,7 @@ export function FacetedMultiPicker<
 
           return (
             <div className="flex min-w-0 items-center gap-2.5 py-0.5">
-              <Checkbox checked={isChosen} className="shrink-0" />
+              <CheckboxMark checked={isChosen} />
               <Avatar className="size-7 shrink-0 rounded-full">
                 {avatarUrl ? <AvatarImage src={avatarUrl} alt={label} /> : null}
                 <AvatarFallback className="text-xs font-semibold">

@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { CheckboxMark } from '@/components/ui/checkbox';
 import {
   Command,
   CommandEmpty,
@@ -101,7 +101,7 @@ export function TagFilterPopover({
                     value={`${tag.label}-${tag.id}`}
                     onSelect={() => toggle(tag.id)}
                   >
-                    <Checkbox checked={checked} className="mr-2 shrink-0" />
+                    <CheckboxMark checked={checked} className="mr-2" />
                     {tag.color ? (
                       <span
                         className="mr-1.5 inline-block size-2 shrink-0 rounded-full"

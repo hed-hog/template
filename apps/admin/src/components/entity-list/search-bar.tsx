@@ -83,7 +83,7 @@ function renderControl(control: SearchBarControl, filterPlaceholder: string) {
   if (control.type === 'date') {
     if (control.label) {
       return (
-        <div className="flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 shadow-xs">
+        <div className="flex w-full items-center gap-1.5 rounded-md border border-input bg-background px-2.5 shadow-xs sm:w-auto">
           <span className="select-none whitespace-nowrap text-xs font-medium text-muted-foreground">
             {control.label}
           </span>
@@ -94,7 +94,7 @@ function renderControl(control: SearchBarControl, filterPlaceholder: string) {
             min={control.min}
             max={control.max}
             className={cn(
-              'w-30 bg-transparent py-1.5 text-sm text-foreground outline-none',
+              'min-w-0 flex-1 bg-transparent py-1.5 text-sm text-foreground outline-none sm:w-30 sm:flex-none',
               control.className
             )}
           />
@@ -108,7 +108,7 @@ function renderControl(control: SearchBarControl, filterPlaceholder: string) {
         onChange={(event) => control.onChange(event.target.value)}
         min={control.min}
         max={control.max}
-        className={cn('w-40 sm:w-44 lg:w-45', control.className)}
+        className={cn('w-full sm:w-44 lg:w-45', control.className)}
       />
     );
   }
@@ -119,10 +119,8 @@ function renderControl(control: SearchBarControl, filterPlaceholder: string) {
       onValueChange={control.onChange}
       disabled={control.disabled}
     >
-      <SelectTrigger className={cn('w-40 sm:w-44 lg:w-45', control.className)}>
-        <SelectValue
-          placeholder={control.placeholder || filterPlaceholder}
-        />
+      <SelectTrigger className={cn('w-full sm:w-44 lg:w-45', control.className)}>
+        <SelectValue placeholder={control.placeholder || filterPlaceholder} />
       </SelectTrigger>
       <SelectContent side="bottom">
         {control.options.map((option) => (
@@ -196,7 +194,7 @@ export function SearchBar({
             size="icon"
             className="shrink-0 lg:w-auto lg:px-4"
             type="submit"
-            aria-label={t('btnBuscar')}
+            tooltip={t('btnBuscar')}
           >
             <Search className="h-4 w-4" />
             <span className="sr-only lg:not-sr-only lg:inline">
@@ -208,18 +206,29 @@ export function SearchBar({
           <div className="shrink-0">{afterSearchButton}</div>
         ) : null}
 
+        {/* No celular os filtros formam uma grade de 2 colunas de largura igual,
+            e o último ocupa a linha inteira quando a conta é ímpar: sem isso
+            cada um fica com a largura fixa dele e a linha sai desencontrada.
+            A partir de `sm` voltam a fluir lado a lado. */}
         {normalizedControls.length > 0 && (
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center [&>*:last-child:nth-child(odd)]:col-span-2">
             {normalizedControls.map((control) => (
-              <div key={control.id} className="shrink-0">
+              <div key={control.id} className="min-w-0 sm:shrink-0">
                 {renderControl(control, t('filterPlaceholder'))}
               </div>
             ))}
           </div>
         )}
 
+        {/* `gap-2` porque `actions` costuma receber mais de um controle solto (o
+            menu de colunas e o alternador de visualização, por exemplo) e sem
+            ele os dois encostam um no outro. Grupo que deve ficar colado —
+            `ToggleGroup`, botão segmentado — tem contêiner próprio e não é
+            afetado; ação única também não. */}
         {actions && (
-          <div className="flex shrink-0 items-center sm:ml-auto">{actions}</div>
+          <div className="flex shrink-0 items-center justify-end gap-2 max-sm:w-full sm:ml-auto">
+            {actions}
+          </div>
         )}
       </div>
     </form>

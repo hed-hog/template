@@ -40,6 +40,9 @@ export const vaultActionSchema = z.enum([
   'ADD_ATTACHMENT',
   'REMOVE_ATTACHMENT',
   'DOWNLOAD_ATTACHMENT',
+  // Anexo baixado a partir de um link compartilhado (não por um membro do cofre) —
+  // por isso não entra em VAULT_ACCESS_ACTIONS: é visível como VIEW_SHARED_SECRET.
+  'DOWNLOAD_SHARED_ATTACHMENT',
 ]);
 export type VaultAction = z.infer<typeof vaultActionSchema>;
 

@@ -1,27 +1,41 @@
 import { useMemo, useState } from 'react';
 import { usePaginationFetch } from './use-pagination-fetch';
 import { usePersistedPageSize } from './use-persisted-page-size';
+import { useTableSort, type SortableColumn } from './use-table-sort';
 
 type PaginationOption = {
   pageSizeOptions: readonly number[];
   maxPages?: number;
 };
 
-type UsePaginationProps = {
+/**
+ * Identidade estável para quem não passa `sortColumns`. Um literal inline
+ * aqui recriaria o mapa do `useTableSort` a cada render.
+ */
+const SEM_ORDENACAO: readonly never[] = [];
+
+type UsePaginationProps<TField extends string> = {
   url: string;
   paginationOptions?: PaginationOption;
   orderField?: string;
   orderDirection?: 'asc' | 'desc';
   storageKey?: string;
+  /**
+   * Allowlist dos campos que o backend aceita em `sortField`. Passando ela, o
+   * `sort` devolvido já vem pronto para o `SortableTableHead`; sem ela o hook
+   * se comporta como antes e nenhum cabeçalho fica clicável.
+   */
+  sortColumns?: readonly SortableColumn<TField>[];
 };
 
-export const usePagination = ({
+export const usePagination = <TField extends string = string>({
   url,
   paginationOptions,
   orderField,
   orderDirection,
   storageKey,
-}: UsePaginationProps) => {
+  sortColumns,
+}: UsePaginationProps<TField>) => {
   const [sortField, setSortField] = useState<string | undefined>(orderField);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(
     orderDirection ?? 'desc'
@@ -34,6 +48,27 @@ export const usePagination = ({
     allowedValues: pageSizeOptions,
   });
   const [search, setSearch] = useState('');
+
+  // Modo controlado: o estado continua sendo o deste hook — o `useTableSort`
+  // só decide qual é a próxima direção e qual coluna está ativa. Voltar para a
+  // página 1 faz parte da mudança: ordenar sem isso mostra "a página 3 da nova
+  // ordem", que nunca é o que o usuário pediu.
+  const sort = useTableSort<TField>({
+    columns: sortColumns ?? (SEM_ORDENACAO as readonly SortableColumn<TField>[]),
+    defaultSort: {
+      field: (orderField ?? 'id') as TField,
+      order: orderDirection ?? 'desc',
+    },
+    value: {
+      field: (sortField ?? orderField ?? 'id') as TField,
+      order: sortOrder ?? 'desc',
+    },
+    onValueChange: (next) => {
+      setSortField(next.field);
+      setSortOrder(next.order);
+      setPage(1);
+    },
+  });
 
   const {
     data: paginatedData,
@@ -81,6 +116,7 @@ export const usePagination = ({
     setSortField,
     sortOrder,
     setSortOrder,
+    sort,
     totalPages,
   };
 };

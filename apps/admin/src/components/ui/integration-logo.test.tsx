@@ -26,6 +26,10 @@ vi.mock('@/generated/integration-logos', () => ({
     'cloudflare-icon': { body: '<path d="M14"/>', width: 256, height: 256 },
     'deepseek-icon': { body: '<path d="M16"/>', width: 256, height: 256 },
     facebook: { body: '<path d="M17"/>', width: 256, height: 256 },
+    'youtube-icon': { body: '<path d="M18"/>', width: 256, height: 180 },
+    'google-maps': { body: '<path d="M19"/>', width: 256, height: 367 },
+    'instagram-icon': { body: '<path d="M20"/>', width: 256, height: 256 },
+    x: { body: '<path d="M21"/>', width: 251, height: 256 },
   },
 }));
 
@@ -232,6 +236,102 @@ describe('IntegrationLogo', () => {
       'Google Play Billing'
     );
   });
+
+  it.each(['instagram', 'instagram-social', 'instagram_social'])(
+    'renderiza o logo do Instagram para %s (rede do canal e provider do perfil)',
+    (provider) => {
+      const { container } = render(
+        <IntegrationLogo provider={provider} decorative={false} />
+      );
+      expect(container.querySelector('svg')).toBeTruthy();
+      expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
+      expect(container.querySelector('[role="img"]')).toHaveAttribute(
+        'aria-label',
+        'Instagram'
+      );
+    }
+  );
+
+  it.each(['linkedin', 'linkedin-social', 'linkedin_social'])(
+    'renderiza o logo do LinkedIn para %s (rede do canal e provider do perfil)',
+    (provider) => {
+      const { container } = render(
+        <IntegrationLogo provider={provider} decorative={false} />
+      );
+      expect(container.querySelector('svg')).toHaveAttribute(
+        'viewBox',
+        '0 0 256 32'
+      );
+      expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
+      expect(container.querySelector('[role="img"]')).toHaveAttribute(
+        'aria-label',
+        'LinkedIn'
+      );
+    }
+  );
+
+  it.each(['x', 'x-social', 'x_social'])(
+    'renderiza o logo do X para %s na cor do texto (rede do canal e provider do perfil)',
+    (provider) => {
+      const { container } = render(
+        <IntegrationLogo provider={provider} decorative={false} />
+      );
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveAttribute('viewBox', '0 0 251 256');
+      expect(svg).toHaveAttribute('fill', 'currentColor');
+      expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
+      expect(container.querySelector('[role="img"]')).toHaveAttribute(
+        'aria-label',
+        'X'
+      );
+    }
+  );
+
+  it('logo colorido nao ganha fill da cor do texto', () => {
+    const { container } = render(<IntegrationLogo provider="linkedin" />);
+    expect(container.querySelector('svg')).not.toHaveAttribute('fill');
+  });
+
+  it.each(['youtube', 'youtube-social', 'youtube_social'])(
+    'renderiza o logo do YouTube para %s (rede do canal e provider do perfil)',
+    (provider) => {
+      const { container } = render(
+        <IntegrationLogo provider={provider} decorative={false} />
+      );
+      expect(container.querySelector('svg')).toHaveAttribute(
+        'viewBox',
+        '0 0 256 180'
+      );
+      expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
+      expect(container.querySelector('[role="img"]')).toHaveAttribute(
+        'aria-label',
+        'YouTube'
+      );
+    }
+  );
+
+  it.each([
+    'google-business',
+    'google_business',
+    'google-business-social',
+    'google_business_social',
+  ])(
+    'renderiza o logo do Google Maps para o Perfil da Empresa (%s)',
+    (provider) => {
+      const { container } = render(
+        <IntegrationLogo provider={provider} decorative={false} />
+      );
+      expect(container.querySelector('svg')).toHaveAttribute(
+        'viewBox',
+        '0 0 256 367'
+      );
+      expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
+      expect(container.querySelector('[role="img"]')).toHaveAttribute(
+        'aria-label',
+        'Google Business Profile'
+      );
+    }
+  );
 
   it('renderiza o ícone Lucide PlugZap como fallback genérico', () => {
     render(<IntegrationLogo provider="totally_unknown_thing" />);

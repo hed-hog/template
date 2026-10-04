@@ -69,6 +69,8 @@ Estas instrucoes se aplicam a `apps/admin`.
 - Para acoes destrutivas ou irreversiveis, usar `AlertDialog` do Shadcn.
 - Nao usar `window.confirm`.
 - Manter textos localizados com `useTranslations()`.
+- Todo botao que espera algo deve mostrar feedback: o `Button` entra em loading sozinho quando o `onClick` devolve uma Promise, e aceita `loading` quando a espera nao passa pelo clique. Nao escrever `Loader2` + `animate-spin` a mao dentro de botao.
+- Botao so-com-icone (`size="icon*"`) exige a prop `tooltip`. O padrao completo esta na skill `.claude/skills/admin-buttons/`.
 
 ## Tabelas e listagens
 

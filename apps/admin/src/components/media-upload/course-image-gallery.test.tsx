@@ -53,11 +53,16 @@ vi.mock('@/components/image-crop/image-crop-dialog', () => ({
       <>
         <button
           data-testid="crop-confirm"
-          onClick={() => props.onCropped(new Blob(['x'], { type: 'image/webp' }))}
+          onClick={() =>
+            props.onCropped(new Blob(['x'], { type: 'image/webp' }))
+          }
         >
           confirm crop
         </button>
-        <button data-testid="crop-cancel" onClick={() => props.onOpenChange(false)}>
+        <button
+          data-testid="crop-cancel"
+          onClick={() => props.onOpenChange(false)}
+        >
           cancel crop
         </button>
       </>
@@ -96,30 +101,24 @@ function pngFile(name = 'a.png', size = 1024) {
   return file;
 }
 
-// The per-image action buttons only contain an icon (no text/aria-label) and
-// their tooltip text isn't reliably exposed as the accessible name (Radix
-// wires it via aria-describedby, not aria-labelledby), so getByRole({ name })
-// doesn't match them. Locate each button by the lucide icon class it contains
-// instead — note the "isPrimary" Badge also renders a Star icon (not inside a
-// button), so we look for a <button> ancestor via closest('button') and pick
-// the first icon whose closest ancestor actually is one.
-function findButtonByIcon(container: HTMLElement, iconClass: string) {
-  const icons = container.querySelectorAll(`svg.${iconClass}`);
-  for (const icon of Array.from(icons)) {
-    const button = icon.closest('button');
-    if (button) return button as HTMLButtonElement;
-  }
-  return null as unknown as HTMLButtonElement;
+// Cada ação por imagem é um botão só-com-ícone: o `tooltip` do `Button` vira o
+// `aria-label`, então o rótulo é o caminho da chave devolvido pelo `t` falso.
+// Localizar pelo ícone não serve: enquanto o clique está pendente o `Button`
+// troca o ícone pelo spinner, e o botão continuaria "sumido" para o teste.
+function findButtonByLabel(container: HTMLElement, label: string) {
+  return container.querySelector(
+    `button[aria-label="${label}"]`
+  ) as HTMLButtonElement;
 }
 
 function getActionButtons(container: HTMLElement) {
   return {
-    setPrimary: findButtonByIcon(container, 'lucide-star'),
+    setPrimary: findButtonByLabel(container, 'form.media.setDefault'),
     toggleActive:
-      findButtonByIcon(container, 'lucide-power') ??
-      findButtonByIcon(container, 'lucide-power-off'),
-    openOriginal: findButtonByIcon(container, 'lucide-eye'),
-    removeImage: findButtonByIcon(container, 'lucide-trash2'),
+      findButtonByLabel(container, 'form.media.deactivate') ??
+      findButtonByLabel(container, 'form.media.activate'),
+    openOriginal: findButtonByLabel(container, 'form.media.viewOriginalImage'),
+    removeImage: findButtonByLabel(container, 'form.media.removeImage'),
   };
 }
 
@@ -206,7 +205,9 @@ describe('CourseImageGallery', () => {
         t={t}
       />
     );
-    expect(screen.getByText('form.media.addImage').closest('button')).toBeDisabled();
+    expect(
+      screen.getByText('form.media.addImage').closest('button')
+    ).toBeDisabled();
   });
 
   describe('handleSelect', () => {
@@ -270,7 +271,10 @@ describe('CourseImageGallery', () => {
   });
 
   describe('handleCropped', () => {
-    function renderAndCrop(onChanged = vi.fn(), courseId: string | number | null = 1) {
+    function renderAndCrop(
+      onChanged = vi.fn(),
+      courseId: string | number | null = 1
+    ) {
       const utils = render(
         <CourseImageGallery
           courseId={courseId}
@@ -524,7 +528,9 @@ describe('CourseImageGallery', () => {
         />
       );
       expect(screen.getByText('form.media.inactiveBadge')).toBeInTheDocument();
-      expect(container.querySelector('svg.lucide-power-off')).toBeInTheDocument();
+      expect(
+        container.querySelector('svg.lucide-power-off')
+      ).toBeInTheDocument();
     });
 
     it('alterna para inativo e chama onChanged em caso de sucesso', async () => {

@@ -221,6 +221,39 @@ interface RichTextEditorProps {
    * na altura mínima do ProseMirror.
    */
   fill?: boolean;
+  /**
+   * Desliga o item "adicionar imagem" do menu.
+   *
+   * A imagem inserida por ali vira base64 dentro do próprio HTML, o que é
+   * aceitável num conteúdo que só o admin lê, mas não numa coluna que trafega
+   * em toda resposta pública — a descrição do produto da loja, por exemplo, que
+   * tem galeria própria.
+   */
+  showImageButton?: boolean;
+  /**
+   * Desvia as imagens coladas ou arrastadas para quem chama, em vez de
+   * inseri-las no HTML. Quando presente, colar um print vira anexo e o editor
+   * não recebe nada — o texto colado continua normal.
+   */
+  onPasteFiles?: (files: File[]) => void;
+  /**
+   * Esconde a edição por IA. Necessário fora do shell autenticado (formulário
+   * público), onde o endpoint da IA recusaria a chamada.
+   */
+  disableAi?: boolean;
+}
+
+/** Imagens de um clipboard ou de um drop, na ordem em que vieram. */
+function imageFilesFrom(data: DataTransfer | null | undefined): File[] {
+  if (!data) return [];
+  const fromItems = Array.from(data.items ?? [])
+    .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => Boolean(file));
+  if (fromItems.length) return fromItems;
+  return Array.from(data.files ?? []).filter((file) =>
+    file.type.startsWith('image/')
+  );
 }
 
 export function RichTextEditor({
@@ -234,6 +267,9 @@ export function RichTextEditor({
   htmlModeButtonLabel,
   placeholder,
   fill = false,
+  showImageButton = true,
+  onPasteFiles,
+  disableAi = false,
 }: RichTextEditorProps) {
   const t = useTranslations('core.RichTextEditor');
   const mounted = useSyncExternalStore(
@@ -258,6 +294,7 @@ export function RichTextEditor({
    */
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
   const showAiButton =
+    !disableAi &&
     getSettingValue('richtext-ai-enabled') === true &&
     String(getSettingValue('richtext-ai-profile-id') ?? '').trim().length > 0;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -266,6 +303,10 @@ export function RichTextEditor({
   useEffect(() => {
     onCtrlEnterRef.current = onCtrlEnter;
   }, [onCtrlEnter]);
+  const onPasteFilesRef = useRef(onPasteFiles);
+  useEffect(() => {
+    onPasteFilesRef.current = onPasteFiles;
+  }, [onPasteFiles]);
 
   // Mention state
   const [suggestionState, setSuggestionState] =
@@ -491,6 +532,27 @@ export function RichTextEditor({
           return true;
         }
         return false;
+      },
+      // Retornar `true` faz o ProseMirror chamar `preventDefault`: quem escuta
+      // o `paste` mais acima (o formulário público) vê `defaultPrevented` e
+      // não anexa a mesma imagem duas vezes.
+      handlePaste: (_view, event) => {
+        const handler = onPasteFilesRef.current;
+        if (!handler) return false;
+        const files = imageFilesFrom(event.clipboardData);
+        if (!files.length) return false;
+        event.preventDefault();
+        handler(files);
+        return true;
+      },
+      handleDrop: (_view, event) => {
+        const handler = onPasteFilesRef.current;
+        if (!handler) return false;
+        const files = imageFilesFrom((event as DragEvent).dataTransfer);
+        if (!files.length) return false;
+        event.preventDefault();
+        handler(files);
+        return true;
       },
     },
     parseOptions: {
@@ -1021,13 +1083,15 @@ export function RichTextEditor({
           </PopoverContent>
         </Popover>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-        />
+        {showImageButton && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -1043,10 +1107,12 @@ export function RichTextEditor({
               <Code className="h-4 w-4" />
               {t('codeBlock')}
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={handleImageUpload}>
-              <ImagePlus className="h-4 w-4" />
-              {t('addImage')}
-            </DropdownMenuItem>
+            {showImageButton && (
+              <DropdownMenuItem onSelect={handleImageUpload}>
+                <ImagePlus className="h-4 w-4" />
+                {t('addImage')}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onSelect={() =>
                 editor.chain().focus().clearNodes().unsetAllMarks().run()

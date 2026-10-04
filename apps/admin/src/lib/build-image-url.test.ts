@@ -47,6 +47,66 @@ describe('buildImageUrl / buildFileOpenUrl', () => {
   });
 });
 
+describe('resolveHubImageUrl', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('prefixa a base da API no caminho do acervo', async () => {
+    const { resolveHubImageUrl } = await loadWithBase('http://api.test');
+    expect(resolveHubImageUrl('/file/image/42')).toBe(
+      'http://api.test/file/image/42'
+    );
+    expect(resolveHubImageUrl('/file/open/42')).toBe(
+      'http://api.test/file/image/42'
+    );
+  });
+
+  // O cadastro antigo de produto gravou o caminho pelo proxy do Next, com
+  // `/api`; sem tratar, o prefixo entraria duas vezes.
+  it('aceita o caminho ja prefixado com /api sem duplicar a base', async () => {
+    const { resolveHubImageUrl } = await loadWithBase('/api');
+    expect(resolveHubImageUrl('/api/file/image/7')).toBe('/api/file/image/7');
+    expect(resolveHubImageUrl('/file/image/7')).toBe('/api/file/image/7');
+  });
+
+  it('ignora a query do caminho', async () => {
+    const { resolveHubImageUrl } = await loadWithBase('http://api.test');
+    expect(resolveHubImageUrl('/file/image/42?w=200&f=webp')).toBe(
+      'http://api.test/file/image/42'
+    );
+  });
+
+  it('devolve intacta a foto hospedada fora do Hub', async () => {
+    const { resolveHubImageUrl } = await loadWithBase('http://api.test');
+    expect(resolveHubImageUrl('https://cdn.test/foto.png')).toBe(
+      'https://cdn.test/foto.png'
+    );
+    expect(resolveHubImageUrl('data:image/png;base64,AAA')).toBe(
+      'data:image/png;base64,AAA'
+    );
+  });
+
+  it('devolve null para vazio e para o que nao da para exibir', async () => {
+    const { resolveHubImageUrl } = await loadWithBase('http://api.test');
+    expect(resolveHubImageUrl(null)).toBeNull();
+    expect(resolveHubImageUrl(undefined)).toBeNull();
+    expect(resolveHubImageUrl('   ')).toBeNull();
+    expect(resolveHubImageUrl('/file/image/abc')).toBeNull();
+    expect(resolveHubImageUrl('/outra/coisa/1')).toBeNull();
+  });
+
+  it('sem base configurada nao inventa URL para o arquivo do acervo', async () => {
+    const { resolveHubImageUrl } = await loadWithBase('');
+    expect(resolveHubImageUrl('/file/image/42')).toBeNull();
+    // A URL externa nao depende da base e continua exibivel.
+    expect(resolveHubImageUrl('https://cdn.test/foto.png')).toBe(
+      'https://cdn.test/foto.png'
+    );
+  });
+});
+
 describe('buildAbsoluteImageUrl', () => {
   afterEach(() => {
     vi.unstubAllEnvs();

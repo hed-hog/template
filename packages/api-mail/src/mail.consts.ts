@@ -20,6 +20,14 @@ export type Mail = {
   /** Codigo do locale usado para resolver header/footer e o atributo lang. */
   locale?: string;
   /**
+   * Cor da etapa que o e-mail comunica (confirmado, recusado, enviado...),
+   * aplicada na barra de destaque do layout.
+   *
+   * Ausente => a cor da marca (`theme-primary-light`), que e o comportamento de
+   * sempre: so quem informa este campo muda de aparencia.
+   */
+  accentColor?: string;
+  /**
    * Chave do app de origem (ex.: "class", "training").
    *
    * Nao afeta mais a marca — desde que `{{brandName}}` passou a vir sempre de

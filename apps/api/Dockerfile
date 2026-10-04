@@ -9,12 +9,13 @@ WORKDIR /app
 FROM base AS pruner
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json ./
+COPY patches/ ./patches/
 COPY apps/ ./apps/
 COPY packages/ ./packages/
 COPY libraries/ ./libraries/
 COPY scripts/ ./scripts/
 
-RUN pnpm dlx turbo@2.8.14 prune api --docker
+RUN pnpm dlx turbo@2.11.4 prune api --docker
 
 # Stage 2: Builder - install full deps for the pruned workspace and compile
 FROM base AS builder
@@ -22,6 +23,7 @@ FROM base AS builder
 # Install dependencies from manifests first for better layer caching.
 COPY --from=pruner /app/out/json/ ./
 COPY --from=pruner /app/scripts/ ./scripts/
+COPY --from=pruner /app/patches/ ./patches/
 
 # Install build dependencies for native modules (sharp, etc)
 RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev
@@ -45,7 +47,11 @@ RUN pnpm exec prisma generate
 RUN test -d /app/node_modules/.prisma/client && \
     node -e "require('@prisma/client')"
 
-RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm run build:docker
+# O `nest build` da API passou de 4 GB de heap e o passo morria com "Ineffective
+# mark-compacts near heap limit" (exit 134), derrubando o job Deploy API e
+# pulando todos os deploys que dependem dele. O runner `ubuntu-latest` tem 16 GB,
+# entao 8 GB aqui sobram — o mesmo teto que destrava o build local.
+RUN NODE_OPTIONS="--max-old-space-size=8192" pnpm run build:docker
 
 # Portao de subida: um provider injetado sem que o modulo o enxergue ("Nest
 # can't resolve dependencies of X") so estoura quando o processo sobe — sem esta

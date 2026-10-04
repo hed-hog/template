@@ -19,15 +19,25 @@ type KpiCardsGridProps = {
 
 // Strings completas de propósito: o Tailwind só gera a classe que encontra
 // literal no fonte, então nada de montar `xl:grid-cols-${n}` em runtime.
+//
+// De 5 KPIs para cima, abaixo de `sm` a grade vira uma faixa com rolagem
+// horizontal: em 2 colunas seriam 3-4 linhas de card empilhadas antes da lista,
+// e o celular abriria a tela sem mostrar um item sequer.
+const scrollStripClassName =
+  'flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:grid sm:overflow-visible sm:pb-0 sm:grid-cols-2 [&::-webkit-scrollbar]:hidden';
+
 const columnClassNames: Record<ResolvedColumns, string> = {
   2: 'grid grid-cols-2 gap-3 md:grid-cols-2',
   3: 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-3',
   4: 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4',
-  5: 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5',
-  6: 'grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6',
-  7: 'grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-7',
-  8: 'grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8',
+  5: `${scrollStripClassName} sm:gap-3 md:grid-cols-3 xl:grid-cols-5`,
+  6: `${scrollStripClassName} md:grid-cols-3 xl:grid-cols-6`,
+  7: `${scrollStripClassName} md:grid-cols-4 xl:grid-cols-7`,
+  8: `${scrollStripClassName} md:grid-cols-4 xl:grid-cols-8`,
 };
+
+/** Largura de cada card na faixa do celular; na grade ele volta a esticar. */
+const scrollStripCardClassName = 'w-36 shrink-0 snap-start sm:w-auto';
 
 const densityByColumns: Record<ResolvedColumns, KpiCardLayout> = {
   2: 'default',
@@ -76,6 +86,7 @@ export function KpiCardsGrid({
   const resolvedColumns = resolveColumns(columns, items.length);
   const gridLayout =
     density === 'auto' ? densityByColumns[resolvedColumns] : density;
+  const isScrollStrip = resolvedColumns >= 5;
 
   return (
     <div className={cn(columnClassNames[resolvedColumns], className)}>
@@ -84,7 +95,11 @@ export function KpiCardsGrid({
           key={key}
           {...item}
           layout={denserLayout(layout ?? 'default', gridLayout)}
-          className={cn(cardClassName, itemClassName)}
+          className={cn(
+            isScrollStrip && scrollStripCardClassName,
+            cardClassName,
+            itemClassName
+          )}
         />
       ))}
     </div>

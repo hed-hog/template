@@ -8,12 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { buildFileOpenUrl, buildImageUrl } from '@/lib/build-image-url';
 import { cn } from '@/lib/utils';
 import { useApp } from '@hed-hog/next-app-provider';
@@ -267,53 +261,38 @@ export function MediaUploadField({
       ) : null}
 
       <div className="flex items-center justify-end gap-1">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-7 w-7"
+          disabled={disabled}
+          loading={uploading}
+          onClick={() => inputRef.current?.click()}
+          tooltip={
+            uploading
+              ? labels.uploading
+              : hasMedia
+                ? labels.replace
+                : labels.upload
+          }
+        >
+          <UploadCloud className="h-3.5 w-3.5" />
+        </Button>
+
+        {hasMedia ? (
+          <Dialog>
+            <DialogTrigger asChild>
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 className="h-7 w-7"
-                disabled={disabled || uploading}
-                onClick={() => inputRef.current?.click()}
+                tooltip={labels.zoom}
               >
-                {uploading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <UploadCloud className="h-3.5 w-3.5" />
-                )}
+                <Eye className="h-3.5 w-3.5" />
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {uploading
-                ? labels.uploading
-                : hasMedia
-                  ? labels.replace
-                  : labels.upload}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        {hasMedia ? (
-          <Dialog>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                  </DialogTrigger>
-                </TooltipTrigger>
-                <TooltipContent>{labels.zoom}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            </DialogTrigger>
             <DialogContent className="flex max-h-[95vh] max-w-[95vw] flex-col gap-3 p-3 sm:max-w-[90vw]">
               <DialogTitle className="sr-only">{label}</DialogTitle>
               <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto">
@@ -351,23 +330,17 @@ export function MediaUploadField({
         ) : null}
 
         {hasMedia ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 text-destructive hover:text-destructive"
-                  disabled={disabled || uploading}
-                  onClick={handleRemove}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{labels.remove}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive"
+            disabled={disabled || uploading}
+            onClick={handleRemove}
+            tooltip={labels.remove}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
         ) : null}
       </div>
     </div>

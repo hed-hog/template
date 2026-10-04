@@ -15,7 +15,15 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    // Specs das outras workspaces: o glob acima puxa `libraries/*/src/**/*.ts`
+    // inteiro, e junto vinham os testes delas. Eles nunca foram checados por
+    // ninguém — o ts-jest roda em transpile-only e o `tsconfig.build.json` já os
+    // exclui — então o que chegava aqui eram ~1.000 erros de tipagem de mock que
+    // afogavam qualquer erro real no editor, que é quem usa ESTE arquivo. Cada
+    // library continua com o seu `tsconfig.spec.json` para quem quiser checá-los.
+    // Os specs de `apps/api/src` seguem cobertos: são deste projeto e estão limpos.
+    "../../packages/*/src/**/*.spec.ts"
   ],
   "extends": "@hed-hog/typescript-config/library.json",
   "compilerOptions": {

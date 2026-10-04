@@ -4,15 +4,57 @@ import { StrictMode, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let mockLocale = 'pt-BR';
+
+/**
+ * Os rótulos do componente vêm de `core.DateRangePicker`. O mock devolve o
+ * texto pt-BR real para as asserções continuarem falando a língua da tela.
+ */
+const messages: Record<string, string> = {
+  placeholder: 'Selecionar período',
+  apply: 'Aplicar',
+  clear: 'Limpar',
+  clearTooltip: 'Limpar período',
+  otherYears: 'Outros anos',
+  fromLabel: 'De',
+  toLabel: 'Até',
+  datePlaceholder: 'dd/mm/aaaa',
+  invalidDate: 'Data inválida',
+  previousDecade: 'Década anterior',
+  nextDecade: 'Próxima década',
+  'presets.today': 'Hoje',
+  'presets.yesterday': 'Ontem',
+  'presets.last7Days': 'Últimos 7 dias',
+  'presets.thisWeek': 'Esta semana',
+  'presets.lastWeek': 'Semana passada',
+  'presets.thisMonth': 'Este mês',
+  'presets.lastMonth': 'Mês passado',
+  'presets.last30Days': 'Últimos 30 dias',
+  'presets.last90Days': 'Últimos 90 dias',
+  'presets.thisYear': 'Este ano',
+};
+
 vi.mock('next-intl', () => ({
   useLocale: () => mockLocale,
+  useTranslations: () => (key: string) => messages[key] ?? key,
 }));
 
 type CalendarSelectHandler = (range: unknown) => void;
 
 vi.mock('@/components/ui/calendar', () => ({
-  Calendar: (props: { onSelect?: CalendarSelectHandler }) => (
+  Calendar: (props: {
+    month?: Date;
+    onSelect?: CalendarSelectHandler;
+    onMonthChange?: (month: Date) => void;
+  }) => (
     <div data-testid="calendar-stub">
+      {/* O mês visível é o que a regra de "onde cai a data digitada" decide. */}
+      <span data-testid="calendar-month">
+        {props.month
+          ? `${props.month.getFullYear()}-${String(
+              props.month.getMonth() + 1
+            ).padStart(2, '0')}`
+          : ''}
+      </span>
       <button
         type="button"
         onClick={() =>
@@ -35,6 +77,16 @@ vi.mock('@/components/ui/calendar', () => ({
       >
         set-from-only
       </button>
+      <button
+        type="button"
+        onClick={() => props.onMonthChange?.(new Date(2024, 0, 1))}
+      >
+        set-month-jan-2024
+      </button>
+      {/* Tecla já tratada por outro handler não pode ser sequestrada. */}
+      <button type="button" onKeyDown={(event) => event.preventDefault()}>
+        swallow-key
+      </button>
     </div>
   ),
 }));
@@ -46,6 +98,23 @@ import {
 
 function openPicker(placeholderText = 'Selecionar período') {
   fireEvent.click(screen.getByText(placeholderText, { selector: 'span' }));
+}
+
+/**
+ * Digita dígito a dígito, como o usuário faz — a máscara monta o resto. Focar
+ * seleciona o conteúdo, então o primeiro dígito substitui o que havia no campo.
+ */
+function typeDigits(label: string, digits: string) {
+  let value = '';
+
+  for (const digit of digits) {
+    value += digit;
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  }
+}
+
+function fieldValue(label: string) {
+  return (screen.getByLabelText(label) as HTMLInputElement).value;
 }
 
 function setup(props: Partial<React.ComponentProps<typeof DateRangePicker>> = {}) {
@@ -210,7 +279,9 @@ describe('DateRangePicker', () => {
     openPicker();
 
     fireEvent.click(await screen.findByText('set-full-range'));
-    expect(screen.getByText('10/01/2024 – 15/01/2024')).toBeInTheDocument();
+    // Sincronização reversa: escolher pelo calendário reescreve os campos.
+    expect(fieldValue('De')).toBe('10/01/2024');
+    expect(fieldValue('Até')).toBe('15/01/2024');
 
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
 
@@ -227,7 +298,8 @@ describe('DateRangePicker', () => {
     openPicker();
 
     fireEvent.click(await screen.findByText('set-from-only'));
-    expect(screen.getByText('A partir de 05/03/2024')).toBeInTheDocument();
+    expect(fieldValue('De')).toBe('05/03/2024');
+    expect(fieldValue('Até')).toBe('');
 
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
     expect(onFromDateChange).toHaveBeenCalledWith('2024-03-05');
@@ -239,10 +311,11 @@ describe('DateRangePicker', () => {
     openPicker();
 
     fireEvent.click(await screen.findByText('set-full-range'));
-    expect(screen.getByText('10/01/2024 – 15/01/2024')).toBeInTheDocument();
+    expect(fieldValue('De')).toBe('10/01/2024');
 
     fireEvent.click(screen.getByRole('button', { name: 'Limpar' }));
-    expect(screen.getByText('Selecione um período')).toBeInTheDocument();
+    expect(fieldValue('De')).toBe('');
+    expect(fieldValue('Até')).toBe('');
 
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
     expect(onFromDateChange).toHaveBeenCalledWith('');
@@ -394,6 +467,9 @@ describe('DateRangePicker', () => {
   it('trata fromDate malformado (mês zero) como indefinido ao abrir o popover', async () => {
     setup({ fromDate: '2024-00-10', toDate: '' });
     openPicker('A partir de 10/00/2024');
+
+    // O campo é semeado pela data interpretada, não pela string crua.
+    expect(await screen.findByLabelText('De')).toHaveValue('');
   });
 
   it('ignora erros ao persistir no storage (setItem lança exceção)', () => {
@@ -412,6 +488,360 @@ describe('DateRangePicker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Limpar período' }));
 
     setItemSpy.mockRestore();
+  });
+
+  it('abre com os campos preenchidos a partir das props', async () => {
+    setup({ fromDate: '2024-01-10', toDate: '2024-01-15' });
+    openPicker('10/01/2024 – 15/01/2024');
+
+    expect(await screen.findByLabelText('De')).toHaveValue('10/01/2024');
+    expect(screen.getByLabelText('Até')).toHaveValue('15/01/2024');
+  });
+
+  it('digita um intervalo completo e aplica', async () => {
+    const { onFromDateChange, onToDateChange } = setup({
+      storageKey: 'typed-range',
+    });
+    openPicker();
+    await screen.findByLabelText('De');
+
+    typeDigits('De', '01082026');
+    typeDigits('Até', '31082026');
+
+    expect(fieldValue('De')).toBe('01/08/2026');
+    expect(fieldValue('Até')).toBe('31/08/2026');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+
+    expect(onFromDateChange).toHaveBeenCalledWith('2026-08-01');
+    expect(onToDateChange).toHaveBeenCalledWith('2026-08-31');
+  });
+
+  it('monta a máscara enquanto digita, sem barra à direita', async () => {
+    setup();
+    openPicker();
+    const input = await screen.findByLabelText('De');
+
+    fireEvent.change(input, { target: { value: '0' } });
+    expect(fieldValue('De')).toBe('0');
+
+    fireEvent.change(input, { target: { value: '01' } });
+    expect(fieldValue('De')).toBe('01');
+
+    fireEvent.change(input, { target: { value: '010' } });
+    expect(fieldValue('De')).toBe('01/0');
+
+    fireEvent.change(input, { target: { value: '01/08' } });
+    expect(fieldValue('De')).toBe('01/08');
+
+    fireEvent.change(input, { target: { value: '01/082' } });
+    expect(fieldValue('De')).toBe('01/08/2');
+  });
+
+  it('avança o foco para "Até" no oitavo dígito', async () => {
+    setup();
+    openPicker();
+    await screen.findByLabelText('De');
+
+    typeDigits('De', '01082026');
+
+    expect(document.activeElement).toBe(screen.getByLabelText('Até'));
+  });
+
+  it('não desfaz a data quando o auto-avanço tira o foco do campo', async () => {
+    const { onFromDateChange, onToDateChange } = setup({
+      fromDate: '2024-01-10',
+      toDate: '2024-01-15',
+    });
+    openPicker('10/01/2024 – 15/01/2024');
+
+    // Com o campo realmente focado, o focus() do auto-avanço dispara o blur
+    // ainda dentro do mesmo handler — e o blur não pode reconciliar com o
+    // rascunho do render anterior, que ainda não viu o oitavo dígito.
+    (await screen.findByLabelText('De')).focus();
+    typeDigits('De', '05012024');
+
+    expect(fieldValue('De')).toBe('05/01/2024');
+    expect(document.activeElement).toBe(screen.getByLabelText('Até'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+    expect(onFromDateChange).toHaveBeenCalledWith('2024-01-05');
+    expect(onToDateChange).toHaveBeenCalledWith('2024-01-15');
+  });
+
+  it('remasca texto colado com outros separadores', async () => {
+    setup();
+    openPicker();
+    const input = await screen.findByLabelText('De');
+
+    fireEvent.change(input, { target: { value: '01-08-2026' } });
+
+    expect(fieldValue('De')).toBe('01/08/2026');
+  });
+
+  it('ignora entrada pela metade e a desfaz ao sair do campo', async () => {
+    const { onFromDateChange } = setup();
+    openPicker();
+    const input = await screen.findByLabelText('De');
+
+    typeDigits('De', '0108');
+    expect(fieldValue('De')).toBe('01/08');
+
+    fireEvent.blur(input);
+    expect(fieldValue('De')).toBe('');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+    expect(onFromDateChange).toHaveBeenCalledWith('');
+  });
+
+  it.each([
+    ['dia impossível', '32082026'],
+    ['mês impossível', '01132026'],
+    ['30 de fevereiro', '30022024'],
+    ['ano fora de faixa', '01080026'],
+  ])('marca %s como inválido e trava o Aplicar', async (_label, digits) => {
+    const { onFromDateChange } = setup();
+    openPicker();
+    await screen.findByLabelText('De');
+
+    typeDigits('De', digits);
+
+    expect(screen.getByLabelText('De')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button', { name: 'Aplicar' })).toBeDisabled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Data inválida');
+
+    // Texto inválido não se desfaz sozinho: fica na tela pra ser corrigido.
+    fireEvent.blur(screen.getByLabelText('De'));
+    expect(fieldValue('De')).not.toBe('');
+    expect(onFromDateChange).not.toHaveBeenCalled();
+  });
+
+  it('esvaziar um campo limpa só aquele lado do período', async () => {
+    const { onFromDateChange, onToDateChange } = setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('set-full-range'));
+    fireEvent.change(screen.getByLabelText('De'), { target: { value: '' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+
+    expect(onFromDateChange).toHaveBeenCalledWith('');
+    expect(onToDateChange).toHaveBeenCalledWith('2024-01-15');
+  });
+
+  it('esvaziar o "Até" limpa só o fim do período', async () => {
+    const { onFromDateChange, onToDateChange } = setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('set-full-range'));
+    fireEvent.change(screen.getByLabelText('Até'), { target: { value: '' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+
+    expect(onFromDateChange).toHaveBeenCalledWith('2024-01-10');
+    expect(onToDateChange).toHaveBeenCalledWith('');
+  });
+
+  it('inverte os campos ao sair quando o início fica depois do fim', async () => {
+    setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('set-full-range'));
+    typeDigits('De', '20012024');
+    expect(fieldValue('De')).toBe('20/01/2024');
+
+    fireEvent.blur(screen.getByLabelText('De'));
+
+    expect(fieldValue('De')).toBe('15/01/2024');
+    expect(fieldValue('Até')).toBe('20/01/2024');
+  });
+
+  it('aplica o período já invertido quando o início ficou depois do fim', async () => {
+    const { onFromDateChange, onToDateChange } = setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('set-full-range'));
+    typeDigits('De', '20012024');
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+
+    expect(onFromDateChange).toHaveBeenCalledWith('2024-01-15');
+    expect(onToDateChange).toHaveBeenCalledWith('2024-01-20');
+  });
+
+  it('preserva o fim quando o início digitado é anterior a ele', async () => {
+    setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('set-full-range'));
+    typeDigits('De', '05012024');
+
+    expect(fieldValue('Até')).toBe('15/01/2024');
+  });
+
+  it('Enter dentro do campo aplica o período', async () => {
+    const { onFromDateChange, onToDateChange } = setup();
+    openPicker();
+    await screen.findByLabelText('De');
+
+    typeDigits('De', '01082026');
+    typeDigits('Até', '31082026');
+    fireEvent.keyDown(screen.getByLabelText('Até'), { key: 'Enter' });
+
+    expect(onFromDateChange).toHaveBeenCalledWith('2026-08-01');
+    expect(onToDateChange).toHaveBeenCalledWith('2026-08-31');
+  });
+
+  it('Enter não aplica com o campo inválido, e outras teclas não interferem', async () => {
+    const { onFromDateChange } = setup();
+    openPicker();
+    await screen.findByLabelText('De');
+
+    typeDigits('De', '32082026');
+    fireEvent.keyDown(screen.getByLabelText('De'), { key: 'Tab' });
+    fireEvent.keyDown(screen.getByLabelText('De'), { key: 'Enter' });
+
+    expect(onFromDateChange).not.toHaveBeenCalled();
+  });
+
+  it('seleciona o conteúdo ao focar, pra digitar por cima', async () => {
+    setup({ fromDate: '2024-01-10', toDate: '2024-01-15' });
+    openPicker('10/01/2024 – 15/01/2024');
+
+    const input = (await screen.findByLabelText('De')) as HTMLInputElement;
+    fireEvent.focus(input);
+
+    expect(input.selectionStart).toBe(0);
+    expect(input.selectionEnd).toBe('10/01/2024'.length);
+  });
+
+  it('sincroniza os campos ao clicar num preset', async () => {
+    setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('Hoje'));
+
+    const today = new Date();
+    const expected = `${String(today.getDate()).padStart(2, '0')}/${String(
+      today.getMonth() + 1
+    ).padStart(2, '0')}/${today.getFullYear()}`;
+
+    expect(fieldValue('De')).toBe(expected);
+    expect(fieldValue('Até')).toBe(expected);
+  });
+
+  it('sincroniza os campos ao escolher ano e mês em "Outros anos"', async () => {
+    setup();
+    openPicker();
+
+    fireEvent.click(await screen.findByText('Outros anos'));
+    const currentYear = new Date().getFullYear();
+    fireEvent.click(screen.getByText(String(currentYear)));
+    fireEvent.click(await screen.findByText('Janeiro'));
+
+    expect(fieldValue('De')).toBe(`01/01/${currentYear}`);
+    expect(fieldValue('Até')).toBe(`31/01/${currentYear}`);
+  });
+
+  describe('mês visível depois de uma data digitada', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2024, 0, 10, 12, 0, 0));
+    });
+
+    it('leva o mês do "De" para o painel da esquerda', async () => {
+      setup();
+      openPicker();
+      await screen.findByLabelText('De');
+
+      typeDigits('De', '01032026');
+
+      expect(screen.getByTestId('calendar-month')).toHaveTextContent('2026-03');
+    });
+
+    it('leva o mês do "Até" para o painel da direita', async () => {
+      setup();
+      openPicker();
+      await screen.findByLabelText('Até');
+
+      typeDigits('Até', '01062026');
+
+      expect(screen.getByTestId('calendar-month')).toHaveTextContent('2026-05');
+    });
+
+    it('não mexe no calendário quando o mês digitado já está à vista', async () => {
+      setup();
+      openPicker();
+      await screen.findByLabelText('De');
+
+      typeDigits('De', '01082026');
+      typeDigits('Até', '10092026');
+
+      expect(screen.getByTestId('calendar-month')).toHaveTextContent('2026-08');
+    });
+
+    it('deixa o mês à esquerda quando as duas pontas caem nele', async () => {
+      setup();
+      openPicker();
+      await screen.findByLabelText('De');
+
+      typeDigits('De', '05082026');
+      // Tira o calendário de agosto pra não cair no caso "já está à vista".
+      fireEvent.click(screen.getByText('set-month-jan-2024'));
+      expect(screen.getByTestId('calendar-month')).toHaveTextContent('2024-01');
+
+      typeDigits('Até', '20082026');
+
+      expect(screen.getByTestId('calendar-month')).toHaveTextContent('2026-08');
+    });
+  });
+
+  describe('digitar com o foco fora dos campos', () => {
+    it('começa a preencher o "De" com o dígito teclado', async () => {
+      setup();
+      openPicker();
+
+      fireEvent.keyDown(await screen.findByText('set-full-range'), {
+        key: '3',
+      });
+
+      expect(fieldValue('De')).toBe('3');
+      expect(document.activeElement).toBe(screen.getByLabelText('De'));
+    });
+
+    it('preserva o fim já escolhido ao recomeçar o início', async () => {
+      setup();
+      openPicker();
+
+      fireEvent.click(await screen.findByText('set-full-range'));
+      fireEvent.keyDown(screen.getByText('set-full-range'), { key: '2' });
+
+      expect(fieldValue('De')).toBe('2');
+      expect(fieldValue('Até')).toBe('15/01/2024');
+    });
+
+    it('ignora letra, atalho e tecla já tratada por outro handler', async () => {
+      setup();
+      openPicker();
+
+      const target = await screen.findByText('set-full-range');
+      fireEvent.keyDown(target, { key: 'a' });
+      fireEvent.keyDown(target, { key: '1', ctrlKey: true });
+      fireEvent.keyDown(target, { key: '2', metaKey: true });
+      fireEvent.keyDown(target, { key: '3', altKey: true });
+      fireEvent.keyDown(screen.getByText('swallow-key'), { key: '4' });
+
+      expect(fieldValue('De')).toBe('');
+    });
+
+    it('não sequestra a digitação quando o foco já está num campo', async () => {
+      setup();
+      openPicker();
+
+      fireEvent.keyDown(await screen.findByLabelText('Até'), { key: '5' });
+
+      expect(fieldValue('De')).toBe('');
+      expect(fieldValue('Até')).toBe('');
+    });
   });
 
   it('aceita className customizada', () => {

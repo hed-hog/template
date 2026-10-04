@@ -161,6 +161,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           },
         },
       },
+      // `file.size` é BIGINT (vídeo passa de 2 GB), e o Prisma devolve BIGINT como
+      // `bigint`: o JSON de toda resposta com uma linha de `file` quebraria, e cada
+      // `file.size` somado ou comparado com number também. Aqui ele volta a ser number
+      // (exato até 9 PB, Number.MAX_SAFE_INTEGER), inclusive em `include` aninhado. A
+      // escrita aceita number como sempre; `aggregate`/raw ainda devolvem `bigint`.
+      result: {
+        file: {
+          size: {
+            needs: { size: true },
+            compute: (file: { size: bigint | number | null }) =>
+              file.size === null || file.size === undefined ? file.size : Number(file.size),
+          },
+        },
+      },
     })
       // Extension separada, e aplicada DEPOIS, de propósito: a composição do Prisma
       // coloca a primeira extension por fora, então esta fica na camada mais interna,

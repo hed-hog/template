@@ -75,7 +75,10 @@ export function TagPickerField({
     }
     // Uma tag criada agora pelo `allowCreate` ainda não existe no catálogo:
     // fica sem cor até ser salva, e o TagBadgeList omite o ponto sozinho.
-    return value.map((slug) => ({ slug, color: colorBySlug.get(slug) ?? null }));
+    return value.map((slug) => ({
+      slug,
+      color: colorBySlug.get(slug) ?? null,
+    }));
   }, [value, knownTags, loadedColors]);
 
   return (
@@ -107,8 +110,7 @@ export function TagPickerField({
             size="icon"
             className="size-7 shrink-0"
             disabled={disabled}
-            aria-label={addLabel}
-            title={addLabel}
+            tooltip={addLabel}
           >
             <Plus className="size-4" />
           </Button>

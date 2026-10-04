@@ -20,6 +20,15 @@ export type IconPickerProps = {
   emptyLabel: string;
   disabled?: boolean;
   className?: string;
+  /**
+   * Restringe a galeria a esta lista. Serve para quem consome os ícones ter um
+   * conjunto próprio — a vitrine da loja, por exemplo, desenha por mapa
+   * explícito e não renderiza o que não estiver nele; oferecer aqui um ícone
+   * que ela não desenha entregaria um marcador neutro na home.
+   *
+   * Sem a prop, vale o conjunto curado padrão (`ICON_OPTIONS`).
+   */
+  options?: readonly string[];
 };
 
 /**
@@ -34,14 +43,16 @@ export function IconPicker({
   emptyLabel,
   disabled,
   className,
+  options: allowedIcons,
 }: IconPickerProps) {
   const [query, setQuery] = useState('');
 
   const options = useMemo(() => {
+    const source = allowedIcons ?? ICON_OPTIONS;
     const term = normalizeIconSlug(query);
-    if (!term) return ICON_OPTIONS;
-    return ICON_OPTIONS.filter((name) => name.includes(term));
-  }, [query]);
+    if (!term) return source;
+    return source.filter((name) => name.includes(term));
+  }, [allowedIcons, query]);
 
   return (
     <div className={cn('space-y-3', className)}>

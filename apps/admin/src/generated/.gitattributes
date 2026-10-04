@@ -1,0 +1,8 @@
+# `pages-manifest.json` e gerado por `apps/admin/scripts/generate-pages-manifest.mjs`,
+# que escreve sempre com LF (`JSON.stringify` + '
+'), em qualquer plataforma.
+# Sem esta regra, o `core.autocrlf=true` do Windows espera CRLF no working tree e
+# o arquivo aparece como modificado depois de TODO build — mesmo com o conteudo
+# byte a byte identico ao do HEAD. Isso travava o gate de arvore limpa do
+# `pnpm production` (`ensureBuildDidNotDirtyTree`) a cada promocao.
+pages-manifest.json text eol=lf

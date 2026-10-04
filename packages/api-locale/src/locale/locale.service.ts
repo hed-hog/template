@@ -83,17 +83,18 @@ export class LocaleService {
   }
 
   async getEnables(paginationParams?: PaginationDTO) {
-    paginationParams = Object.assign(
-      {
-        search: '',
-        pageSize: 1000,
-        page: 1,
-        fields: '',
-        sortField: 'code',
-        sortOrder: PageOrderDirection.Asc,
-      },
-      paginationParams,
-    );
+    // Campo a campo em vez de `Object.assign`: aquele copia chave própria mesmo
+    // com valor `undefined`, então um chamador que passasse `sortField:
+    // undefined` apagaria o default 'code' e a lista de idiomas — consumida no
+    // bootstrap de todos os apps — sairia ordenada por id.
+    paginationParams = {
+      search: paginationParams?.search ?? '',
+      pageSize: paginationParams?.pageSize ?? 1000,
+      page: paginationParams?.page ?? 1,
+      fields: paginationParams?.fields ?? '',
+      sortField: paginationParams?.sortField ?? 'code',
+      sortOrder: paginationParams?.sortOrder ?? PageOrderDirection.Asc,
+    };
 
     const fields = ['code', 'region'];
     const OR: any[] = this.prismaService.createInsensitiveSearch(
@@ -492,6 +493,28 @@ export class LocaleService {
           fields,
           paginationParams,
         );
+      }
+
+      // O nome traduzido mora na tabela de traduções, não no modelo: sem isto a
+      // busca só olhava colunas como `code` e "Celular" não achava nada.
+      const translationModel = this.getTableNameTranslations(modelName);
+      let translationFields: string[] = [];
+      if (OR.length) {
+        try {
+          translationFields = (
+            this.prismaService.getFields(translationModel, true) ?? []
+          ).filter((field: string) => field !== 'id' && !field.endsWith('_id'));
+        } catch {
+          // Modelo sem tabela de traduções: segue só com as colunas próprias.
+        }
+      }
+      if (translationFields.length > 0) {
+        const translationOR = this.prismaService
+          .createInsensitiveSearch(translationFields, paginationParams)
+          .filter((condition: any) => !('id' in condition));
+        if (translationOR.length > 0) {
+          OR.push({ [translationModel]: { some: { OR: translationOR } } });
+        }
       }
 
       return this.paginationService.paginate(

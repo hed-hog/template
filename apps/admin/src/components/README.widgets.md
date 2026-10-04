@@ -9,4 +9,4 @@ hedhog dev create-library --name <library>
 hedhog dev assets-to-library <library>
 ```
 
-See `apps/admin/AGENTS.md` and the `Dashboard` subagent (`.codex/subagents/dashboard.md`) for the widget lifecycle and catalog conventions.
+See `apps/admin/AGENTS.md` and the `dashboard` subagent (`.claude/agents/dashboard.md`) for the widget lifecycle and catalog conventions.

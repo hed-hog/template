@@ -1,5 +1,8 @@
 import { PaginationService } from '@hed-hog/api-pagination';
-import { PrismaService } from '@hed-hog/api-prisma';
+import {
+  classifyDatabaseInfraError,
+  PrismaService,
+} from '@hed-hog/api-prisma';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { existsSync } from 'fs';
 import { join } from 'path';
@@ -10,6 +13,28 @@ import { join } from 'path';
  * probe: banco lento a este ponto já não serve request nenhuma.
  */
 const READINESS_TIMEOUT_MS = 2000;
+
+/**
+ * Por quanto tempo depois do último `SELECT 1` bem-sucedido a probe tolera um sinal
+ * inconclusivo (timeout da própria probe ou erro de pool).
+ *
+ * Existe porque a readiness disputa o MESMO pool que esgota: com
+ * `PRISMA_CONNECTION_LIMIT=5` por pod, uma rajada que ocupe as cinco conexões faz o
+ * `SELECT 1` ficar na fila e estourar os 2s. O pod continua perfeitamente capaz de
+ * servir, mas era marcado `degraded`, saía do Service pelo `failureThreshold: 3` e
+ * jogava seu tráfego nas réplicas — que estão no mesmo banco saturado. Tirar pod de
+ * um cluster sobrecarregado é exatamente o contrário do que se quer.
+ *
+ * A graça é temporal, e não um simples "timeout vira ok", porque banco fora também
+ * se manifesta como query pendurada (ver o teste do pool_timeout): o que separa os
+ * dois casos é ter falado com o banco recentemente. Sem nenhum sucesso registrado —
+ * pod recém-subido que nunca alcançou o Postgres — não há o que tolerar, e a probe
+ * degrada como antes. 60s cobre com folga os 30s do failureThreshold.
+ */
+const READINESS_GRACE_MS = 60_000;
+
+/** Timeout da própria probe, para separá-lo de um erro vindo do banco. */
+class ReadinessTimeoutError extends Error {}
 
 function getPackageVersion() {
   const packagePaths = [
@@ -26,6 +51,8 @@ function getPackageVersion() {
 export class AppService implements OnModuleInit {
   private readonly logger = new Logger(AppService.name);
   private readonly version = getPackageVersion();
+  /** Epoch do último SELECT 1 que respondeu. 0 = o pod ainda não falou com o banco. */
+  private lastDatabaseSuccessAt = 0;
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -58,13 +85,40 @@ export class AppService implements OnModuleInit {
   async getReadiness() {
     try {
       await this.checkDatabase();
+      this.lastDatabaseSuccessAt = Date.now();
       return { status: 'ok', database: 'up', version: this.version };
     } catch (error) {
-      this.logger.error(
-        `Readiness degradada: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      const message = error instanceof Error ? error.message : String(error);
+
+      // Saturação do pool e timeout da probe não provam que o banco caiu — e a
+      // readiness disputa o mesmo pool. Enquanto houver sucesso recente, o pod fica
+      // no Service: ele ainda serve, e removê-lo empurra a carga para réplicas que
+      // estão no mesmo banco. Erro que identifica o banco como inalcançável não
+      // passa por aqui: degrada na hora, que é o motivo de a probe existir.
+      if (this.isInconclusiveReadinessError(error) && this.hasRecentDatabaseSuccess()) {
+        this.logger.warn(
+          `Readiness sob contenção do banco, mantendo o pod no Service: ${message}`,
+        );
+        return { status: 'ok', database: 'degraded', version: this.version };
+      }
+
+      this.logger.error(`Readiness degradada: ${message}`);
       return { status: 'degraded', database: 'down', version: this.version };
     }
+  }
+
+  private hasRecentDatabaseSuccess(): boolean {
+    return (
+      this.lastDatabaseSuccessAt > 0 &&
+      Date.now() - this.lastDatabaseSuccessAt < READINESS_GRACE_MS
+    );
+  }
+
+  private isInconclusiveReadinessError(error: unknown): boolean {
+    return (
+      error instanceof ReadinessTimeoutError ||
+      classifyDatabaseInfraError(error) === 'pool'
+    );
   }
 
   private async checkDatabase(): Promise<void> {
@@ -84,7 +138,7 @@ export class AppService implements OnModuleInit {
           timer = setTimeout(
             () =>
               reject(
-                new Error(
+                new ReadinessTimeoutError(
                   `database check timed out after ${READINESS_TIMEOUT_MS}ms`,
                 ),
               ),

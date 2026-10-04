@@ -5,7 +5,7 @@ description: Synchronize route.yaml and role.yaml with the current endpoint surf
 Synchronize permission seeds for the library **$ARGUMENTS** after endpoint changes.
 If no library name was provided, ask the user which library to audit.
 
-Seed ownership reference: `.codex/subagents/route-permissions.md`.
+Seed ownership reference: `.claude/agents/route-permissions.md`.
 Keep this command limited to `route.yaml` and `role.yaml`; do not modify backend runtime code here.
 
 ## Step 1 — Audit changed endpoints

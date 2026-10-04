@@ -88,6 +88,31 @@ function parseMoneyToNumber(value: string) {
   return parsedValue;
 }
 
+/**
+ * Converte o texto exibido pelo `InputMoney` ("1.234,56") em centavos inteiros
+ * (123456) — a unidade que os DTOs do backend esperam.
+ *
+ * Existe porque quem guarda o valor mascarado como string (o `EntityPicker` e o
+ * diálogo de ações do Commerce) precisa da mesma conversão que o
+ * `onValueChange` já entrega a quem guarda número.
+ *
+ * Vazio ou sem dígito nenhum vira `null`, não 0: campo em branco significa "não
+ * informado", e mandar 0 sobrescreveria o default do backend.
+ */
+function parseMoneyToCents(value: string): number | null {
+  if (value.replace(/\D/g, '') === '') {
+    return null;
+  }
+
+  const parsedValue = parseMoneyToNumber(value);
+
+  if (parsedValue === null) {
+    return null;
+  }
+
+  return Math.round(parsedValue * 100);
+}
+
 // The digit sequence is the "calculator-style" source of truth.
 // "1.234,56" -> "123456" ; "" -> ""
 function digitsFromMoney(formatted: string) {
@@ -309,4 +334,4 @@ const InputMoney = React.forwardRef<HTMLInputElement, InputMoneyProps>(
 
 InputMoney.displayName = 'InputMoney';
 
-export { InputMoney };
+export { InputMoney, parseMoneyToCents };

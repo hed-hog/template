@@ -6,6 +6,7 @@ import {
 } from './constants/pagination.constants';
 import { AbstractDatabase, Database, DatabaseFactory } from './databases';
 import { PageOrderDirection } from './enums/patination.enums';
+import type { Sortable } from '@hed-hog/api-types';
 import type { FindManyArgs, PaginationParams } from './types/pagination.types';
 
 @Injectable()
@@ -191,7 +192,15 @@ export class PaginationService {
       where?: any;
       include?: any;
       select?: any;
+      /**
+       * Ordem quando o cliente NÃO pede — não é mais uma trava. Prefira
+       * `defaultSortField`/`defaultSortOrder`, ou o descritor em `sort`.
+       */
       orderBy?: any;
+      /** Descritor `defineSortable`: allowlist, default e desempate num objeto só. */
+      sort?: Sortable<string>;
+      defaultSortField?: string;
+      defaultSortOrder?: 'asc' | 'desc';
     }) {
 
       try {
@@ -200,7 +209,10 @@ export class PaginationService {
         page = 1,
         pageSize = 10,
         search,
-        sortField = 'id',
+        // Sem default: `sortField` ausente significa "o cliente não pediu
+        // ordem", e é isso que permite ao service ter uma ordem padrão sem
+        // precisar travar o `orderBy`.
+        sortField,
         sortOrder = 'desc',
         validSortFields = ['id'],
         searchFields = [],
@@ -208,7 +220,17 @@ export class PaginationService {
         include,
         select,
         orderBy: customOrderBy,
+        sort,
+        defaultSortField,
+        defaultSortOrder,
       } = options;
+
+      if (sort && customOrderBy) {
+        this.logger.error(
+          'paginatePrismaModel: `sort` e `orderBy` juntos — o `orderBy` é ignorado. ' +
+            'Mova a ordem padrão para defineSortable({...}, { default, defaultOrder }).',
+        );
+      }
 
       const currentPage = Math.max(Number(page) || 1, 1);
       const limit = Math.max(Number(pageSize) || 10, 1);
@@ -228,11 +250,24 @@ export class PaginationService {
 
       where = this.sanitizeWhereForModel(where, model);
 
-      const orderBy = customOrderBy ?? (
-        sortField && typeof sortField === 'string' && validSortFields.includes(sortField)
-          ? { [sortField]: sortOrder === 'asc' ? 'asc' : 'desc' }
-          : { id: 'desc' }
-      );
+      // Precedência: o que o CLIENTE pediu vence; na falta, a ordem padrão do
+      // service; na falta dela, o id. Era o contrário — `customOrderBy` vencia
+      // sempre, e por isso metade dos endpoints ignorava o `sortField`.
+      const askedSortField =
+        typeof sortField === 'string' ? sortField.trim() : '';
+
+      const orderBy = sort
+        ? sort.toPrismaOrderBy({ sortField: askedSortField, sortOrder })
+        : askedSortField && validSortFields.includes(askedSortField)
+          ? { [askedSortField]: sortOrder === 'asc' ? 'asc' : 'desc' }
+          : (customOrderBy ??
+            // Reproduz os dois ramos antigos: sem `sortOrder` dá `{id:'desc'}`
+            // (o fallback), e com `sortOrder:'asc'` dá `{id:'asc'}` — que é o
+            // que as duas rotas de sessão recebem hoje.
+            {
+              [defaultSortField ?? 'id']:
+                defaultSortOrder ?? (sortOrder === 'asc' ? 'asc' : 'desc'),
+            });
 
       const findManyQuery: any = { skip, take: limit, where, orderBy };
 
@@ -268,6 +303,13 @@ export class PaginationService {
     paginationParams: PaginationParams,
     customQuery?: FindManyArgs<M>,
     translationKey?: string,
+    // 5º parâmetro porque o 4º está ocupado em 61 chamadas — `translationKey`
+    // é passado posicionalmente por vehicle e api-locale.
+    options?: {
+      sort?: Sortable<string>;
+      defaultSortField?: string;
+      defaultSortOrder?: PageOrderDirection | 'asc' | 'desc';
+    },
   ) /*: Promise<PaginatedResult<T>>*/ {
 
     try {
@@ -299,33 +341,56 @@ export class PaginationService {
       let localeTableName = '';
       let localeSortField = '';
 
-      if (sortField && !customOrderBy) {
-        const invalid = this.isInvalidField(sortField, model);
-        let localeInvalid = false;
-                
-        if (invalid) {
-          localeInvalid = this.isInvalidLocaleField(sortField, model);
-          
-          if (localeInvalid) {
+      // Três camadas, da mais fraca para a mais forte. A ordem das atribuições
+      // é o que muda em relação a antes: o `customOrderBy` era aplicado por
+      // último e vencia o pedido do cliente, o que fazia metade dos endpoints
+      // aceitar `sortField` e ignorá-lo em silêncio.
+
+      // 1) Base — o que este método já respondia sem ordem de ninguém.
+      // 2) A ordem padrão do service passa a ser default, não trava.
+      if (options?.sort) {
+        sortOrderCondition = options.sort.toPrismaOrderBy();
+      } else if (customOrderBy) {
+        sortOrderCondition = customOrderBy;
+      } else if (options?.defaultSortField) {
+        sortOrderCondition = {
+          [options.defaultSortField]: options.defaultSortOrder ?? sortOrder,
+        };
+      }
+
+      // 3) O que o cliente pediu vence — e é só aqui que ele é validado.
+      if (sortField) {
+        if (options?.sort) {
+          // Fora da allowlist cai no default, sem 400: mesma escolha que o
+          // `useListUrlState` do admin faz ao ler a URL.
+          if (options.sort.is(sortField)) {
+            sortOrderCondition = options.sort.toPrismaOrderBy({
+              sortField,
+              sortOrder,
+            });
+          }
+        } else if (this.isInvalidField(sortField, model)) {
+          if (this.isInvalidLocaleField(sortField, model)) {
             this.logger.error(`Invalid field: ${sortField}`);
             throw new BadRequestException(
               `Invalid field: ${sortField}. Valid columns are: ${this.extractFieldNames(
                 model,
               ).join(', ')}`,
             );
-          } else {
-            // Campo existe na tabela locale - precisa usar raw query
-            localeTableName = `${(model as any).name}_locale`;
-            localeSortField = sortField;
-            needsRawQueryOrdering = true;
           }
-        } else {
-          sortOrderCondition = { [sortField]: sortOrder };
-        }
-      }
 
-      if (customOrderBy) {
-        sortOrderCondition = customOrderBy;
+          // Campo existe na tabela locale - precisa usar raw query
+          localeTableName = `${(model as any).name}_locale`;
+          localeSortField = sortField;
+          needsRawQueryOrdering = true;
+        } else if (sortField === 'id' || this.isInvalidField('id', model)) {
+          sortOrderCondition = { [sortField]: sortOrder };
+        } else {
+          // Desempate: ordenar por coluna não-única com OFFSET faz linha
+          // repetir e sumir entre páginas. O caminho de locale já fazia isso
+          // (`, t.id ASC`); o caminho Prisma nunca fez.
+          sortOrderCondition = [{ [sortField]: sortOrder }, { id: sortOrder }];
+        }
       }
 
       if (search) {
@@ -387,7 +452,7 @@ export class PaginationService {
         };
 
         // Usar raw query para ordenação por campo de tabela relacionada
-        data = await this.paginateWithLocaleOrdering(
+        const orderedByLocale = await this.paginateWithLocaleOrdering(
           model,
           localeTableName,
           localeSortField,
@@ -395,7 +460,29 @@ export class PaginationService {
           skip,
           pageSize,
           localeOrderQuery,
+          total,
         );
+
+        if (orderedByLocale !== null) {
+          data = orderedByLocale;
+        } else {
+          // Degradação: a listagem responde ordenada por id em vez de dar erro
+          // por causa de um cabeçalho clicado.
+          const fallbackQuery: any = {
+            where: sanitizedWhere,
+            orderBy: { id: sortOrder },
+            take: pageSize,
+            skip,
+          };
+
+          if ((customQuery as any)?.include) {
+            fallbackQuery.include = (customQuery as any).include;
+          } else if (selectCondition) {
+            fallbackQuery.select = selectCondition;
+          }
+
+          data = await (model as any).findMany(fallbackQuery);
+        }
       } else {
         // Usar Prisma normal
         const query: any = {
@@ -443,8 +530,23 @@ export class PaginationService {
   }
 
   /**
-   * Método auxiliar para paginação com ordenação por campos de tabela locale
-   * Usa raw query para ordenação, mas mantém estrutura aninhada do Prisma
+   * Teto de ids materializados em memória para ordenar por campo traduzido.
+   * Acima disso a ordenação degrada para `id`, com aviso no log — preferível a
+   * carregar um array gigante e mandá-lo como parâmetro de query.
+   */
+  private static readonly LOCALE_SORT_ID_LIMIT = 20_000;
+
+  /**
+   * Paginação ordenada por coluna da tabela `<model>_locale`.
+   *
+   * O Prisma não ordena por campo de relação to-many (`<model>_locale` tem uma
+   * linha por idioma), então o ORDER BY precisa ser SQL. O **filtro**, porém,
+   * continua sendo resolvido pelo Prisma: é o mesmo objeto `where` usado no
+   * `count`, com OR/AND e relações, então página e total nunca divergem.
+   *
+   * Devolve `null` quando não dá para ordenar com segurança (locale não
+   * resolvível no include, ou conjunto filtrado grande demais); nesse caso o
+   * chamador cai no ordenamento por `id` em vez de estourar a requisição.
    */
   private async paginateWithLocaleOrdering(
     model: any,
@@ -453,100 +555,164 @@ export class PaginationService {
     sortOrder: string,
     skip: number,
     take: number,
-    customQuery?: any,
-  ): Promise<any[]> {
+    customQuery: any,
+    total: number,
+  ): Promise<any[] | null> {
     try {
-      const tableName = (model as any).name;
-      const db = await this.getDb(model);
-      
-      // Detectar locale code do include (se disponível)
-      let localeCode = 'en'; // fallback
-      if (customQuery?.include?.[localeTableName]?.where?.locale?.code) {
-        localeCode = customQuery.include[localeTableName].where.locale.code;
-      }
+      const prisma = model['$parent'];
+      const tableName = model.name as string;
+      const where = customQuery?.where ?? {};
+      const hasFilter = Object.keys(where).length > 0;
 
-      // Construir WHERE clause da raw query
-      const whereConditions: string[] = [];
-      let whereParams: any[] = [];
-      let paramIndex = 1;
+      // Sem saber o idioma, o JOIN traria uma linha por tradução e o ORDER BY
+      // sairia arbitrário — melhor degradar do que ordenar errado em silêncio.
+      const localeFilter = this.extractLocaleFilter(
+        customQuery,
+        localeTableName,
+      );
 
-      if (customQuery?.where) {
-        const { conditions, params, nextIndex } = this.buildWhereClause(
-          customQuery.where,
-          tableName,
-          db,
-          paramIndex,
+      if (!localeFilter) {
+        this.logger.warn(
+          `Sort by "${sortField}" on ${tableName} ignored: locale not resolvable from the include.`,
         );
-        whereConditions.push(...conditions);
-        whereParams.push(...params);
-        paramIndex = nextIndex;
+        return null;
       }
 
-      // Adicionar filtro de locale
-      whereConditions.push(`l.code = $${paramIndex}`);
-      whereParams.push(localeCode);
-      paramIndex++;
+      if (hasFilter && total > PaginationService.LOCALE_SORT_ID_LIMIT) {
+        this.logger.warn(
+          `Sort by "${sortField}" on ${tableName} ignored: ${total} rows exceed the locale-sort limit.`,
+        );
+        return null;
+      }
 
-      const whereClause = whereConditions.length > 0 
-        ? `WHERE ${whereConditions.join(' AND ')}` 
+      // `sortField` já passou por `model.fields` / `<model>_locale.fields` e
+      // `tableName` vem do metadado do Prisma — nenhum dos dois é string livre
+      // do usuário. É essa allowlist que impede injeção, e NÃO o
+      // `escapeIdentifier` (que devolve o identificador cru; ver
+      // databases/abstract.database.ts).
+      const params: any[] = [];
+      const conditions: string[] = [];
+
+      let joinCondition = `tl.${tableName}_id = t.id`;
+
+      if (localeFilter.kind === 'id') {
+        params.push(localeFilter.value);
+        joinCondition += ` AND tl.locale_id = $${params.length}`;
+      } else {
+        params.push(localeFilter.value);
+        joinCondition += ` AND tl.locale_id = (SELECT id FROM locale WHERE code = $${params.length})`;
+      }
+
+      if (hasFilter) {
+        const filtered = await model.findMany({ where, select: { id: true } });
+
+        if (filtered.length === 0) {
+          return [];
+        }
+
+        params.push(filtered.map((row: any) => row.id));
+        conditions.push(`t.id = ANY($${params.length}::int[])`);
+      }
+
+      const whereClause = conditions.length
+        ? `WHERE ${conditions.join(' AND ')}`
         : '';
+      const direction =
+        String(sortOrder).toLowerCase() === 'desc' ? 'DESC' : 'ASC';
 
-      // Query para buscar IDs ordenados
-      const orderDirection = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-      const orderByClause = `ORDER BY tl.${db.escapeIdentifier(sortField)} ${orderDirection}`;
-      
-      const rawQuery = `
-        SELECT DISTINCT t.id
-        FROM ${db.escapeIdentifier(tableName)} t
-        LEFT JOIN ${db.escapeIdentifier(localeTableName)} tl ON t.id = tl.${tableName}_id
-        LEFT JOIN locale l ON tl.locale_id = l.id
+      params.push(take);
+      const limitIndex = params.length;
+      params.push(skip);
+      const offsetIndex = params.length;
+
+      // LEFT JOIN + NULLS LAST: registro sem tradução no idioma pedido continua
+      // aparecendo, no fim da lista, em vez de sumir da listagem e fazer a
+      // página divergir do `total`.
+      // `t.id` como desempate: sem ele, nomes repetidos fazem linhas aparecerem
+      // duas vezes ou sumirem entre páginas.
+      const sql = `
+        SELECT t.id
+        FROM "${tableName}" t
+        LEFT JOIN "${localeTableName}" tl ON ${joinCondition}
         ${whereClause}
-        ${orderByClause}
-        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        ORDER BY tl."${sortField}" ${direction} NULLS LAST, t.id ASC
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      whereParams.push(take, skip);
+      const ordered: Array<{ id: number }> = await prisma.$queryRawUnsafe(
+        sql,
+        ...params,
+      );
+      const orderedIds = ordered.map((row) => row.id);
 
-      // Executar raw query para obter IDs ordenados
-      const orderedIds = await db.queryRaw(rawQuery, whereParams);
-      
-      if (!orderedIds || orderedIds.length === 0) {
+      if (orderedIds.length === 0) {
         return [];
       }
 
-      const ids = orderedIds.map((row: any) => row.id);
-
-      // Buscar dados completos com Prisma mantendo estrutura aninhada
-      const query: any = {
-        where: {
-          id: { in: ids },
-          ...(customQuery?.where || {}),
-        },
-      };
+      const hydrateQuery: any = { where: { id: { in: orderedIds } } };
 
       if (customQuery?.include) {
-        query.include = customQuery.include;
+        hydrateQuery.include = customQuery.include;
+      } else if (customQuery?.select) {
+        hydrateQuery.select = customQuery.select;
       }
 
-      if (customQuery?.select) {
-        query.select = customQuery.select;
-      }
+      const data = await model.findMany(hydrateQuery);
+      const byId = new Map<number, any>(
+        data.map((item: any) => [item.id, item]),
+      );
 
-      const data = await model.findMany(query);
-
-      // Reordenar dados para manter a ordem da raw query
-      const orderedData = ids
-        .map(id => data.find((item: any) => item.id === id))
-        .filter(Boolean);
-
-      return orderedData;
-
+      return orderedIds.map((id) => byId.get(id)).filter(Boolean);
     } catch (error: any) {
-      this.logger.error(`Error in paginateWithLocaleOrdering: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error in paginateWithLocaleOrdering: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException(
-        `Failed to paginate with locale ordering: ${error.message}`
+        `Failed to paginate with locale ordering: ${error.message}`,
       );
     }
+  }
+
+  /**
+   * Descobre o idioma da ordenação a partir do `include` de quem chamou —
+   * `where: { locale_id }` (formato usado pelos services) ou
+   * `where: { locale: { code } }`. Sem nenhum dos dois, devolve `null` e a
+   * ordenação por campo traduzido é abandonada.
+   */
+  private extractLocaleFilter(
+    customQuery: any,
+    localeTableName: string,
+  ): { kind: 'id'; value: number } | { kind: 'code'; value: string } | null {
+    const where = customQuery?.include?.[localeTableName]?.where;
+
+    if (!where) {
+      return null;
+    }
+
+    const localeId =
+      typeof where.locale_id === 'number'
+        ? where.locale_id
+        : typeof where.locale_id?.equals === 'number'
+          ? where.locale_id.equals
+          : null;
+
+    if (localeId !== null) {
+      return { kind: 'id', value: localeId };
+    }
+
+    const code =
+      typeof where.locale?.code === 'string'
+        ? where.locale.code
+        : typeof where.locale?.code?.equals === 'string'
+          ? where.locale.code.equals
+          : null;
+
+    if (code !== null) {
+      return { kind: 'code', value: code };
+    }
+
+    return null;
   }
 
   /**
@@ -613,10 +779,16 @@ export class PaginationService {
     return model && model.fields ? !model.fields[sortField] : true;
   }
 
+  /**
+   * Model sem tabela `<model>_locale` é o caso comum, não um erro: devolver
+   * `true` faz o chamador lançar o `Invalid field: ...` legível. Antes o acesso
+   * direto estourava `TypeError` e a API respondia
+   * "Cannot read properties of undefined".
+   */
   isInvalidLocaleField(sortField: string, model: any): boolean {
-    const fields = model['$parent'][`${model.name}_locale`].fields;
+    const fields = model?.['$parent']?.[`${model.name}_locale`]?.fields;
 
-    return model && fields ? !fields[sortField] : true;
+    return fields ? !fields[sortField] : true;
   }
 
   isInvalidFields(fields: string[], model: any): boolean {

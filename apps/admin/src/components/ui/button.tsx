@@ -1,7 +1,16 @@
+'use client';
+
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
+import { Spinner } from '@/components/ui/spinner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -37,25 +46,174 @@ const buttonVariants = cva(
   }
 );
 
+type ButtonProps = React.ComponentProps<'button'> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+    /**
+     * Força o estado de carregando. Vence a detecção automática.
+     * Use em submit de formulário, onde a assincronia não passa pelo onClick.
+     */
+    loading?: boolean;
+    /** Texto que substitui o label enquanto carrega (ex.: "Salvando..."). */
+    loadingLabel?: React.ReactNode;
+    /**
+     * Obrigatório em botões só-com-ícone (size `icon`, `icon-sm`, `icon-lg`).
+     * Quando for string, também vira o `aria-label` do botão.
+     */
+    tooltip?: React.ReactNode;
+    tooltipSide?: React.ComponentProps<typeof TooltipContent>['side'];
+  };
+
+function isThenable(value: unknown): value is Promise<unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { then?: unknown }).then === 'function'
+  );
+}
+
+function isIconSize(size: ButtonProps['size']) {
+  return typeof size === 'string' && size.startsWith('icon');
+}
+
 function Button({
   className,
   variant,
   size,
   asChild = false,
+  loading,
+  loadingLabel,
+  tooltip,
+  tooltipSide,
+  children,
+  disabled,
+  onClick,
   ...props
-}: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+}: ButtonProps) {
+  const [autoPending, setAutoPending] = React.useState(false);
+  const mountedRef = React.useRef(true);
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const iconOnly = isIconSize(size);
+  const ariaLabel =
+    props['aria-label'] ?? (typeof tooltip === 'string' ? tooltip : undefined);
+
+  // Com asChild o filho é único e não dá para injetar o spinner sem quebrar o Slot.
+  const supportsPending = !asChild;
+  const pending = supportsPending && (loading ?? autoPending);
+  const isDisabled = Boolean(disabled) || pending;
+
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+    if (asChild && loading !== undefined) {
+      console.warn(
+        '[Button] `loading` é ignorado junto com `asChild`: o Slot exige um filho único. Renderize o spinner dentro do filho.'
+      );
+    }
+    if (iconOnly && !tooltip && !ariaLabel && !props.title) {
+      console.warn(
+        '[Button] Botão só-com-ícone sem rótulo. Passe `tooltip` (padrão do admin) ou, no mínimo, `aria-label`.'
+      );
+    }
+  }, [asChild, loading, iconOnly, tooltip, ariaLabel, props.title]);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (pending) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    const result = onClick?.(event) as unknown;
+
+    if (!supportsPending || !isThenable(result)) {
+      return;
+    }
+
+    setAutoPending(true);
+    const settle = () => {
+      if (mountedRef.current) {
+        setAutoPending(false);
+      }
+    };
+    // O rethrow preserva o comportamento original da Promise do chamador.
+    result.then(settle, (error: unknown) => {
+      settle();
+      throw error;
+    });
+  };
+
+  // aria-hidden: o Spinner traz `role="status"` e `aria-label="Loading"`, que
+  // entrariam no nome acessível do botão ("Loading Salvar"). O estado já é
+  // anunciado pelo `aria-busy` abaixo.
+  const spinner = (
+    <Spinner
+      data-slot="button-spinner"
+      aria-hidden
+      role={undefined}
+      aria-label={undefined}
+    />
+  );
+
+  const content = pending ? (
+    iconOnly ? (
+      spinner
+    ) : (
+      <>
+        {spinner}
+        {loadingLabel ?? children}
+      </>
+    )
+  ) : (
+    children
+  );
+
   const Comp = asChild ? Slot : 'button';
 
-  return (
+  const button = (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      data-loading={pending ? '' : undefined}
+      aria-busy={pending || undefined}
+      aria-label={ariaLabel}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        // O spinner ocupa o lugar do ícone original, então a largura não pula.
+        pending && !iconOnly && '[&>svg:not([data-slot=button-spinner])]:hidden'
+      )}
+      disabled={isDisabled}
+      onClick={handleClick}
       {...props}
-    />
+    >
+      {content}
+    </Comp>
+  );
+
+  if (!tooltip) {
+    return button;
+  }
+
+  // O TooltipProvider local mantém o botão autossuficiente: o Radix lança
+  // "`Tooltip` must be used within `TooltipProvider`" fora do provider do layout.
+  // Botão desabilitado não recebe eventos de ponteiro (`disabled:pointer-events-none`),
+  // então o tooltip não abre nesse estado — durante o loading o próprio spinner é o feedback.
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side={tooltipSide}>{tooltip}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
 export { Button, buttonVariants };
+export type { ButtonProps };

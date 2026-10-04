@@ -4,12 +4,6 @@ import { FileTypeIcon } from '@/components/file-type-icon';
 import { ImageCropDialog } from '@/components/image-crop/image-crop-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { buildImageUrl } from '@/lib/build-image-url';
 import { useApp } from '@hed-hog/next-app-provider';
 import {
@@ -44,7 +38,10 @@ export type CourseImageGallerySpec = {
   imageType: string;
 };
 
-type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
+type TranslateFn = (
+  key: string,
+  values?: Record<string, string | number>
+) => string;
 
 type CourseImageGalleryProps = {
   courseId: string | number | null;
@@ -95,7 +92,10 @@ export function CourseImageGallery({
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', new File([blob], `${type}.webp`, { type: 'image/webp' }));
+      formData.append(
+        'file',
+        new File([blob], `${type}.webp`, { type: 'image/webp' })
+      );
       formData.append('destination', 'lms/courses');
       formData.append('imageType', spec.imageType);
       formData.append('maxWidth', String(spec.width));
@@ -240,7 +240,10 @@ export function CourseImageGallery({
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <FileTypeIcon filename={image.filename ?? 'image'} size={20} />
+                    <FileTypeIcon
+                      filename={image.filename ?? 'image'}
+                      size={20}
+                    />
                   </div>
                 )}
                 {busy ? (
@@ -252,104 +255,86 @@ export function CourseImageGallery({
 
               <div className="flex flex-wrap items-center gap-1 px-2 pt-1">
                 {image.isPrimary ? (
-                  <Badge variant="secondary" className="h-5 gap-1 px-1.5 text-[10px]">
+                  <Badge
+                    variant="secondary"
+                    className="h-5 gap-1 px-1.5 text-[10px]"
+                  >
                     <Star className="h-3 w-3" />
                     {t('form.media.defaultBadge')}
                   </Badge>
                 ) : null}
                 {!image.isActive ? (
-                  <Badge variant="outline" className="h-5 px-1.5 text-[10px] text-muted-foreground">
+                  <Badge
+                    variant="outline"
+                    className="h-5 px-1.5 text-[10px] text-muted-foreground"
+                  >
                     {t('form.media.inactiveBadge')}
                   </Badge>
                 ) : null}
               </div>
 
               <div className="flex items-center justify-end gap-0.5 px-1 py-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        disabled={busy || image.isPrimary}
-                        onClick={() => setPrimary(image)}
-                      >
-                        <Star
-                          className={
-                            image.isPrimary
-                              ? 'h-3.5 w-3.5 fill-current text-amber-500'
-                              : 'h-3.5 w-3.5'
-                          }
-                        />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('form.media.setDefault')}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={busy || image.isPrimary}
+                  onClick={() => setPrimary(image)}
+                  tooltip={t('form.media.setDefault')}
+                >
+                  <Star
+                    className={
+                      image.isPrimary
+                        ? 'h-3.5 w-3.5 fill-current text-amber-500'
+                        : 'h-3.5 w-3.5'
+                    }
+                  />
+                </Button>
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        disabled={busy}
-                        onClick={() => toggleActive(image)}
-                      >
-                        {image.isActive ? (
-                          <Power className="h-3.5 w-3.5 text-emerald-600" />
-                        ) : (
-                          <PowerOff className="h-3.5 w-3.5 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {image.isActive
-                        ? t('form.media.deactivate')
-                        : t('form.media.activate')}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={busy}
+                  onClick={() => toggleActive(image)}
+                  tooltip={
+                    image.isActive
+                      ? t('form.media.deactivate')
+                      : t('form.media.activate')
+                  }
+                >
+                  {image.isActive ? (
+                    <Power className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <PowerOff className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </Button>
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        disabled={busy || !image.fileId}
-                        onClick={() => openOriginal(image.fileId)}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('form.media.viewOriginalImage')}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={busy || !image.fileId}
+                  onClick={() => openOriginal(image.fileId)}
+                  tooltip={t('form.media.viewOriginalImage')}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                </Button>
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        disabled={busy}
-                        onClick={() => removeImage(image)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('form.media.removeImage')}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-destructive hover:text-destructive"
+                  disabled={busy}
+                  onClick={() => removeImage(image)}
+                  tooltip={t('form.media.removeImage')}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
             </div>
           );

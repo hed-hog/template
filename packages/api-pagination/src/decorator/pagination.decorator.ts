@@ -11,17 +11,20 @@ import {
 } from '../constants/pagination.constants';
 import { PaginationDTO } from '../dto/pagination.dto';
 import { PageOrderDirection, PaginationField } from '../enums/patination.enums';
-import { PaginationType } from '../types/pagination.types';
+import { PaginationParams, PaginationType } from '../types/pagination.types';
 
 export const Pagination = createParamDecorator(
   (data: PaginationField, ctx: ExecutionContext): PaginationType => {
     const request = ctx.switchToHttp().getRequest();
 
+    // Sem `sortField` de propósito: o default 'id' que ficava aqui era copiado
+    // para `requestData` e tornava impossível saber se o cliente pediu ordem.
+    // Quem define a ordem padrão agora é o service (via `defineSortable` ou
+    // `defaultSortField`), que é quem sabe qual ela é.
     const defaultOptions: PaginationType = {
       page: DEFAULT_PAGE,
       pageSize: DEFAULT_PAGE_SIZE,
       search: '',
-      sortField: 'id',
       sortOrder: PageOrderDirection.Asc,
       fields: '',
     };
@@ -36,7 +39,6 @@ export const Pagination = createParamDecorator(
       page = defaultOptions.page,
       pageSize = defaultOptions.pageSize,
       search = defaultOptions.search,
-      sortField = defaultOptions.sortField,
       sortOrder = defaultOptions.sortOrder,
       fields = defaultOptions.fields,
     } = requestData;
@@ -45,14 +47,32 @@ export const Pagination = createParamDecorator(
       ? sortOrder
       : defaultOptions.sortOrder;
 
-    const finalData = {
+    // `sortField` só existe quando o cliente realmente pediu. Preenchê-lo com
+    // 'id' por omissão — como era feito aqui — apagava a diferença entre "pediu
+    // por id" e "não pediu nada", e era por isso que um service só conseguia
+    // declarar sua ordem padrão travando o `orderBy`. Metade dos endpoints
+    // paginados ignorava o `sortField` do cliente por causa disso.
+    const rawSortField = (requestData as Record<string, unknown>).sortField;
+    const sortField =
+      typeof rawSortField === 'string' && rawSortField.trim().length > 0
+        ? rawSortField.trim()
+        : undefined;
+
+    const finalData: PaginationParams = {
       page,
       pageSize,
       search,
-      sortField,
       sortOrder: validSortOrder,
       fields,
     };
+
+    // A chave é OMITIDA, não posta como `undefined`: `Object.assign({ sortField:
+    // 'code' }, paginationParams)` — o padrão de api-locale/locale.service.ts —
+    // copia chave própria mesmo com valor `undefined` e sobrescreveria o
+    // default do service.
+    if (sortField !== undefined) {
+      finalData.sortField = sortField;
+    }
 
     const paginationDtoInstance = plainToClass(PaginationDTO, finalData);
 

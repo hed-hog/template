@@ -189,18 +189,32 @@ async listEmployees(args: { departmentId?: number; status?: string }, ctx: McpCo
 - Inclua os filtros principais no texto (melhora o score de seleção automática)
 - Use o prefixo de domínio no nome: `hr.`, `finance.`, `lms.`, `operations.`
 
-Para que a tool apareça no MCP Chat, adicione em `route.yaml` e `role.yaml`:
+A tool também precisa de permissão, senão ela aparece no `tools/list` e responde
+403: o `McpPermissionGuard` conta linhas em `route` com `type = 'MCP'` e aquele
+`tool_name` ligadas a um papel do usuário, e nega quando dá zero. Declare em
+`route.yaml` (e o papel em `role.yaml`, se ele ainda não existir):
 
 ```yaml
 # route.yaml
-- url: /mcp/hr/employees/list
-  method: MCP
-  tool_name: hr.employees.list
+- tool_name: hr.employees.list
+  type: MCP
+  name: Hr Employees List
   relations:
     role:
       - where: { slug: admin }
       - where: { slug: admin-hr }
 ```
+
+Linha MCP não tem `url` nem `method` — os dois são nulos, e `tool_name` tem
+índice único. Declarar no YAML **não** aplica nada sozinho: crie também a
+migration que insere as linhas, como
+`20261106010000_commerce_mcp_routes/migration.sql` faz.
+
+Nada no servidor verifica que as duas listas batem, e as duas divergências já
+aconteceram aqui: seis tools da `tag` no ar e inalcançáveis por falta de rota, e
+30 rotas do `commerce` concedidas a tools que nunca foram escritas. O spec
+`libraries/commerce/src/mcp-tools/mcp-route-sync.spec.ts` é o molde de guarda
+para uma library nova.
 
 ---
 

@@ -2,12 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { buildFileOpenUrl, buildImageUrl } from '@/lib/build-image-url';
 import { cn } from '@/lib/utils';
 import { useApp } from '@hed-hog/next-app-provider';
@@ -40,6 +34,13 @@ export type MediaUploadUrlFieldLabels = {
    * case silently looks like a generic broken image.
    */
   previewUnavailable?: string;
+  /**
+   * Shown when there IS a value but the browser failed to load it (404, CORS,
+   * arquivo removido do storage etc.) — sem isto esse caso caía no mesmo texto
+   * e ícone de "nenhuma imagem selecionada", fazendo quem edita achar que
+   * nunca salvou nada, quando na verdade salvou um link que não carrega.
+   */
+  loadError?: string;
 };
 
 export interface MediaUploadUrlFieldProps {
@@ -144,7 +145,11 @@ export function MediaUploadUrlField({
       // `/file/image/:id` (buildImageUrl) explicitly 404s anything whose
       // mimetype isn't image/* — a video needs the generic `/file/open/:id`
       // endpoint instead, same split as the fileId-based MediaUploadField.
-      const url = id ? (kind === 'image' ? buildImageUrl(id) : buildFileOpenUrl(id)) : null;
+      const url = id
+        ? kind === 'image'
+          ? buildImageUrl(id)
+          : buildFileOpenUrl(id)
+        : null;
       if (!url) {
         toast.error(labels.uploadError);
         return;
@@ -187,7 +192,17 @@ export function MediaUploadUrlField({
                 'Prévia indisponível — configure o Domínio Público em CMS → Configurações'}
             </span>
           </div>
-        ) : hasValue && !broken ? (
+        ) : hasValue && broken ? (
+          <div className="flex flex-col items-center gap-1 px-2 text-destructive">
+            <AlertTriangle className="size-5" />
+            <span className="text-center text-[11px] leading-tight">
+              {labels.loadError ?? 'Não foi possível carregar esta imagem'}
+            </span>
+            <span className="max-w-full truncate text-center text-[10px] text-muted-foreground/70">
+              {previewSrc}
+            </span>
+          </div>
+        ) : hasValue ? (
           kind === 'image' ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -237,41 +252,34 @@ export function MediaUploadUrlField({
             variant="outline"
             size="sm"
             className="h-7 flex-1 text-xs"
-            disabled={disabled || uploading}
+            disabled={disabled}
+            loading={uploading}
+            loadingLabel={labels.uploading}
             onClick={() => inputRef.current?.click()}
           >
-            {uploading ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <UploadCloud className="mr-1.5 h-3.5 w-3.5" />
-            )}
-            {uploading ? labels.uploading : hasValue ? labels.replace : labels.upload}
+            <UploadCloud className="mr-1.5 h-3.5 w-3.5" />
+            {hasValue ? labels.replace : labels.upload}
           </Button>
         ) : (
           <>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-7 w-7 shrink-0"
-                    disabled={disabled || uploading}
-                    onClick={() => inputRef.current?.click()}
-                  >
-                    {uploading ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <UploadCloud className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {uploading ? labels.uploading : hasValue ? labels.replace : labels.upload}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              disabled={disabled}
+              loading={uploading}
+              onClick={() => inputRef.current?.click()}
+              tooltip={
+                uploading
+                  ? labels.uploading
+                  : hasValue
+                    ? labels.replace
+                    : labels.upload
+              }
+            >
+              <UploadCloud className="h-3.5 w-3.5" />
+            </Button>
 
             <Input
               // Explícito de propósito: `Input` repassa o `type` cru, e sem ele o
@@ -292,23 +300,17 @@ export function MediaUploadUrlField({
         )}
 
         {hasValue ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 shrink-0 text-destructive hover:text-destructive"
-                  disabled={disabled}
-                  onClick={handleRemove}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{labels.remove}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-7 w-7 shrink-0 text-destructive hover:text-destructive"
+            disabled={disabled}
+            onClick={handleRemove}
+            tooltip={labels.remove}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
         ) : null}
       </div>
     </div>

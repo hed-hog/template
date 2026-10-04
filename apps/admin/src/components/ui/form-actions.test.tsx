@@ -9,7 +9,9 @@ describe('FormActions', () => {
     render(<FormActions submitLabel="Salvar" />);
 
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Cancel' })
+    ).not.toBeInTheDocument();
   });
 
   it('renderiza o botão de cancelar e propaga onCancel/onSubmit', () => {
@@ -66,7 +68,11 @@ describe('FormActions', () => {
 
   it('envolve o conteúdo em SheetFooter quando sheet=true', () => {
     const { container } = render(
-      <FormActions submitLabel="Salvar" sheet sheetClassName="custom-sheet-class" />
+      <FormActions
+        submitLabel="Salvar"
+        sheet
+        sheetClassName="custom-sheet-class"
+      />
     );
 
     const footer = container.querySelector('[data-slot="sheet-footer"]');
@@ -74,5 +80,50 @@ describe('FormActions', () => {
     expect(footer).toHaveClass('custom-sheet-class');
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeInTheDocument();
     expect(screen.getByTestId('sheet-submit')).toBeInTheDocument();
+  });
+});
+
+describe('FormActions — submitLoading', () => {
+  it('mostra spinner e desabilita o submit enquanto envia', () => {
+    render(<FormActions submitLabel="Salvar" submitLoading sheet />);
+
+    const submit = screen.getByTestId('sheet-submit');
+    expect(submit).toBeDisabled();
+    expect(submit).toHaveAttribute('data-loading');
+    expect(
+      document.querySelector('[data-slot="button-spinner"]')
+    ).toBeInTheDocument();
+  });
+
+  it('nao dispara onSubmit em clique repetido durante o envio', () => {
+    const onSubmit = vi.fn();
+    render(
+      <FormActions
+        submitLabel="Salvar"
+        submitLoading
+        sheet
+        onSubmit={onSubmit}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('sheet-submit'));
+    fireEvent.click(screen.getByTestId('sheet-submit'));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('mantem o cancelar utilizavel durante o envio', () => {
+    const onCancel = vi.fn();
+    render(
+      <FormActions
+        submitLabel="Salvar"
+        cancelLabel="Cancelar"
+        submitLoading
+        onCancel={onCancel}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(onCancel).toHaveBeenCalled();
   });
 });

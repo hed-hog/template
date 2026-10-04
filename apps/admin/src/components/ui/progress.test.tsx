@@ -39,4 +39,29 @@ describe('Progress', () => {
 
     expect(container.querySelector('[data-slot="progress"]')).toHaveClass('custom-class');
   });
+
+  it('expõe o valor a leitor de tela, e não só no transform', () => {
+    // O shadcn não repassa `value` ao Root do Radix: a barra pintava certo e o
+    // `role="progressbar"` ficava indeterminate, sem valor nenhum para anunciar.
+    render(<Progress value={40} />);
+
+    const barra = screen.getByRole('progressbar');
+    expect(barra).toHaveAttribute('aria-valuenow', '40');
+    expect(barra).toHaveAttribute('aria-valuemax', '100');
+    expect(barra).toHaveAttribute('data-state', 'loading');
+  });
+
+  it('sem value continua indeterminado, sem anunciar um valor falso', () => {
+    render(<Progress />);
+
+    const barra = screen.getByRole('progressbar');
+    expect(barra).not.toHaveAttribute('aria-valuenow');
+    expect(barra).toHaveAttribute('data-state', 'indeterminate');
+  });
+
+  it('value igual ao máximo marca conclusão', () => {
+    render(<Progress value={100} />);
+
+    expect(screen.getByRole('progressbar')).toHaveAttribute('data-state', 'complete');
+  });
 });

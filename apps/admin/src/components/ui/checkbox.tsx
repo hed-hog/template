@@ -29,4 +29,35 @@ function Checkbox({
   );
 }
 
-export { Checkbox };
+/**
+ * Mesmo visual do `Checkbox`, sem o primitive do Radix: para linha de lista em
+ * que o clique já é tratado pelo item (cmdk) e a caixa só mostra o estado.
+ *
+ * O `Checkbox.Root` do Radix (1.1.x) guarda o próprio botão em estado por um ref
+ * callback recriado a cada render; no React 19 isso vira loop de atualização
+ * (React #185) quando muitas linhas re-renderizam juntas, como numa lista de
+ * seleção múltipla.
+ */
+function CheckboxMark({
+  checked,
+  className,
+}: {
+  checked: boolean;
+  className?: string;
+}) {
+  return (
+    <span
+      aria-hidden
+      data-slot="checkbox"
+      data-state={checked ? 'checked' : 'unchecked'}
+      className={cn(
+        'border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary grid size-4 shrink-0 place-content-center rounded-lg border shadow-xs',
+        className
+      )}
+    >
+      {checked ? <CheckIcon className="size-3.5" /> : null}
+    </span>
+  );
+}
+
+export { Checkbox, CheckboxMark };

@@ -88,5 +88,6 @@ hedhog dev assets-to-library <library>
 - [ ] All dates use `formatDate` / `formatDateTime`
 - [ ] `SelectTrigger` has `className="w-full"` in the form
 - [ ] Relation fields use `EntityPicker`
+- [ ] Icon-only buttons have the `tooltip` prop; buttons that wait use `loading` (or return the Promise from `onClick`) — see `.claude/skills/admin-buttons/`
 - [ ] i18n keys are present in the messages file
 - [ ] Asset sync completed (`hedhog dev assets-to-library <library>`)

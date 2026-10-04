@@ -3,7 +3,7 @@ import * as React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 
-import { InputMoney } from './input-money';
+import { InputMoney, parseMoneyToCents } from './input-money';
 
 // React's synthetic `onBeforeInput` is emulated from legacy
 // compositionend/keypress/textInput/paste native events — it never listens
@@ -460,5 +460,28 @@ describe('InputMoney - efeito de reposicionamento de caret (controlado)', () => 
     fireEvent.click(screen.getByRole('button', { name: 'change' }));
 
     expect(input.value).toBe('555,00');
+  });
+});
+
+describe('parseMoneyToCents', () => {
+  it('converte o texto mascarado em centavos inteiros', () => {
+    expect(parseMoneyToCents('29,13')).toBe(2913);
+    expect(parseMoneyToCents('1.234,56')).toBe(123456);
+    expect(parseMoneyToCents('0,29')).toBe(29);
+    expect(parseMoneyToCents('19,90')).toBe(1990);
+  });
+
+  it('trata dígitos sem separador como reais inteiros', () => {
+    expect(parseMoneyToCents('2000')).toBe(200000);
+  });
+
+  it('devolve null para vazio ou texto sem dígito', () => {
+    expect(parseMoneyToCents('')).toBeNull();
+    expect(parseMoneyToCents('   ')).toBeNull();
+    expect(parseMoneyToCents('abc')).toBeNull();
+  });
+
+  it('zero explícito é 0, não null', () => {
+    expect(parseMoneyToCents('0,00')).toBe(0);
   });
 });

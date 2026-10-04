@@ -1,7 +1,16 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, X } from 'lucide-react';
 import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  Loader2,
+  Plus,
+  X,
+} from 'lucide-react';
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -26,6 +35,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
+import { InputMoney } from '@/components/ui/input-money';
 import { Label } from '@/components/ui/label';
 import {
   Pagination,
@@ -67,7 +77,12 @@ export type EntityPickerCreateField = {
   name: string;
   label: string;
   placeholder?: string;
-  type?: 'text' | 'email' | 'password' | 'number';
+  /**
+   * `money` renderiza o campo com a máscara em reais do `InputMoney`; o valor
+   * entregue ao `onCreate` continua sendo a string mascarada ("1.234,56"), que
+   * o consumidor converte com `parseMoneyToCents`.
+   */
+  type?: 'text' | 'email' | 'password' | 'number' | 'money';
   required?: boolean;
   defaultValue?: string;
 };
@@ -252,6 +267,23 @@ function buildPageRange(page: number, totalPages: number): Array<number | '…'>
   }
 
   return result;
+}
+
+// Diacríticos combinantes removidos por código, não por literal no regex: a
+// busca local casa "joao" com "João" sem depender da codificação do arquivo.
+const COMBINING_START = 0x0300;
+const COMBINING_END = 0x036f;
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code < COMBINING_START || code > COMBINING_END;
+    })
+    .join('')
+    .toLowerCase();
 }
 
 function normalizeLoadResult<TOption extends object>(
@@ -662,14 +694,16 @@ export function EntityPicker<
   );
 
   const locallyFilteredOptions = useMemo(() => {
-    const normalizedSearch = debouncedSearch.trim().toLowerCase();
+    const normalizedSearch = normalizeSearchText(debouncedSearch.trim());
 
     if (!normalizedSearch) {
       return knownOptions;
     }
 
     return knownOptions.filter((option) =>
-      optionSearchTextResolver(option).includes(normalizedSearch)
+      normalizeSearchText(optionSearchTextResolver(option)).includes(
+        normalizedSearch
+      )
     );
   }, [debouncedSearch, knownOptions, optionSearchTextResolver]);
 
@@ -934,11 +968,7 @@ export function EntityPicker<
             disabled={isLoadingOptions || isLoadingMoreOptions}
             onClick={() => {
               if (loadOptions && hasMore) {
-                void loadRemoteOptions(
-                  currentPage + 1,
-                  debouncedSearch,
-                  false
-                );
+                void loadRemoteOptions(currentPage + 1, debouncedSearch, false);
                 return;
               }
 
@@ -984,7 +1014,12 @@ export function EntityPicker<
         >
           <CommandEmpty>
             {isLoadingOptions ? (
-              loadingLabel
+              // Busca remota (diretório do Entra, listagem paginada) leva o
+              // suficiente para o texto sozinho parecer tela travada.
+              <div className="flex items-center justify-center gap-2 p-3 text-sm text-muted-foreground">
+                <Loader2 className="size-4 shrink-0 animate-spin" />
+                {loadingLabel}
+              </div>
             ) : (
               <div className="space-y-2 p-2 text-center">
                 <p className="text-sm text-muted-foreground">
@@ -1071,7 +1106,10 @@ export function EntityPicker<
                     })
                   ) : (
                     <div className="min-w-0">
-                      <div className="truncate">
+                      <div
+                        className="truncate"
+                        title={optionLabelResolver(option)}
+                      >
                         {optionLabelResolver(option)}
                       </div>
                       {optionDescriptionResolver(option) ? (
@@ -1175,15 +1213,28 @@ export function EntityPicker<
                   buttonClassName
                 )}
               >
-                <span className="min-w-0 flex-1 truncate text-left">
+                <span
+                  className="min-w-0 flex-1 truncate text-left"
+                  title={
+                    typeof displayValue === 'string' ? displayValue : undefined
+                  }
+                >
                   {displayValue}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
+            {/* A lista parte da largura do botão, mas cresce até caber o rótulo
+                inteiro (plano de contas tem nomes longos); o teto evita que ela
+                saia da tela. */}
             <PopoverContent
+              align="start"
               className="p-0"
-              style={{ width: 'var(--radix-popover-trigger-width)' }}
+              style={{
+                minWidth: 'var(--radix-popover-trigger-width)',
+                width: 'max-content',
+                maxWidth: 'min(32rem, calc(100vw - 2rem))',
+              }}
             >
               {commandContent}
             </PopoverContent>
@@ -1203,7 +1254,7 @@ export function EntityPicker<
                 setVisibleCount(visibleCountStep);
                 setOpen(false);
               }}
-              aria-label={cancelLabel}
+              tooltip={cancelLabel}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -1215,14 +1266,15 @@ export function EntityPicker<
               variant="outline"
               size="icon"
               className="h-10 w-10 shrink-0"
-              disabled={disabled || isCreating}
+              disabled={disabled}
+              loading={isCreating}
               onClick={(event) => {
                 captureParentScrollPosition(event.currentTarget);
                 openCreateSheet(
                   search.trim() || normalizedValue || selectedLabel
                 );
               }}
-              aria-label={resolvedCreateActionLabel}
+              tooltip={resolvedCreateActionLabel}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -1238,25 +1290,33 @@ export function EntityPicker<
 
   const createFieldsContent = createFields.length ? (
     <div className="mt-6 space-y-4">
-      {createFields.map((field) => (
-        <div key={field.name} className="space-y-2">
-          <Label>{field.label}</Label>
-          <Input
-            type={field.type ?? 'text'}
-            value={createValues[field.name] ?? ''}
-            placeholder={field.placeholder ?? createPlaceholder ?? field.label}
-            onChange={(event) =>
-              setCreateFieldValue(field.name, event.target.value)
+      {createFields.map((field) => {
+        // `InputMoney` é um <input> com máscara: as mesmas props servem aos dois,
+        // só o `type` é exclusivo do Input cru.
+        const inputProps = {
+          value: createValues[field.name] ?? '',
+          placeholder: field.placeholder ?? createPlaceholder ?? field.label,
+          onChange: (event: ChangeEvent<HTMLInputElement>) =>
+            setCreateFieldValue(field.name, event.target.value),
+          onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              void handleCreate();
             }
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                void handleCreate();
-              }
-            }}
-          />
-        </div>
-      ))}
+          },
+        };
+
+        return (
+          <div key={field.name} className="space-y-2">
+            <Label>{field.label}</Label>
+            {field.type === 'money' ? (
+              <InputMoney {...inputProps} />
+            ) : (
+              <Input type={field.type ?? 'text'} {...inputProps} />
+            )}
+          </div>
+        );
+      })}
 
       {onCreate ? (
         <div className="flex justify-end gap-2">

@@ -33,7 +33,7 @@ import {
 } from './network-error';
 import { createRefreshGate, isSessionRejection } from './refresh-policy';
 import { attachRequestMarks, isSameOriginTarget } from './request-marks';
-import { resolveStoredRefreshToken } from './session-tokens';
+import { getSessionIdentity, resolveStoredRefreshToken } from './session-tokens';
 
 
 // Export QueryClient for external use
@@ -181,7 +181,19 @@ const emptyForbiddenErrorState: ForbiddenErrorState = {
 };
 
 type AppContextType = {
-	logout: () => Promise<void>;
+	/**
+	 * Encerra a sessao e navega para `redirectTo` (padrao `/login`).
+	 *
+	 * Com destino explicito a URL atual NAO e guardada em `urlAfterLogin`: quem
+	 * chamou ja decidiu para onde ir, e memorizar uma pagina privada faria o
+	 * login seguinte pular de volta pra ela (o callback de OAuth le
+	 * `getUrlAfterLogin()`). Numa loja publica, por exemplo, sair leva para a
+	 * home — e o proximo login nao deve reabrir o perfil de onde se saiu.
+	 *
+	 * Numa aba com simulacao de acesso ativa, "sair" continua significando
+	 * encerrar a simulacao: `redirectTo` e ignorado e nao ha navegacao.
+	 */
+	logout: (redirectTo?: string) => Promise<void>;
 	login: (
 		email: string,
 		password: string,
@@ -1046,8 +1058,11 @@ function AppContextProvider({
 		[],
 	);
 
+	// Chave pela SESSÃO, não pelo token: com o token na chave, cada renovação zerava
+	// `user` e os guards de layout trocavam a página por um spinner. Ver
+	// `getSessionIdentity`.
 	const { data: user, refetch: refetchUser } = useQuery({
-		queryKey: ['user', accessToken],
+		queryKey: ['user', getSessionIdentity(accessToken)],
 		queryFn: async () => {
 			if (!accessToken) return null;
 			const response = await request<User>({ url: '/auth/verify', showErrors: false });
@@ -1256,7 +1271,7 @@ function AppContextProvider({
 		[setImpersonation],
 	);
 
-	const logout = async () => {
+	const logout = async (redirectTo?: string) => {
 		// Numa aba simulada, "sair" significa encerrar a simulacao — nao deslogar o
 		// operador, cuja sessao continua viva nas outras abas.
 		if (isImpersonating) {
@@ -1281,8 +1296,14 @@ function AppContextProvider({
 			
 			if (typeof window !== 'undefined') {
 				clearStoredFormDrafts();
-				rememberCurrentUrl();
-				window.location.href = '/login';
+				// Sem destino explicito o app volta para /login, e ai faz sentido que o
+				// proximo login devolva o usuario a pagina onde ele estava. Com destino
+				// explicito, memorizar a URL atual faria o login seguinte ignorar a
+				// decisao de quem chamou e reabrir a pagina de onde se saiu.
+				if (redirectTo === undefined) {
+					rememberCurrentUrl();
+				}
+				window.location.href = redirectTo ?? '/login';
 			}
 		}
 	};

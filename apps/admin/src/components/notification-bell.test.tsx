@@ -27,7 +27,40 @@ vi.mock('@hed-hog/next-app-provider', () => ({
   useApp: () => ({ request: requestMock, accessToken }),
 }));
 
-import { NotificationBell, useNotifications } from './notification-bell';
+// Socket compartilhado, controlado pelo teste: `emitRealtime` faz o papel do
+// servidor empurrando o evento, e `realtime.connected` decide se o fallback de
+// polling deve estar ligado.
+const realtime = { connected: false };
+const realtimeHandlers = new Map<string, Set<(payload: any) => void>>();
+
+function emitRealtime(payload: unknown, event = 'notification:event') {
+  realtimeHandlers.get(event)?.forEach((handler) => handler(payload));
+}
+
+vi.mock('@/components/realtime/realtime-provider', () => ({
+  useRealtime: () => ({
+    connected: realtime.connected,
+    addChannels: vi.fn(),
+    removeChannels: vi.fn(),
+    on: (event: string, handler: (payload: any) => void) => {
+      let set = realtimeHandlers.get(event);
+      if (!set) {
+        set = new Set();
+        realtimeHandlers.set(event, set);
+      }
+      set.add(handler);
+      return () => {
+        realtimeHandlers.get(event)?.delete(handler);
+      };
+    },
+  }),
+}));
+
+import {
+  NotificationBell,
+  NotificationsProvider,
+  useNotifications,
+} from './notification-bell';
 
 function makeNotification(overrides: Partial<any> = {}) {
   return {
@@ -43,6 +76,8 @@ function makeNotification(overrides: Partial<any> = {}) {
 
 describe('useNotifications', () => {
   beforeEach(() => {
+    realtimeHandlers.clear();
+    realtime.connected = false;
     accessToken = null;
     requestMock = vi.fn().mockImplementation(({ url }: { url: string }) => {
       if (url === '/notification') {
@@ -60,7 +95,9 @@ describe('useNotifications', () => {
   });
 
   it('busca notificações e contagem de não lidas no mount', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
     expect(result.current.unreadCount).toBe(1);
   });
@@ -75,7 +112,9 @@ describe('useNotifications', () => {
       }
       return Promise.resolve({ data: {} });
     });
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(requestMock).toHaveBeenCalled());
     expect(result.current.notifications).toEqual([]);
     expect(result.current.unreadCount).toBe(0);
@@ -83,13 +122,17 @@ describe('useNotifications', () => {
 
   it('trata falha silenciosamente ao buscar notificações', async () => {
     requestMock = vi.fn().mockRejectedValue(new Error('network'));
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(requestMock).toHaveBeenCalled());
     expect(result.current.notifications).toEqual([]);
   });
 
   it('marca uma notificação como lida (sem auto_remove)', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
 
     await act(async () => {
@@ -122,7 +165,9 @@ describe('useNotifications', () => {
       }
       return Promise.resolve({ data: {} });
     });
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(2));
 
     await act(async () => {
@@ -149,7 +194,9 @@ describe('useNotifications', () => {
       }
       return Promise.resolve({ data: {} });
     });
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
 
     await act(async () => {
@@ -160,7 +207,9 @@ describe('useNotifications', () => {
   });
 
   it('lida com falha ao marcar como lida silenciosamente', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
     requestMock.mockRejectedValueOnce(new Error('fail'));
 
@@ -172,7 +221,9 @@ describe('useNotifications', () => {
   });
 
   it('deleta uma notificação', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
 
     await act(async () => {
@@ -188,7 +239,9 @@ describe('useNotifications', () => {
   });
 
   it('lida com falha ao deletar silenciosamente', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
     requestMock.mockRejectedValueOnce(new Error('fail'));
 
@@ -199,7 +252,9 @@ describe('useNotifications', () => {
   });
 
   it('marca todas como lidas', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
 
     await act(async () => {
@@ -214,7 +269,9 @@ describe('useNotifications', () => {
   });
 
   it('lida com falha ao marcar todas como lidas', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
     requestMock.mockRejectedValueOnce(new Error('fail'));
 
@@ -224,7 +281,9 @@ describe('useNotifications', () => {
   });
 
   it('deleta todas as notificações (nenhuma em execução)', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
 
     await act(async () => {
@@ -256,7 +315,9 @@ describe('useNotifications', () => {
       }
       return Promise.resolve({ data: {} });
     });
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(2));
 
     await act(async () => {
@@ -272,7 +333,9 @@ describe('useNotifications', () => {
   });
 
   it('lida com falha ao deletar todas silenciosamente', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
     requestMock.mockRejectedValueOnce(new Error('fail'));
 
@@ -282,7 +345,9 @@ describe('useNotifications', () => {
   });
 
   it('abre e fecha o popover via setOpen, refazendo a busca ao abrir', async () => {
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
     await waitFor(() => expect(result.current.notifications).toHaveLength(1));
     requestMock.mockClear();
 
@@ -293,212 +358,169 @@ describe('useNotifications', () => {
     await waitFor(() => expect(requestMock).toHaveBeenCalled());
   });
 
-  it('não conecta ao stream sem accessToken', async () => {
-    accessToken = null;
-    const { result } = renderHook(() => useNotifications());
-    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+  it('não faz polling enquanto o socket está conectado', async () => {
+    vi.useFakeTimers();
+    realtime.connected = true;
+    const { unmount } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await vi.waitFor(() => expect(requestMock).toHaveBeenCalled());
+    const afterSeed = requestMock.mock.calls.length;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(120_000);
+    });
+
+    expect(requestMock.mock.calls.length).toBe(afterSeed);
+    unmount();
+    vi.useRealTimers();
   });
 
-  it('desmonta enquanto o stream ainda está conectando (limpa abort/reconnect)', async () => {
-    accessToken = 'tok-abc';
-    const originalFetch = global.fetch;
-    let resolveFetch: ((value: unknown) => void) | undefined;
-    global.fetch = vi.fn().mockReturnValue(
-      new Promise((resolve) => {
-        resolveFetch = resolve as (value: unknown) => void;
-      }),
-    );
-    const { unmount } = renderHook(() => useNotifications());
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+  it('faz polling quando o socket está desconectado', async () => {
+    vi.useFakeTimers();
+    realtime.connected = false;
+    const { unmount } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await vi.waitFor(() => expect(requestMock).toHaveBeenCalled());
+    const afterSeed = requestMock.mock.calls.length;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(31_000);
+    });
+
+    expect(requestMock.mock.calls.length).toBeGreaterThan(afterSeed);
     unmount();
-    global.fetch = originalFetch;
-    resolveFetch?.(undefined);
-  });
-
-  it('desconecta o stream (aborta e limpa reconexão) quando o accessToken é removido', async () => {
-    accessToken = 'tok-live';
-    let resolveFetch: ((value: unknown) => void) | undefined;
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockReturnValue(
-      new Promise((resolve) => {
-        resolveFetch = resolve as (value: unknown) => void;
-      }),
-    );
-    const { rerender, unmount } = renderHook(() => useNotifications());
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
-
-    accessToken = null;
-    rerender();
-
-    unmount();
-    global.fetch = originalFetch;
-    resolveFetch?.(undefined);
-  });
-
-  it('conecta ao stream quando há accessToken (fetch indisponível)', async () => {
-    accessToken = 'tok-123';
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValue(new Error('no stream'));
-    const { unmount } = renderHook(() => useNotifications());
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
-    unmount();
-    global.fetch = originalFetch;
+    vi.useRealTimers();
   });
 });
 
-function makeStreamResponse(chunks: string[]) {
-  const encoder = new TextEncoder();
-  let i = 0;
-  return {
-    ok: true,
-    status: 200,
-    body: {
-      getReader: () => ({
-        read: async () => {
-          if (i < chunks.length) {
-            const value = encoder.encode(chunks[i]);
-            i += 1;
-            return { value, done: false };
-          }
-          return { value: undefined, done: true };
-        },
-      }),
-    },
-  };
-}
-
-describe('useNotifications (leitura do stream SSE)', () => {
+describe('useNotifications (push pelo socket)', () => {
   beforeEach(() => {
-    accessToken = null;
+    realtimeHandlers.clear();
+    accessToken = 'tok';
+    realtime.connected = true;
     requestMock = vi.fn().mockImplementation(({ url }: { url: string }) => {
       if (url === '/notification') {
-        return Promise.resolve({ data: { data: [], total: 0 } });
+        return Promise.resolve({ data: { data: [makeNotification()], total: 1 } });
       }
       if (url === '/notification/unread-count') {
-        return Promise.resolve({ data: { count: 0 } });
+        return Promise.resolve({ data: { count: 1 } });
       }
       return Promise.resolve({ data: {} });
     });
-    toastFn.mockClear();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('processa eventos do stream (ready, JSON inválido e notification.created) e mostra o toast quando o popover está fechado', async () => {
-    accessToken = 'tok-stream-1';
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValue(
-      makeStreamResponse([
-        'data: {"type":"ready"}\n\n',
-        'data: not-json\n\n',
-        'data: {"type":"notification.created","notification":{"id":5,"title":"Nova notificação","body":"Olá"}}\n\n',
-      ]),
-    );
-
-    const { unmount } = renderHook(() => useNotifications());
-
-    await waitFor(() =>
-      expect(toastFn).toHaveBeenCalledWith('Nova notificação', {
-        description: 'Olá',
-      }),
-    );
-
-    unmount();
-    global.fetch = originalFetch;
-  });
-
-  it('não mostra o toast quando o popover já está aberto ao chegar uma notification.created', async () => {
-    accessToken = 'tok-stream-2';
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValue(
-      makeStreamResponse([
-        'data: {"type":"notification.created","notification":{"id":9,"title":"Popover aberto"}}\n\n',
-      ]),
-    );
-
-    const { result, unmount } = renderHook(() => useNotifications());
-    act(() => {
-      result.current.setOpen(true);
+  it('assina o evento de notificação e busca de novo quando ele chega', async () => {
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
     });
+    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+    const afterSeed = requestMock.mock.calls.length;
 
-    await waitFor(() => expect(requestMock).toHaveBeenCalled());
-    expect(toastFn).not.toHaveBeenCalledWith(
-      'Popover aberto',
-      expect.anything(),
-    );
-
-    unmount();
-    global.fetch = originalFetch;
-  });
-
-  it('ignora blocos sem "data:" e trata "data: null" com o evento padrão', async () => {
-    accessToken = 'tok-stream-3';
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValue(
-      makeStreamResponse([
-        ': keep-alive\n\n',
-        'data: null\n\n',
-      ]),
-    );
-
-    requestMock.mockClear();
-    const { unmount } = renderHook(() => useNotifications());
-
-    // The "data: null" block parses to a null payload, which falls back to
-    // the default `{ type: 'notification.updated' }` event and still
-    // triggers a refetch via fetchAll().
-    await waitFor(() =>
-      expect(requestMock).toHaveBeenCalledWith(
-        expect.objectContaining({ url: '/notification' }),
-      ),
-    );
-
-    unmount();
-    global.fetch = originalFetch;
-  });
-
-  it('trata resposta HTTP não-ok do stream (sem body) silenciosamente', async () => {
-    accessToken = 'tok-stream-4';
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, body: null });
-
-    const { unmount } = renderHook(() => useNotifications());
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
-
-    unmount();
-    global.fetch = originalFetch;
-  });
-
-  it('reconecta automaticamente após o stream terminar (agenda e dispara o retry)', async () => {
-    vi.useFakeTimers();
-    accessToken = 'tok-reconnect';
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockResolvedValue(makeStreamResponse([]));
-
-    const { unmount } = renderHook(() => useNotifications());
-
-    // Let the first connectStream() call reach its `finally` and schedule a
-    // reconnect via setTimeout(..., 5000).
-    await vi.waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1), {
-      timeout: 2000,
-    });
-
-    // Firing the timer invokes `void connectStream()` again while the old
-    // (already-fired) reconnect ref is still set, exercising the "clear an
-    // existing timer/controller before starting a new one" guards.
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(5000);
+      emitRealtime({ type: 'notification.created', notification: makeNotification({ id: 9 }) });
+      await new Promise((resolve) => setTimeout(resolve, 400));
     });
 
-    await vi.waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2), {
-      timeout: 2000,
+    expect(requestMock.mock.calls.length).toBeGreaterThan(afterSeed);
+  });
+
+  it('toasta a notificação criada quando o popover está fechado', async () => {
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+
+    await act(async () => {
+      emitRealtime({
+        type: 'notification.created',
+        notification: makeNotification({ id: 9, title: 'Nova', body: 'Corpo' }),
+      });
     });
 
-    unmount();
-    global.fetch = originalFetch;
-    vi.useRealTimers();
+    expect(toastFn).toHaveBeenCalledWith('Nova', { description: 'Corpo' });
+  });
+
+  // Uma rajada de progresso emite dezenas de eventos; sem o debounce cada um
+  // viraria duas requisições — pior que o poll que este trabalho removeu.
+  it('coalesce uma rajada de eventos em um único refetch', async () => {
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+    const afterSeed = requestMock.mock.calls.length;
+
+    await act(async () => {
+      for (let i = 0; i < 10; i += 1) {
+        emitRealtime({ type: 'notification.updated', notificationId: 1 });
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    });
+
+    // duas chamadas: a lista e o contador, uma única vez.
+    expect(requestMock.mock.calls.length).toBe(afterSeed + 2);
+  });
+
+  it('aplica o progresso vindo no payload sem esperar o refetch', async () => {
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+
+    await act(async () => {
+      emitRealtime({
+        type: 'notification.updated',
+        notification: makeNotification({ id: 1, progress: 42 }),
+      });
+    });
+
+    expect(result.current.notifications[0]?.progress).toBe(42);
+  });
+
+  it('ignora reward.granted, que é do aluno e não desta tela', async () => {
+    const { result } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+    const afterSeed = requestMock.mock.calls.length;
+
+    await act(async () => {
+      emitRealtime({ type: 'reward.granted' });
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    });
+
+    expect(requestMock.mock.calls.length).toBe(afterSeed);
+  });
+
+  // O socket não guarda histórico: o que passou enquanto a aba esteve fora do ar
+  // só se recupera perguntando de novo na volta.
+  it('busca de novo ao (re)conectar', async () => {
+    realtime.connected = false;
+    const { result, rerender } = renderHook(() => useNotifications(), {
+      wrapper: NotificationsProvider,
+    });
+    await waitFor(() => expect(result.current.notifications).toHaveLength(1));
+    const afterSeed = requestMock.mock.calls.length;
+
+    realtime.connected = true;
+    await act(async () => {
+      rerender();
+    });
+
+    await waitFor(() =>
+      expect(requestMock.mock.calls.length).toBeGreaterThan(afterSeed),
+    );
+  });
+
+  it('lança sem o provider, em vez de voltar calado a estado por consumidor', () => {
+    expect(() => renderHook(() => useNotifications())).toThrow(
+      /NotificationsProvider/,
+    );
   });
 });
 

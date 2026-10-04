@@ -43,6 +43,35 @@ describe('classifyDatabaseInfraError', () => {
     ).toBe('pool');
   });
 
+  it('reconhece o P2028 da transação interativa como pool, não como defeito', () => {
+    // Mesma saturação do P2024, pelo caminho da transação: o maxWait estourou e a
+    // transação nem começou. Sem isso a falha caía no ramo de erro não tratado do
+    // filtro HTTP (500 com stack, sem dedupe) em vez de 503 com Retry-After.
+    expect(
+      classifyDatabaseInfraError({
+        code: 'P2028',
+        message:
+          'Transaction API error: Unable to start a transaction in the given time.',
+      }),
+    ).toBe('pool');
+  });
+
+  it('reconhece o P2028 pelo texto quando chega sem código', () => {
+    expect(
+      classifyDatabaseInfraError(
+        new Error(
+          'Transaction API error: Unable to start a transaction in the given time.',
+        ),
+      ),
+    ).toBe('pool');
+  });
+
+  it('não confunde P2028 com os erros de negócio vizinhos', () => {
+    // P2002/P2003 são resposta de negócio (409/400), não incidente de infra.
+    expect(classifyDatabaseInfraError({ code: 'P2002', message: '' })).toBeNull();
+    expect(classifyDatabaseInfraError({ code: 'P2003', message: '' })).toBeNull();
+  });
+
   it('reconhece conexão derrubada pelo servidor (57P01) sem código nenhum', () => {
     const error = new Error(
       'ConnectorError(ConnectorError { kind: QueryError(PostgresError { code: "57P01", message: "terminating connection due to administrator command" }) })',

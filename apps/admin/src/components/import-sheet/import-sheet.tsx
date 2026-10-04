@@ -137,7 +137,11 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 export function getImportErrorMessage(error: unknown, fallback: string) {
   if (typeof error === 'object' && error !== null) {
     const response = 'response' in error ? error.response : undefined;
-    if (typeof response === 'object' && response !== null && 'data' in response) {
+    if (
+      typeof response === 'object' &&
+      response !== null &&
+      'data' in response
+    ) {
       const data = response.data;
       if (typeof data === 'object' && data !== null && 'message' in data) {
         const message = data.message;
@@ -153,13 +157,14 @@ export function getImportErrorMessage(error: unknown, fallback: string) {
 
 // ─── Step indicator ──────────────────────────────────────────────────────────
 
-const STEPS: { key: WizardStep; labelKey: string; icon: React.ElementType }[] = [
-  { key: 'upload', labelKey: 'stepUpload', icon: Upload },
-  { key: 'preview', labelKey: 'stepPreview', icon: FileText },
-  { key: 'mapping', labelKey: 'stepMapping', icon: FileSpreadsheet },
-  { key: 'confirm', labelKey: 'stepConfirm', icon: CheckCircle2 },
-  { key: 'result', labelKey: 'stepResult', icon: CheckCircle2 },
-];
+const STEPS: { key: WizardStep; labelKey: string; icon: React.ElementType }[] =
+  [
+    { key: 'upload', labelKey: 'stepUpload', icon: Upload },
+    { key: 'preview', labelKey: 'stepPreview', icon: FileText },
+    { key: 'mapping', labelKey: 'stepMapping', icon: FileSpreadsheet },
+    { key: 'confirm', labelKey: 'stepConfirm', icon: CheckCircle2 },
+    { key: 'result', labelKey: 'stepResult', icon: CheckCircle2 },
+  ];
 
 function StepIndicator({ current }: { current: WizardStep }) {
   const t = useTranslations('import-sheet');
@@ -467,7 +472,8 @@ function MappingStep({
   const autoCount = useMemo(
     () =>
       columns.filter(
-        (col) => autoDetected[col] && (mapping[col] ?? IGNORE_VALUE) !== IGNORE_VALUE
+        (col) =>
+          autoDetected[col] && (mapping[col] ?? IGNORE_VALUE) !== IGNORE_VALUE
       ).length,
     [columns, autoDetected, mapping]
   );
@@ -552,7 +558,8 @@ function MappingStep({
             const isDuplicate =
               currentValue !== IGNORE_VALUE &&
               duplicateFields.includes(currentValue);
-            const isAuto = Boolean(autoDetected[col]) && currentValue !== IGNORE_VALUE;
+            const isAuto =
+              Boolean(autoDetected[col]) && currentValue !== IGNORE_VALUE;
             const sample = sampleRow?.[col];
             const customError = customErrors[col];
 
@@ -699,7 +706,9 @@ function BatchTagPicker({
   const term = search.trim();
   const isNewTag =
     term.length > 0 &&
-    !options.some((option) => option.slug.toLowerCase() === term.toLowerCase()) &&
+    !options.some(
+      (option) => option.slug.toLowerCase() === term.toLowerCase()
+    ) &&
     !value.some((tag) => tag.toLowerCase() === term.toLowerCase());
 
   return (
@@ -725,7 +734,12 @@ function BatchTagPicker({
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button type="button" variant="outline" size="sm" className="gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
               <TagIcon className="size-3.5" />
               {t('batchTagsAdd')}
             </Button>
@@ -811,7 +825,10 @@ function BatchMarksSection({
 }) {
   const t = useTranslations('import-sheet');
 
-  const setFieldAt = (index: number, patch: Partial<{ key: string; value: string }>) => {
+  const setFieldAt = (
+    index: number,
+    patch: Partial<{ key: string; value: string }>
+  ) => {
     const fields = value.fields.map((field, i) =>
       i === index ? { ...field, ...patch } : field
     );
@@ -870,7 +887,10 @@ function BatchMarksSection({
                     <Input
                       value={field.key}
                       placeholder={t('batchFieldKeyPlaceholder')}
-                      className={cn('h-8 text-xs', error && 'border-destructive')}
+                      className={cn(
+                        'h-8 text-xs',
+                        error && 'border-destructive'
+                      )}
                       onChange={(e) =>
                         setFieldAt(index, {
                           key: normalizeCustomKey(e.target.value),
@@ -881,14 +901,16 @@ function BatchMarksSection({
                       value={field.value}
                       placeholder={t('batchFieldValuePlaceholder')}
                       className="h-8 text-xs"
-                      onChange={(e) => setFieldAt(index, { value: e.target.value })}
+                      onChange={(e) =>
+                        setFieldAt(index, { value: e.target.value })
+                      }
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       className="size-8 shrink-0 cursor-pointer"
-                      aria-label={t('batchFieldRemove')}
+                      tooltip={t('batchFieldRemove')}
                       onClick={() =>
                         onChange({
                           ...value,
@@ -961,7 +983,8 @@ function BatchMarksSection({
                     enrichExisting: checked === true,
                     // Overwriting without filling is not a state that means
                     // anything, so the switch resets with the checkbox.
-                    overwriteExisting: checked === true && value.overwriteExisting,
+                    overwriteExisting:
+                      checked === true && value.overwriteExisting,
                   })
                 }
               />

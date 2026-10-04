@@ -43,13 +43,26 @@ describe('KpiCardsGrid', () => {
     expect(container.firstChild).toHaveClass('xl:grid-cols-4');
   });
 
-  it.each([2, 3, 4, 5, 6, 7, 8] as const)(
+  it.each([2, 3, 4] as const)(
     'aceita a quantidade de colunas customizada: %s',
     (columns) => {
       const { container } = render(
         <KpiCardsGrid items={items} columns={columns} />,
       );
       expect(container.firstChild).toHaveClass('grid');
+    },
+  );
+
+  it.each([5, 6, 7, 8] as const)(
+    'com %s colunas vira faixa rolável no celular e grade a partir de sm',
+    (columns) => {
+      const { container } = render(
+        <KpiCardsGrid items={items} columns={columns} />,
+      );
+      expect(container.firstChild).toHaveClass('flex', 'overflow-x-auto', 'sm:grid');
+      for (const card of screen.getAllByTestId('kpi-card')) {
+        expect(card.getAttribute('data-class')).toContain('shrink-0');
+      }
     },
   );
 

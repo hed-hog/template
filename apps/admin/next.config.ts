@@ -6,7 +6,7 @@ const isStandaloneBuild =
 
 const nextConfig: NextConfig = {
   output: isStandaloneBuild ? 'standalone' : undefined,
-  transpilePackages: ['@hed-hog/next-app-provider', '@hed-hog/next-build-skew'],
+  transpilePackages: ['@hed-hog/next-app-provider', '@hed-hog/next-build-skew', '@hed-hog/editor-player', '@hed-hog/editor-recording'],
   // Página prerenderizada responde `s-maxage=60, stale-while-revalidate=<expireTime - 60>`,
   // e o padrão do Next para `expireTime` é um ano. `stale-while-revalidate` vale
   // também para o cache privado do navegador: quem já visitou recebe o HTML de
