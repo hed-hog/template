@@ -8,5 +8,6 @@
  * lados. Reexportado pela entrada principal: `import { paginationEnvelope } from '@hed-hog/api-types'`.
  */
 export * from './pagination';
+export * from './sort';
 export * from './error';
 export * from './crypto';
