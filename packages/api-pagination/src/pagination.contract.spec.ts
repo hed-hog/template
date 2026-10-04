@@ -231,7 +231,11 @@ describe('contrato de ordenação — guardas estáticas', () => {
     const novos = semEnum.filter((f) => !DIVIDA_CONHECIDA.includes(f));
     expect(novos).toEqual([]);
 
-    const corrigidos = DIVIDA_CONHECIDA.filter((f) => !semEnum.includes(f));
+    // Só cobra a saída da lista de quem está instalado: no projeto gerado pelo
+    // `hedhog new` a maioria destas libraries não existe em `libraries/`.
+    const corrigidos = DIVIDA_CONHECIDA.filter(
+      (f) => fs.existsSync(path.join(LIBS, f)) && !semEnum.includes(f),
+    );
     expect(corrigidos).toEqual([]);
   });
 });
