@@ -11973,7 +11973,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/duplicate-class-sheet.tsx"
       ],
-      "loc": 1954,
+      "loc": 2243,
       "i18nNamespaces": [
         "lms.ClassesPage",
         "lms.ClassesPage.deleteDialog",
@@ -14261,7 +14261,8 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/create-lms-instructor-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/create-lms-person-sheet.tsx",
-        "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/page.tsx"
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/page.tsx"
       ],
       "hasChildren": false
     },

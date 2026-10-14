@@ -19,6 +19,13 @@ type UseColumnPreferencesOptions = {
   columnIds: string[];
   /** Colunas que nunca podem ser ocultadas (ex: coluna de ações). */
   requiredIds?: string[];
+  /**
+   * Colunas que nascem ocultas. Valem para quem não tem preferência salva e
+   * também para quem tem, enquanto a coluna não estiver na ordem salva — é o
+   * caso da coluna que acabou de ser criada. Depois que a preferência é gravada
+   * com ela, a escolha do usuário é a que vale.
+   */
+  defaultHiddenIds?: string[];
   version?: number;
 };
 
@@ -34,6 +41,26 @@ function sanitizeOrder(order: unknown, columnIds: string[]): string[] {
     : [];
   const missing = columnIds.filter((id) => !known.includes(id));
   return [...known, ...missing];
+}
+
+function resolveHidden(
+  stored: { order: unknown; hidden: unknown } | null,
+  columnIds: string[],
+  requiredIds: string[],
+  defaultHiddenIds: string[]
+): string[] {
+  const hidden = sanitizeHidden(stored?.hidden, columnIds, requiredIds);
+  const storedOrder: unknown[] = Array.isArray(stored?.order)
+    ? stored.order
+    : [];
+  const unseenDefaults = defaultHiddenIds.filter(
+    (id) =>
+      columnIds.includes(id) &&
+      !requiredIds.includes(id) &&
+      !storedOrder.includes(id) &&
+      !hidden.includes(id)
+  );
+  return [...hidden, ...unseenDefaults];
 }
 
 function sanitizeHidden(
@@ -61,6 +88,7 @@ export function useColumnPreferences({
   storageKey,
   columnIds,
   requiredIds = [],
+  defaultHiddenIds = [],
   version = 1,
 }: UseColumnPreferencesOptions) {
   const { accessToken, user } = useApp();
@@ -75,6 +103,7 @@ export function useColumnPreferences({
 
   const columnIdsKey = columnIds.join('\0');
   const requiredIdsKey = requiredIds.join('\0');
+  const defaultHiddenIdsKey = defaultHiddenIds.join('\0');
 
   const readStored = useCallback((): StoredColumnPreferences | null => {
     if (!isClient()) return null;
@@ -108,7 +137,7 @@ export function useColumnPreferences({
     const stored = readStored();
     return {
       order: sanitizeOrder(stored?.order, columnIds),
-      hidden: sanitizeHidden(stored?.hidden, columnIds, requiredIds),
+      hidden: resolveHidden(stored, columnIds, requiredIds, defaultHiddenIds),
     };
   });
 
@@ -121,10 +150,10 @@ export function useColumnPreferences({
     const stored = readStored();
     setPrefs({
       order: sanitizeOrder(stored?.order, columnIds),
-      hidden: sanitizeHidden(stored?.hidden, columnIds, requiredIds),
+      hidden: resolveHidden(stored, columnIds, requiredIds, defaultHiddenIds),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnIdsKey, requiredIdsKey, ownerKey, storageKey]);
+  }, [columnIdsKey, requiredIdsKey, defaultHiddenIdsKey, ownerKey, storageKey]);
 
   useEffect(() => {
     if (!isClient()) return;
@@ -181,9 +210,12 @@ export function useColumnPreferences({
   );
 
   const reset = useCallback(() => {
-    setPrefs({ order: [...columnIds], hidden: [] });
+    setPrefs({
+      order: [...columnIds],
+      hidden: resolveHidden(null, columnIds, requiredIds, defaultHiddenIds),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnIdsKey]);
+  }, [columnIdsKey, requiredIdsKey, defaultHiddenIdsKey]);
 
   const visibility = useMemo(() => {
     const map: Record<string, boolean> = {};

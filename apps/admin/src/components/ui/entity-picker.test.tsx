@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -1471,5 +1477,95 @@ describe('EntityPicker', () => {
     );
 
     expect(screen.getAllByText('AS')).toHaveLength(2);
+  });
+});
+
+describe('EntityPicker — modo múltiplo', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'ResizeObserver',
+      vi.fn(() => ({
+        disconnect: vi.fn(),
+        observe: vi.fn(),
+        unobserve: vi.fn(),
+      })),
+    );
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
+  function Multi({
+    initial = [],
+    onValuesChange,
+  }: {
+    initial?: Array<string | number>;
+    onValuesChange?: (
+      values: Array<string | number>,
+      options: EntityPickerOption[],
+    ) => void;
+  }) {
+    const [values, setValues] = useState<Array<string | number>>(initial);
+    return (
+      <EntityPicker
+        multiple
+        values={values}
+        onValuesChange={(next, nextOptions) => {
+          setValues(next);
+          onValuesChange?.(next, nextOptions);
+        }}
+        valueType="number"
+        placeholder="Pessoas"
+        options={options}
+        allowEmptySelection
+        emptySelectionLabel="Qualquer pessoa"
+        selectedCountLabel={(count) => `${count} pessoas`}
+        getOptionAvatar={() => ({ src: null })}
+      />
+    );
+  }
+
+  const trigger = () => screen.getByTestId('popover-trigger');
+
+  it('sem seleção mostra o rótulo de "qualquer" e ele vem marcado', () => {
+    render(<Multi />);
+
+    expect(trigger()).toHaveTextContent('Qualquer pessoa');
+    const anyRow = screen.getAllByText('Qualquer pessoa').at(-1) as HTMLElement;
+    expect(
+      anyRow.closest('[cmdk-item]')?.querySelector('[data-checked]'),
+    ).toHaveAttribute('data-checked', 'true');
+  });
+
+  it('marca e desmarca opções sem perder as outras', () => {
+    const onValuesChange = vi.fn();
+    render(<Multi onValuesChange={onValuesChange} />);
+
+    fireEvent.click(screen.getByText('Alice'));
+    expect(onValuesChange).toHaveBeenLastCalledWith([1], [options[0]]);
+    expect(trigger()).toHaveTextContent('Alice');
+
+    fireEvent.click(screen.getByText('Carla'));
+    expect(onValuesChange).toHaveBeenLastCalledWith(
+      [1, 3],
+      [options[0], options[2]],
+    );
+    expect(trigger()).toHaveTextContent('2 pessoas');
+
+    fireEvent.click(screen.getByText('Alice'));
+    expect(onValuesChange).toHaveBeenLastCalledWith([3], [options[2]]);
+    expect(trigger()).toHaveTextContent('Carla');
+  });
+
+  it('"qualquer" e o X limpam a seleção', () => {
+    const onValuesChange = vi.fn();
+    render(<Multi initial={[1, 2]} onValuesChange={onValuesChange} />);
+
+    expect(trigger()).toHaveTextContent('2 pessoas');
+    fireEvent.click(screen.getByText('Qualquer pessoa'));
+    expect(onValuesChange).toHaveBeenLastCalledWith([], []);
+    expect(trigger()).toHaveTextContent('Qualquer pessoa');
+
+    fireEvent.click(screen.getByText('Bob'));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(onValuesChange).toHaveBeenLastCalledWith([], []);
   });
 });

@@ -42,6 +42,8 @@ type UseEntityColumnTableOptions<TData extends RowData> = {
    * `@tanstack/react-table` já posiciona depois quem não está na lista).
    */
   columnIds?: string[];
+  /** Colunas que nascem ocultas — ver `useColumnPreferences`. */
+  defaultHiddenIds?: string[];
   getRowId?: TableOptions<TData>['getRowId'];
 };
 
@@ -56,6 +58,7 @@ export function useEntityColumnTable<TData extends RowData>({
   columns,
   data,
   columnIds,
+  defaultHiddenIds,
   getRowId,
 }: UseEntityColumnTableOptions<TData>) {
   const resolvedColumnIds = useMemo(
@@ -70,6 +73,7 @@ export function useEntityColumnTable<TData extends RowData>({
   const columnPrefs = useColumnPreferences({
     storageKey,
     columnIds: resolvedColumnIds,
+    defaultHiddenIds,
   });
 
   const table = useReactTable({

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Check,
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
@@ -151,6 +152,22 @@ function EntityPickerAvatarView({
   );
 }
 
+/** Caixinha de marcação das linhas no modo múltiplo. */
+function MultiCheck({ checked }: { checked: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      data-checked={checked}
+      className={cn(
+        'flex size-4 shrink-0 items-center justify-center rounded-sm border border-primary',
+        checked ? 'bg-primary text-primary-foreground' : 'opacity-50'
+      )}
+    >
+      {checked ? <Check className="size-3" /> : null}
+    </span>
+  );
+}
+
 export type EntityPickerCreateContext<TOption> = {
   values: Record<string, string>;
   setValue: (name: string, value: string) => void;
@@ -239,6 +256,18 @@ export type EntityPickerProps<
     label: string;
   }) => ReactNode;
   isOptionDisabled?: (option: TOption) => boolean;
+  /**
+   * Seleção múltipla (filtros de listagem). Controlado por `values`/
+   * `onValuesChange` — `value`, `onChange` e `form` ficam de fora. Clicar numa
+   * opção marca/desmarca sem fechar a lista; com `allowEmptySelection`, o item
+   * `emptySelectionLabel` ("Qualquer curso") limpa tudo e é o que aparece
+   * marcado sem seleção.
+   */
+  multiple?: boolean;
+  values?: Array<string | number>;
+  onValuesChange?: (values: Array<string | number>, options: TOption[]) => void;
+  /** Rótulo do campo com mais de um item marcado. Padrão: "N selecionados". */
+  selectedCountLabel?: (count: number) => string;
   // When false, selecting an option keeps the popover open instead of closing
   // it — used by multi-select wrappers (e.g. FacetedMultiPicker) so several
   // items can be toggled in one open/close cycle. Defaults to true so every
@@ -435,6 +464,10 @@ export function EntityPicker<
   renderOption,
   renderSelectedValue,
   isOptionDisabled,
+  multiple = false,
+  values,
+  onValuesChange,
+  selectedCountLabel,
   closeOnSelect = true,
   renderListHeader,
   fillHeight = false,
@@ -470,6 +503,11 @@ export function EntityPicker<
   const [lastSelectedOption, setLastSelectedOption] = useState<TOption | null>(
     null
   );
+  // Modo múltiplo: as opções marcadas, por chave. A lista remota muda a cada
+  // busca, e o campo continua precisando do rótulo e do avatar de cada uma.
+  const [multiSelectedCache, setMultiSelectedCache] = useState<
+    Map<string, TOption>
+  >(() => new Map());
   const [visibleCount, setVisibleCount] = useState(visibleCountStep);
   const parentScrollContainerRef = useRef<HTMLElement | null>(null);
   const parentScrollTopRef = useRef(0);
@@ -487,6 +525,7 @@ export function EntityPicker<
   const resolvedEditActionLabel =
     editActionLabel ?? (entityLabel ? `Editar ${entityLabel}` : 'Editar');
   const canCreate =
+    !multiple &&
     showCreateButton &&
     Boolean(onCreate || renderCreateContent || onCreateClick);
   const resolvedCreateTitle =
@@ -937,7 +976,14 @@ export function EntityPicker<
         ? String(currentRawValue)
         : '';
 
-    const hasValue = normalizedValue.length > 0;
+    const multiKeys = multiple ? (values ?? []).map(String) : [];
+    const findMultiOption = (key: string) =>
+      knownOptions.find(
+        (option) => String(optionValueResolver(option)) === key
+      ) ?? multiSelectedCache.get(key);
+    const hasValue = multiple
+      ? multiKeys.length > 0
+      : normalizedValue.length > 0;
     const selectedOption =
       knownOptions.find(
         (option) => String(optionValueResolver(option)) === normalizedValue
@@ -966,7 +1012,88 @@ export function EntityPicker<
           : (initialSelectedAvatar ?? { fallback: displayLabel })
         : null;
 
-    const displayValue = renderSelectedValue ? (
+    const renderMultiDisplay = () => {
+      if (multiKeys.length === 0) {
+        return emptySelectionLabel ?? resolvedEmptyLabel;
+      }
+
+      const entries = multiKeys.map((key) => {
+        const option = findMultiOption(key);
+        const optionLabel = option ? optionLabelResolver(option) : `ID #${key}`;
+        return {
+          key,
+          label: optionLabel,
+          avatar: getOptionAvatar
+            ? option
+              ? getOptionAvatar(option)
+              : { fallback: optionLabel }
+            : null,
+        };
+      });
+      const text =
+        entries.length === 1
+          ? (entries[0]?.label ?? '')
+          : (selectedCountLabel?.(entries.length) ??
+            `${entries.length} selecionados`);
+      const avatars = entries
+        .filter((entry) => entry.avatar)
+        .slice(0, 3);
+
+      return (
+        <span className="flex min-w-0 items-center gap-2">
+          {avatars.length > 0 ? (
+            <span className="flex shrink-0 items-center -space-x-1.5">
+              {avatars.map((entry) => (
+                <EntityPickerAvatarView
+                  key={entry.key}
+                  avatar={entry.avatar as EntityPickerAvatar}
+                  label={entry.label}
+                  shape={avatarShape}
+                  className="size-5 ring-2 ring-background"
+                />
+              ))}
+            </span>
+          ) : null}
+          <span className="truncate">{text}</span>
+        </span>
+      );
+    };
+
+    const toggleMultiOption = (option: TOption) => {
+      const rawValue = optionValueResolver(option);
+      if (rawValue === undefined || rawValue === null || rawValue === '') {
+        return;
+      }
+
+      const key = String(rawValue);
+      const current = values ?? [];
+      const isMarked = current.some((item) => String(item) === key);
+      const nextValues = isMarked
+        ? current.filter((item) => String(item) !== key)
+        : [...current, valueType === 'number' ? Number(rawValue) : rawValue];
+
+      const nextCache = new Map(multiSelectedCache);
+      nextCache.set(key, option);
+      setMultiSelectedCache(nextCache);
+
+      const nextOptions = nextValues
+        .map(
+          (item) =>
+            nextCache.get(String(item)) ??
+            knownOptions.find(
+              (known) => String(optionValueResolver(known)) === String(item)
+            )
+        )
+        .filter((item): item is TOption => Boolean(item));
+
+      onValuesChange?.(nextValues, nextOptions);
+    };
+
+    const clearMulti = () => onValuesChange?.([], []);
+
+    const displayValue = multiple ? (
+      renderMultiDisplay()
+    ) : renderSelectedValue ? (
       renderSelectedValue({
         option: selectedOption,
         value: normalizedValue,
@@ -1180,19 +1307,32 @@ export function EntityPicker<
               <CommandItem
                 value="__empty__"
                 onSelect={() => {
-                  setCurrentValue(valueType === 'number' ? null : '', null);
-                  setSelectedLabel('');
+                  if (multiple) {
+                    clearMulti();
+                  } else {
+                    setCurrentValue(valueType === 'number' ? null : '', null);
+                    setSelectedLabel('');
+                  }
                   setSearch('');
                   setOpen(false);
                 }}
               >
-                {emptySelectionLabel ?? resolvedEmptyLabel}
+                {multiple ? (
+                  <span className="flex min-w-0 items-center gap-2">
+                    <MultiCheck checked={!hasValue} />
+                    {emptySelectionLabel ?? resolvedEmptyLabel}
+                  </span>
+                ) : (
+                  (emptySelectionLabel ?? resolvedEmptyLabel)
+                )}
               </CommandItem>
             ) : null}
 
             {visibleOptions.map((option, index) => {
               const optionValue = optionValueResolver(option);
-              const isSelected = String(optionValue) === normalizedValue;
+              const isSelected = multiple
+                ? multiKeys.includes(String(optionValue))
+                : String(optionValue) === normalizedValue;
               const optionDisabled = isOptionDisabled?.(option) ?? false;
               // cmdk identifica cada item pelo `value` (não pela `key` do React). Usar o
               // texto de busca causava colisão entre opções de rótulo idêntico e `id`
@@ -1217,6 +1357,10 @@ export function EntityPicker<
                     if (optionDisabled) {
                       return;
                     }
+                    if (multiple) {
+                      toggleMultiOption(option);
+                      return;
+                    }
                     setCurrentValue(optionValue ?? null, option);
                     setLastSelectedOption(option);
                     if (closeOnSelect) {
@@ -1234,6 +1378,7 @@ export function EntityPicker<
                     })
                   ) : (
                     <div className="flex min-w-0 items-center gap-2">
+                      {multiple ? <MultiCheck checked={isSelected} /> : null}
                       {optionAvatar ? (
                         <EntityPickerAvatarView
                           avatar={optionAvatar}
@@ -1385,7 +1530,11 @@ export function EntityPicker<
               className="h-10 w-10 shrink-0"
               disabled={disabled || isCreating}
               onClick={() => {
-                setCurrentValue(valueType === 'number' ? null : '', null);
+                if (multiple) {
+                  clearMulti();
+                } else {
+                  setCurrentValue(valueType === 'number' ? null : '', null);
+                }
                 setSearch('');
                 setSelectedLabel('');
                 setVisibleCount(visibleCountStep);
@@ -1397,7 +1546,7 @@ export function EntityPicker<
             </Button>
           ) : null}
 
-          {onEditSelection && hasValue ? (
+          {onEditSelection && hasValue && !multiple ? (
             <Button
               type="button"
               variant="outline"

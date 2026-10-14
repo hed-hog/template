@@ -98,7 +98,7 @@ describe('<FileTypeIcon />', () => {
     expect(img.getAttribute('src')).toContain(getIconForFile('file.pdf'));
   });
 
-  it('cai no ícone de fallback (lucide File) quando a imagem falha ao carregar', () => {
+  it('cai no ícone de fallback (lucide File) quando todas as imagens falham ao carregar', () => {
     const { container } = render(
       <FileTypeIcon
         filename="report.pdf"
@@ -106,11 +106,19 @@ describe('<FileTypeIcon />', () => {
         className="custom-class"
       />
     );
-    const img = container.querySelector('img') as HTMLImageElement;
-    expect(img).toBeInTheDocument();
+    expect(container.querySelector('img')).toBeInTheDocument();
 
-    fireEvent.error(img);
+    // Antes do lucide, tenta o ícone específico, o da categoria e o default.
+    const tried: string[] = [];
+    let img = container.querySelector('img');
+    while (img && tried.length < 5) {
+      tried.push(img.getAttribute('src') ?? '');
+      fireEvent.error(img);
+      img = container.querySelector('img');
+    }
 
+    expect(tried.length).toBeGreaterThan(1);
+    expect(tried.at(-1)).toMatch(/default_file\.svg$/);
     expect(container.querySelector('img')).not.toBeInTheDocument();
     const fallbackIcon = container.querySelector('svg.custom-class');
     expect(fallbackIcon).toBeInTheDocument();
