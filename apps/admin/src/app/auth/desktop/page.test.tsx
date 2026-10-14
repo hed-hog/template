@@ -21,6 +21,8 @@ vi.mock('next-intl', () => ({
 }));
 
 let mockAccessToken: string | undefined;
+let mockUserEmail: string | undefined;
+let mockSettings: Record<string, string> = {};
 const mockRequest = vi.fn();
 const mockSetUrlAfterLogin = vi.fn();
 
@@ -29,18 +31,22 @@ vi.mock('@hed-hog/next-app-provider', () => ({
     accessToken: mockAccessToken,
     request: mockRequest,
     setUrlAfterLogin: mockSetUrlAfterLogin,
+    getSettingValue: (slug: string) => mockSettings[slug],
+    user: mockUserEmail ? { name: 'Usuária Teste' } : undefined,
+    userEmail: mockUserEmail,
+    userPhotoUrl: undefined,
+    userAbbr: 'UT',
   }),
 }));
 
 import DesktopAuthPage from './page';
 
-function makeJwt(payload: unknown): string {
-  return `header.${btoa(JSON.stringify(payload))}.signature`;
-}
 
 describe('DesktopAuthPage', () => {
   beforeEach(() => {
     mockAccessToken = undefined;
+    mockUserEmail = undefined;
+    mockSettings = {};
     mockSearchParams = new URLSearchParams();
     mockPush.mockClear();
     mockReplace.mockClear();
@@ -77,41 +83,41 @@ describe('DesktopAuthPage', () => {
     expect(mockReplace).toHaveBeenCalledWith('/login');
   });
 
-  it('com accessToken válido: renderiza a UI completa e exibe o e-mail extraído do JWT', () => {
-    mockAccessToken = makeJwt({ email: 'user@example.com' });
+  it('com accessToken: renderiza o consentimento com o usuário logado e o app', () => {
+    mockAccessToken = 'token';
+    mockUserEmail = 'user@example.com';
     mockSearchParams = new URLSearchParams();
 
     render(<DesktopAuthPage />);
 
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByText('subtitle')).toBeInTheDocument();
+    expect(screen.getByText('connectingAs')).toBeInTheDocument();
+    expect(screen.getByText('Usuária Teste')).toBeInTheDocument();
     expect(screen.getByText('user@example.com')).toBeInTheDocument();
+    expect(screen.getByAltText('appName')).toHaveAttribute(
+      'src',
+      '/app-logos/hedhog-desktop.png',
+    );
     expect(screen.getByText('authorize')).toBeInTheDocument();
     expect(screen.getByText('cancel')).toBeInTheDocument();
   });
 
-  it('com accessToken malformado: extractEmailFromJwt cai no catch e não exibe e-mail', () => {
-    mockAccessToken = 'token-sem-ponto-valido';
+  it('usa o nome do sistema das settings e cai em "HedHog" sem ele', () => {
+    mockAccessToken = 'token';
     mockSearchParams = new URLSearchParams();
 
+    const { unmount } = render(<DesktopAuthPage />);
+    expect(screen.getByAltText('HedHog')).toBeInTheDocument();
+    unmount();
+
+    mockSettings = { 'system-name': 'Minha Empresa' };
     render(<DesktopAuthPage />);
-
-    expect(screen.getByText('title')).toBeInTheDocument();
-    expect(screen.queryByText(/@/)).not.toBeInTheDocument();
-  });
-
-  it('com accessToken cujo payload tem email não-string: não exibe e-mail', () => {
-    mockAccessToken = makeJwt({ email: 12345 });
-    mockSearchParams = new URLSearchParams();
-
-    render(<DesktopAuthPage />);
-
-    expect(screen.getByText('title')).toBeInTheDocument();
-    expect(screen.queryByText(/@/)).not.toBeInTheDocument();
+    expect(screen.getByAltText('Minha Empresa')).toBeInTheDocument();
   });
 
   it('ao clicar em autorizar com sucesso: mostra tela de sucesso e navega via window.location.href', async () => {
-    mockAccessToken = makeJwt({ email: 'user@example.com' });
+    mockAccessToken = 'token';
     mockSearchParams = new URLSearchParams({ scheme: 'myscheme' });
     mockRequest.mockResolvedValueOnce({
       data: { accessToken: 'at-1', refreshToken: 'rt-1' },
@@ -132,7 +138,7 @@ describe('DesktopAuthPage', () => {
   });
 
   it('ao clicar em autorizar com falha: exibe mensagem de erro e reabilita o botão', async () => {
-    mockAccessToken = makeJwt({ email: 'user@example.com' });
+    mockAccessToken = 'token';
     mockSearchParams = new URLSearchParams();
     mockRequest.mockRejectedValueOnce(new Error('boom'));
 
@@ -168,7 +174,7 @@ describe('DesktopAuthPage', () => {
   });
 
   it('ao clicar em cancelar: navega para /', () => {
-    mockAccessToken = makeJwt({ email: 'user@example.com' });
+    mockAccessToken = 'token';
     mockSearchParams = new URLSearchParams();
 
     render(<DesktopAuthPage />);

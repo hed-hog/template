@@ -19,6 +19,10 @@ vi.mock('@/components/mcp-floating-chat', () => ({
   McpFloatingChat: () => <div data-testid="mcp-floating-chat" />,
 }));
 
+vi.mock('@/components/support/support-sheets', () => ({
+  SupportSheets: () => <div data-testid="support-sheets" />,
+}));
+
 vi.mock('@/components/page/guard-page', () => ({
   GuardPage: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="guard-page">{children}</div>
@@ -52,6 +56,7 @@ describe('(app) Layout', () => {
     expect(screen.getByTestId('app-sidebar')).toBeInTheDocument();
     expect(screen.getByTestId('maintenance-alert-banner')).toBeInTheDocument();
     expect(screen.getByTestId('mcp-floating-chat')).toBeInTheDocument();
+    expect(screen.getByTestId('support-sheets')).toBeInTheDocument();
     expect(screen.getByTestId('guard-page')).toBeInTheDocument();
     expect(screen.getByTestId('sidebar-inset')).toBeInTheDocument();
   });
