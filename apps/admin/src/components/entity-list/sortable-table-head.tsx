@@ -22,6 +22,11 @@ export type SortableTableHeadProps = Omit<
      * coluna encolhe para o que sobra (a alça de arrastar, a seta de ordenação).
      */
     labelHidden?: boolean;
+    /**
+     * Conteúdo do cabeçalho no lugar do texto do `label` (checkbox "selecionar
+     * todos", por exemplo). O `label` continua valendo para o menu de colunas.
+     */
+    headContent?: ReactNode;
     /** Alça de arrastar (ex.: grip icon) renderizada antes do rótulo. */
     dragHandle?: ReactNode;
   };
@@ -40,6 +45,7 @@ export function SortableTableHead({
   label,
   align = 'left',
   labelHidden,
+  headContent,
   sortDirection,
   onSort,
   className,
@@ -48,11 +54,9 @@ export function SortableTableHead({
 }: SortableTableHeadProps) {
   const t = useTranslations('core.TableSort');
 
-  const labelNode = labelHidden ? (
-    <span className="sr-only">{label}</span>
-  ) : (
-    label
-  );
+  const labelNode =
+    headContent ??
+    (labelHidden ? <span className="sr-only">{label}</span> : label);
 
   const alignClass =
     align === 'right'

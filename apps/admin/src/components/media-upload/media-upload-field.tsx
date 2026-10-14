@@ -47,6 +47,12 @@ export interface MediaUploadFieldProps {
   description?: string;
   /** Upload destination folder passed to `POST /file`. */
   destination: string;
+  /**
+   * Endpoint that receives the multipart upload and answers `{ id }`. Defaults
+   * to the core `POST /file`, which only `admin`/`admin-access` can call —
+   * libraries whose role lacks it expose their own upload route.
+   */
+  uploadUrl?: string;
   labels: MediaUploadLabels;
   /** Base name (without extension) used for downloads. */
   downloadName?: string;
@@ -88,6 +94,7 @@ export function MediaUploadField({
   label,
   description,
   destination,
+  uploadUrl = '/file',
   labels,
   downloadName,
   disabled,
@@ -147,7 +154,7 @@ export function MediaUploadField({
       // No maxWidth/maxHeight: keep the original aspect (only the global
       // image-max-dimension cap applies). Videos pass through untouched.
       const res = await request<{ id?: number }>({
-        url: '/file',
+        url: uploadUrl,
         method: 'POST',
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data' },

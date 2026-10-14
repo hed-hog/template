@@ -9,6 +9,12 @@ export type MailAttachment = {
 
 export type Mail = {
   attachments?: MailAttachment[];
+  /**
+   * Cabecalhos extras da mensagem (ex.: `List-Unsubscribe`). Com cabecalho ou
+   * anexo, o SES sai por `SendRawEmail`: o `SendEmail` simples nao carrega nenhum
+   * dos dois.
+   */
+  headers?: Record<string, string>;
   mail_id?: number;
   /**
    * Envia o corpo verbatim, sem layout base. Para remetentes que ja montam o

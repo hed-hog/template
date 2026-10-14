@@ -221,6 +221,7 @@ What the column fields do:
 | `align` | alinhamento do `<th>`; o da célula vai em `className` |
 | `className` / `headClassName` | classe da célula / do `<th>` (largura fixa, truncate, cor) |
 | `hideable: false` | coluna travada: fora do esconde-mostra e sem alça de arrastar |
+| `draggable: true` | com `hideable: false`, a coluna fica sempre visível mas mantém a alça (código, nome) |
 | `stopClickPropagation` | a célula não deixa o clique subir para a linha (célula de ações) |
 | `cell` | o conteúdo, a partir do item |
 
@@ -382,6 +383,10 @@ Behaviour worth knowing:
 - `EntityTable` renders the whole `<Table>` (header + body), so it already wraps itself in
   `ColumnDragContext` — don't wrap it again. Use `rowProps`/`cellClassName` for the per-row/per-cell
   customization (`onDoubleClick`, `className`) that pages used to put directly on `TableRow`/`TableCell`.
+- Wide tables keep their horizontal scrollbar pinned to the bottom of the window
+  (`StickyHorizontalScroll`), in both modes: with many rows the native bar would only show up after the
+  last row. Nothing to configure — give the table a `min-w-*` via `tableClassName`/`className` and it
+  appears whenever the columns overflow.
 - `getSortProps` is optional — omit it on a page with no server-side sort, and columns with
   `meta.sortField` simply render without the sort affordance.
 - Still needs `ColumnDef` + real per-column `cell` functions; a hand-rolled `<TableHead>`/`<TableCell>`

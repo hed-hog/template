@@ -3,7 +3,6 @@ import { Prisma } from '@hed-hog/api-prisma';
 import { HttpService } from '@nestjs/axios';
 import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as mimemessage from 'mimemessage';
 import { firstValueFrom } from 'rxjs';
 import { MailConfigurationTypeEnum } from './enums/mail-configuration-type.enum';
 import type { MailModuleOptions } from './interfaces/mail-module-options.interface';
@@ -723,87 +722,49 @@ export class MailService implements OnModuleInit {
     }
   }
 
+  /**
+   * Monta a mensagem MIME completa (multipart/alternative com HTML e texto,
+   * anexos e cabecalhos extras) pelo MailComposer do nodemailer.
+   *
+   * `keepBcc` so vale para o Gmail, que le o Bcc do cabecalho e o remove antes
+   * de entregar; no SES os destinatarios ocultos vao em `Destinations`.
+   */
+  static async buildMimeMessage(mail: Mail, options: { keepBcc?: boolean } = {}): Promise<Buffer> {
+    // Caminho com `index.js`: com moduleResolution NodeNext o import() resolve
+    // como ESM, que recusa importar diretório (ERR_UNSUPPORTED_DIR_IMPORT).
+    const { default: MailComposer } = await import('nodemailer/lib/mail-composer/index.js');
+
+    const composer = new MailComposer({
+      from: mail.from,
+      to: mail.to,
+      cc: mail.cc,
+      bcc: mail.bcc,
+      replyTo: mail.replyTo,
+      subject: mail.subject,
+      html: mail.body,
+      text: MailService.htmlToPlainText(mail.body ?? ''),
+      headers: mail.headers,
+      attachments: (mail.attachments ?? []).map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: attachment.contentType,
+      })),
+    } as any);
+
+    const message = composer.compile();
+    (message as any).keepBcc = Boolean(options.keepBcc);
+
+    return message.build();
+  }
+
   async createRawEmail(mail: Mail) {
-    if (mail.attachments instanceof Array && mail.attachments?.length) {
-      const mailContent = mimemessage.factory({
-        contentType: 'multipart/mixed;charset=utf-8',
-        body: [],
-      });
+    const message = await MailService.buildMimeMessage(mail, { keepBcc: true });
 
-      mailContent.header('From', mail.from);
-      mailContent.header('To', mail.to);
-      mailContent.header('Subject', mail.subject);
-
-      const replyTo = MailService.formatReplyTo(mail.replyTo);
-      if (replyTo) {
-        mailContent.header('Reply-To', replyTo);
-      }
-
-      const alternateEntity = mimemessage.factory({
-        contentType: 'multipart/alternate',
-        body: [],
-      });
-
-      const htmlEntity = mimemessage.factory({
-        contentType: 'text/html;charset=utf-8',
-        body: mail.body,
-      });
-
-      alternateEntity.body.push(htmlEntity);
-
-      mailContent.body.push(alternateEntity);
-
-      await Promise.all(
-        (mail.attachments ?? []).map(async (attachment) => {
-          const attachmentEntity = mimemessage.factory({
-            contentType: attachment.contentType,
-            contentTransferEncoding: 'base64',
-            body: attachment.content
-              .toString('base64')
-              .replace(/([^\0]{76})/g, '$1\n'),
-          });
-
-          attachmentEntity.header(
-            'Content-Disposition',
-            `attachment; filename="${attachment.filename}"`,
-          );
-
-          mailContent.body.push(attachmentEntity);
-        }),
-      );
-
-      const messageString = mailContent.toString();
-      const encodedMessage = Buffer.from(messageString)
-        .toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-
-      return encodedMessage;
-    } else {
-      const encodedSubject = `=?utf-8?B?${Buffer.from(mail.subject).toString('base64')}?=`;
-
-      const replyTo = MailService.formatReplyTo(mail.replyTo);
-
-      const messageParts = [
-        'Content-Type: text/html;charset=utf-8',
-        `From: ${mail.from}`,
-        `To: ${mail.to instanceof Array ? mail.to.join(',') : mail.to}`,
-        ...(replyTo ? [`Reply-To: ${replyTo}`] : []),
-        `Subject: ${encodedSubject}`,
-        '',
-        mail.body,
-      ];
-
-      const message = messageParts.join('\n');
-      const encodedMessage = Buffer.from(message)
-        .toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-
-      return encodedMessage;
-    }
+    return message
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
   }
 
   async sendWithSMTP(mail: Mail) {
@@ -864,7 +825,13 @@ export class MailService implements OnModuleInit {
       bcc: mail.bcc,
       replyTo: mail.replyTo,
       priority: mail.priority,
-    });
+      headers: mail.headers,
+      attachments: (mail.attachments ?? []).map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: attachment.contentType,
+      })),
+    } as any);
 
     this.log('Email sent:', result);
 
@@ -951,55 +918,27 @@ export class MailService implements OnModuleInit {
     // o SES recusa o `Source` exatamente como recusa um destinatario sujo.
     const source = MailService.splitAddresses(from)[0] ?? '';
 
-    if (mail.attachments instanceof Array && mail.attachments.length > 0) {
-      const mailContent = mimemessage.factory({
-        contentType: 'multipart/mixed',
-        body: [],
-      });
+    const hasAttachments = mail.attachments instanceof Array && mail.attachments.length > 0;
+    const hasHeaders = Boolean(mail.headers && Object.keys(mail.headers).length > 0);
 
-      mailContent.header('From', source);
-      mailContent.header('To', mail.to.join(', '));
-      mailContent.header('Subject', mail.subject);
+    // O `SendEmail` simples nao carrega anexo nem cabecalho extra: qualquer um
+    // dos dois manda a mensagem MIME inteira pelo `SendRawEmail`.
+    if (hasAttachments || hasHeaders) {
+      const raw = await MailService.buildMimeMessage({ ...mail, from: source });
 
-      const alternateEntity = mimemessage.factory({
-        contentType: 'multipart/alternate',
-        body: [],
-      });
+      const result = await sesClient.send(new SendRawEmailCommand({
+        Source: source,
+        Destinations: [
+          ...(mail.to as string[]),
+          ...(mail.cc as string[]),
+          ...(mail.bcc as string[]),
+        ],
+        RawMessage: { Data: raw },
+      }));
 
-      const htmlEntity = mimemessage.factory({
-        contentType: 'text/html;charset=utf-8',
-        body: mail.body,
-      });
+      this.log('Email sent:', result);
 
-      alternateEntity.body.push(htmlEntity);
-
-      mailContent.body.push(alternateEntity);
-
-      await Promise.all(
-        (mail.attachments ?? []).map((item) => {
-          const attachmentEntity = mimemessage.factory({
-            contentType: item.contentType,
-            contentTransferEncoding: 'base64',
-            body: item.content
-              .toString('base64')
-              .replace(/([^\0]{76})/g, '$1\n'),
-          });
-
-          attachmentEntity.header(
-            'Content-Disposition',
-            `attachment ;filename="${item.filename}"`,
-          );
-
-          mailContent.body.push(attachmentEntity);
-        }),
-      );
-
-      return {
-        result: await sesClient.send(new SendRawEmailCommand({
-          RawMessage: { Data: mailContent.toString() },
-        })),
-        mail,
-      };
+      return { result, mail };
     } else {
       const params = {
         Destination: {

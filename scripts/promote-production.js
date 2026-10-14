@@ -107,6 +107,8 @@ function runGit(args, options = {}) {
   const result = spawnSync('git', args, {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    // The default (1 MiB) overflows on `git show` of a large schema.prisma (ENOBUFS).
+    maxBuffer: 256 * 1024 * 1024,
   });
 
   const stdout = (result.stdout || '').trim();
@@ -430,6 +432,105 @@ function ensureNewMigrationsResolveSettingGroup() {
   }
 }
 
+// Tabelas em que um lock segurado durante o deploy derruba a API inteira: grandes, ou
+// escritas a cada requisicao. Criterio para entrar na lista e esse, nao o tamanho em si.
+//
+// O Prisma roda cada migration.sql numa transacao so, entao TODO lock tomado nela vale
+// ate o fim do arquivo. Em 2026-10-06, 20270402000000_core_service_account fez
+// ADD COLUMN (ACCESS EXCLUSIVE) + CREATE INDEX + FOREIGN KEY validada em `access_log`:
+// 24s de lock, e como toda requisicao grava em access_log, as 5 conexoes de cada pod
+// ficaram presas esperando — pool esgotado em todos os pods no mesmo segundo
+// (Sentry 7692792694, que estourou numa rota que nem toca access_log).
+const HOT_TABLES = ['access_log'];
+
+// Pura de proposito, como migrationResolvesGroupFromSibling: da para testar contra as
+// migrations reais sem git. Devolve os comandos que acusam (vazio = passa).
+//
+// O que acusa, sempre numa tabela de HOT_TABLES — o que torna a migration LONGA
+// segurando o lock:
+//   - CREATE INDEX sem CONCURRENTLY (le a tabela inteira);
+//   - FOREIGN KEY sem NOT VALID, nela ou apontando para ela (valida linha a linha, e
+//     a FK trava as duas pontas);
+//   - ALTER COLUMN ... TYPE (reescreve a tabela).
+function migrationLocksHotTable(sql) {
+  if (/^[ \t]*--[ \t]*hot-table-lock-ok:/m.test(sql)) return [];
+
+  const code = sql.replace(/--[^\n]*/g, '');
+  const table = `(?:"?public"?\\.)?"?(${HOT_TABLES.join('|')})"?(?![\\w"])`;
+  const alterHot = new RegExp(`\\bALTER\\s+TABLE\\s+(?:IF\\s+EXISTS\\s+)?(?:ONLY\\s+)?${table}`, 'i');
+  const indexHot = new RegExp(
+    `\\bCREATE\\s+(?:UNIQUE\\s+)?INDEX\\b(?!\\s+CONCURRENTLY)[\\s\\S]*?\\bON\\s+(?:ONLY\\s+)?${table}`,
+    'i',
+  );
+  const referencesHot = new RegExp(`\\bREFERENCES\\s+${table}`, 'i');
+
+  // `;` corta tambem dentro de bloco DO $$ … $$, e e isso que se quer: o ALTER TABLE
+  // la dentro vira um fragmento proprio.
+  const offenders = [];
+  for (const raw of code.split(';')) {
+    const stmt = raw.replace(/\s+/g, ' ').trim();
+    if (!stmt) continue;
+
+    const alter = stmt.match(alterHot);
+    const index = stmt.match(indexHot);
+    const isFk = /\bFOREIGN\s+KEY\b/i.test(stmt) && !/\bNOT\s+VALID\b/i.test(stmt);
+
+    let reason = null;
+    if (index) reason = `CREATE INDEX without CONCURRENTLY on ${index[1]}`;
+    else if (isFk && (alter || referencesHot.test(stmt))) {
+      reason = `FOREIGN KEY without NOT VALID touching ${(alter || stmt.match(referencesHot))[1]}`;
+    } else if (alter && /\bALTER\s+COLUMN\s+"?\w+"?\s+(?:SET\s+DATA\s+)?TYPE\b/i.test(stmt)) {
+      reason = `ALTER COLUMN ... TYPE on ${alter[1]}`;
+    }
+
+    if (reason) offenders.push(`${reason}: ${stmt.replace(/^DO \$\$ BEGIN /i, '').slice(0, 140)}`);
+  }
+  return offenders;
+}
+
+function ensureNewMigrationsAvoidHotTableLocks() {
+  if (process.env.ALLOW_HOT_TABLE_LOCK) return;
+
+  const repoRoot = runGit(['rev-parse', '--show-toplevel']).stdout;
+  const diff = runGit(
+    ['diff', '--name-only', '--diff-filter=A', 'origin/production...master', '--',
+      'apps/api/prisma/migrations'],
+    { allowFailure: true }
+  );
+  if (!diff.stdout) return;
+
+  const offenders = [];
+  for (const rel of diff.stdout.split('\n').map((l) => l.trim()).filter(Boolean)) {
+    if (!rel.endsWith('migration.sql')) continue;
+    const file = path.join(repoRoot, rel);
+    if (!fs.existsSync(file)) continue;
+
+    const found = migrationLocksHotTable(fs.readFileSync(file, 'utf8'));
+    if (found.length > 0) offenders.push({ rel, found });
+  }
+
+  if (offenders.length > 0) {
+    throw new Error(
+      `${offenders.length} new migration(s) hold a long lock on a hot table (${HOT_TABLES.join(', ')}):\n` +
+      offenders
+        .map(({ rel, found }) => `       - ${rel}\n` + found.map((f) => `           ${f}`).join('\n'))
+        .join('\n') + '\n' +
+      '     Prisma runs the whole file in one transaction, so the lock lasts until the end of\n' +
+      '     the migration and every request writing that table waits holding a pool\n' +
+      '     connection — on 2026-10-06 that was 24s of pool exhaustion on every API pod.\n' +
+      '     Instead:\n' +
+      '       - index: run `CREATE INDEX CONCURRENTLY IF NOT EXISTS ...` by hand in production\n' +
+      '         before the deploy; the migration keeps `CREATE INDEX IF NOT EXISTS` and it\n' +
+      '         becomes a no-op;\n' +
+      '       - FK: add it `NOT VALID` here and `VALIDATE CONSTRAINT` in a migration of its\n' +
+      '         own (SHARE UPDATE EXCLUSIVE, does not block writes);\n' +
+      '       - keep the hot-table DDL in a short migration, apart from slow statements.\n' +
+      '     If the index already exists in production, say so with a line\n' +
+      '     `-- hot-table-lock-ok: <reason>`, or retry with ALLOW_HOT_TABLE_LOCK=1.'
+    );
+  }
+}
+
 // Read from disk rather than from a git ref: ensureCleanWorkingTree has already run
 // and the promotion is of master, so the working tree *is* the ref being checked —
 // and this is one pass instead of a `git show` per migration, of which there are ~400.
@@ -747,6 +848,7 @@ function promote() {
   ensurePrismaSchemaIsComplete();
   ensurePrismaEnumTypesExist();
   ensureNewMigrationsResolveSettingGroup();
+  ensureNewMigrationsAvoidHotTableLocks();
   printDone();
 
   if (skipBuild) {
@@ -853,4 +955,5 @@ module.exports = {
   ensurePrismaSchemaIsComplete,
   ensurePrismaEnumTypesExist,
   migrationResolvesGroupFromSibling,
+  migrationLocksHotTable,
 };

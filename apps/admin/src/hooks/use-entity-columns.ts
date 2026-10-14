@@ -15,6 +15,11 @@ export type EntityTableColumn<TItem> = {
    * leitura acessível (coluna de seleção, por exemplo).
    */
   labelHidden?: boolean;
+  /**
+   * Conteúdo do cabeçalho no lugar do texto do `label` — o checkbox "selecionar
+   * todos" de uma coluna de seleção, por exemplo. O `label` segue no menu de colunas.
+   */
+  headerContent?: ReactNode;
   align?: SortableTableHeadAlign;
   /** `{...sort.getSortProps('campo')}`. Ausente = cabeçalho sem seta. */
   sortProps?: Partial<TableSortProps>;
@@ -22,8 +27,14 @@ export type EntityTableColumn<TItem> = {
   className?: string;
   /** Classe do `<th>` (largura fixa, por exemplo). */
   headClassName?: string;
-  /** `false` trava a coluna: não esconde e não arrasta (ex.: a de ações). */
+  /** `false` trava a coluna: não esconde e, salvo `draggable`, não arrasta (ex.: a de ações). */
   hideable?: boolean;
+  /**
+   * Se o cabeçalho arrasta. Padrão: arrasta, menos as de `hideable: false`.
+   * Coluna de dado que não pode sumir (código, nome) usa `hideable: false` +
+   * `draggable: true`: fica sempre visível, mas o usuário reordena.
+   */
+  draggable?: boolean;
   /** A linha inteira navega; a célula de ações não deve arrastar o clique junto. */
   stopClickPropagation?: boolean;
   cell: (item: TItem) => ReactNode;

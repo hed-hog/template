@@ -5,6 +5,7 @@ import type { AutomationMode, AutomationRule } from './automation';
 import type { DirectionDefaults, DirectionSpec } from './direction';
 import type { VisualSpec } from './visual';
 import type { EditDocument } from './document';
+import type { ProcessingSummary } from './processing';
 import type { ExportTimeline, ExportTrack, PackageManifest, TrackKind } from './export';
 import { type TrackTiming, trackTimingFromCapture } from './sync';
 import type { TranscriptWord } from './transcript';
@@ -24,8 +25,14 @@ export interface ReviewTrack {
   sourceIndex: number;
   /** Quem gravou a fonte (a máquina/instrutor) — liga microfone, câmera e tela da mesma pessoa. */
   userId: number | null;
+  /** Nome de quem gravou, para o badge da fonte; nulo sem usuário vinculado. */
+  userName?: string | null;
+  /** Nome da máquina que gravou (hostname do desktop), quando conhecido. */
+  machineName?: string | null;
   deviceLabel: string | null;
   fileName: string | null;
+  codec?: string | null;
+  droppedFrames?: number | null;
   uploadStatus: string;
   startOffsetMs: number;
   durationSeconds: number | null;
@@ -37,6 +44,11 @@ export interface ReviewTrack {
   sampleRate: number | null;
   channels: number | null;
   sizeBytes: number | null;
+  /**
+   * O arquivo tem faixa de áudio, segundo o ffprobe; nulo enquanto a sondagem
+   * não terminou. É o que põe uma tela ou câmera com som na lista de áudios.
+   */
+  hasAudio?: boolean | null;
   media: {
     probe: MediaJobStatus;
     proxy: MediaJobStatus;
@@ -87,6 +99,8 @@ export interface ReviewTake {
   recordingMarkers: RecordingMarker[];
   /** Execuções de análise do take, a mais recente primeiro — base da comparação entre execuções. */
   analysisRuns: AnalysisRunSummary[];
+  /** Preparação e análises do take num estado só: o que a tela anima enquanto espera. */
+  processing: ProcessingSummary;
 }
 
 export interface AnalysisRunSummary {
@@ -117,6 +131,8 @@ export interface ReviewRecording {
   slug: string;
   status: string;
   takes: ReviewTake[];
+  /** Todos os takes juntos. */
+  processing: ProcessingSummary;
 }
 
 export type SuggestionStatus =
@@ -244,6 +260,8 @@ export interface TrackSources {
   original: MediaSource | null;
   proxy: MediaSource | null;
   proxySmall: MediaSource | null;
+  /** Áudio embutido de um vídeo, extraído em AAC; nulo quando o vídeo não tem som. */
+  audio?: MediaSource | null;
   waveform: MediaSource | null;
   /** Só em telas: atividade por região (JSON `ScreenActivity`). */
   activity: MediaSource | null;

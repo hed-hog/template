@@ -741,6 +741,111 @@ const PROVIDER_FIELDS: Record<string, FieldDef[]> = {
       placeholder: '(opcional) audience da subscription push',
     },
   ],
+  // Google Search Console. A service account (JSON completo OU client_email +
+  // private_key) precisa ser adicionada como usuário de cada propriedade no
+  // Search Console; o site do CMS escolhe a propriedade ao vincular o perfil.
+  'google-search-console': [
+    {
+      key: 'service_account_json',
+      labelKey: 'fieldServiceAccountJson',
+      type: 'password',
+      required: false,
+      colSpan: true,
+    },
+    {
+      key: 'client_email',
+      labelKey: 'fieldClientEmail',
+      type: 'email',
+      required: false,
+      placeholder: 'nome@projeto.iam.gserviceaccount.com',
+    },
+    {
+      key: 'private_key',
+      labelKey: 'fieldServiceAccountPrivateKey',
+      type: 'password',
+      required: false,
+      colSpan: true,
+      placeholder: '-----BEGIN PRIVATE KEY-----...',
+    },
+  ],
+  // Google Analytics 4. Mesma forma da service account do Search Console; o
+  // e-mail dela entra como Leitor em cada propriedade do GA4, e o site do CMS
+  // escolhe a propriedade ao vincular o perfil.
+  'google-analytics': [
+    {
+      key: 'service_account_json',
+      labelKey: 'fieldServiceAccountJson',
+      type: 'password',
+      required: false,
+      colSpan: true,
+    },
+    {
+      key: 'client_email',
+      labelKey: 'fieldClientEmail',
+      type: 'email',
+      required: false,
+      placeholder: 'nome@projeto.iam.gserviceaccount.com',
+    },
+    {
+      key: 'private_key',
+      labelKey: 'fieldServiceAccountPrivateKey',
+      type: 'password',
+      required: false,
+      colSpan: true,
+      placeholder: '-----BEGIN PRIVATE KEY-----...',
+    },
+  ],
+  'google-service-account': [
+    {
+      key: 'service_account_json',
+      labelKey: 'fieldServiceAccountJson',
+      type: 'password',
+      required: false,
+      colSpan: true,
+    },
+    {
+      key: 'client_email',
+      labelKey: 'fieldClientEmail',
+      type: 'email',
+      required: false,
+      placeholder: 'nome@projeto.iam.gserviceaccount.com',
+    },
+    {
+      key: 'private_key',
+      labelKey: 'fieldServiceAccountPrivateKey',
+      type: 'password',
+      required: false,
+      colSpan: true,
+      placeholder: '-----BEGIN PRIVATE KEY-----...',
+    },
+    {
+      key: 'subject',
+      labelKey: 'fieldGoogleSubject',
+      type: 'email',
+      required: false,
+      placeholder: 'automacao@empresa.com.br',
+    },
+    {
+      key: 'default_calendar_id',
+      labelKey: 'fieldGoogleDefaultCalendar',
+      type: 'text',
+      required: false,
+      placeholder: 'primary',
+    },
+    {
+      key: 'search_api_key',
+      labelKey: 'fieldGoogleSearchApiKey',
+      type: 'password',
+      required: false,
+    },
+    {
+      key: 'search_cx',
+      labelKey: 'fieldGoogleSearchCx',
+      type: 'text',
+      required: false,
+      placeholder: '0123456789abcdef0',
+    },
+  ],
   local: [
     {
       key: 'base_path',
@@ -3603,6 +3708,60 @@ export function IntegrationProfileSheet({
                   </p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {selectedProvider?.slug === 'google-service-account' && (
+            <div className="rounded-md bg-muted/50 p-3">
+              <p className="mb-1.5 text-xs font-semibold">
+                {t('googleWorkspaceStepsTitle')}
+              </p>
+              <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                {[
+                  'googleWorkspaceStep1',
+                  'googleWorkspaceStep2',
+                  'googleWorkspaceStep3',
+                  'googleWorkspaceStep4',
+                ].map((stepKey) => (
+                  <li key={stepKey}>{t(stepKey as any)}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {selectedProvider?.slug === 'google-search-console' && (
+            <div className="rounded-md bg-muted/50 p-3">
+              <p className="mb-1.5 text-xs font-semibold">
+                {t('searchConsoleStepsTitle')}
+              </p>
+              <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                {[
+                  'searchConsoleStep1',
+                  'searchConsoleStep2',
+                  'searchConsoleStep3',
+                  'searchConsoleStep4',
+                ].map((stepKey) => (
+                  <li key={stepKey}>{t(stepKey as any)}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {selectedProvider?.slug === 'google-analytics' && (
+            <div className="rounded-md bg-muted/50 p-3">
+              <p className="mb-1.5 text-xs font-semibold">
+                {t('searchConsoleStepsTitle')}
+              </p>
+              <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+                {[
+                  'googleAnalyticsStep1',
+                  'googleAnalyticsStep2',
+                  'googleAnalyticsStep3',
+                  'googleAnalyticsStep4',
+                ].map((stepKey) => (
+                  <li key={stepKey}>{t(stepKey as any)}</li>
+                ))}
+              </ol>
             </div>
           )}
 

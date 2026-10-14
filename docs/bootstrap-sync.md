@@ -47,6 +47,11 @@ pnpm sync:bootstrap:check
 Writes nothing. Point it elsewhere with `--source <path>` or `HEDHOG_HUB_PATH`;
 it defaults to `../../hcodev/hub`.
 
+The sync copies from the hub's working tree, so **commit or stash the hub
+first**: a file with uncommitted changes would carry work in progress — often
+half a pair, its test still untracked — into the template. The plan lists such
+files and the apply refuses them unless you pass `--allow-dirty` (CLI 0.0.152+).
+
 **Read the "Adicionar" list every time.** `include` covers `apps/api/**`,
 `scripts/**` and `docs/**` wholesale, so anything new in the hub shows up as an
 addition — including code that belongs only there. Each entry is one of:

@@ -134,3 +134,59 @@ describe('MailService.splitAddresses', () => {
     ]);
   });
 });
+
+describe('MailService.buildMimeMessage', () => {
+  const base = {
+    from: 'Hub <no-reply@x.com>',
+    to: 'aluno@x.com',
+    replyTo: 'suporte@x.com',
+    subject: 'Sua aula começa em breve',
+    body: '<p>Olá</p>',
+  };
+
+  it('leva os cabecalhos extras, o Reply-To e a parte texto', async () => {
+    const raw = (
+      await MailService.buildMimeMessage({
+        ...base,
+        headers: {
+          'List-Unsubscribe': '<https://api.x.com/mail/unsubscribe/abc>',
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      })
+    ).toString();
+
+    expect(raw).toContain('List-Unsubscribe: <https://api.x.com/mail/unsubscribe/abc>');
+    expect(raw).toContain('List-Unsubscribe-Post: List-Unsubscribe=One-Click');
+    expect(raw).toContain('Reply-To: suporte@x.com');
+    expect(raw).toContain('multipart/alternative');
+    expect(raw).toContain('text/plain');
+  });
+
+  it('anexa o arquivo com o content-type informado', async () => {
+    const raw = (
+      await MailService.buildMimeMessage({
+        ...base,
+        attachments: [
+          {
+            filename: 'aula.ics',
+            content: Buffer.from('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n'),
+            contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+          },
+        ],
+      })
+    ).toString();
+
+    expect(raw).toContain('multipart/mixed');
+    expect(raw).toContain('filename=aula.ics');
+    expect(raw).toContain('text/calendar');
+  });
+
+  it('so mantem o Bcc no cabecalho quando pedido', async () => {
+    const mail = { ...base, bcc: 'oculto@x.com' };
+
+    expect((await MailService.buildMimeMessage(mail)).toString()).not.toContain('oculto@x.com');
+    expect(
+      (await MailService.buildMimeMessage(mail, { keepBcc: true })).toString(),
+    ).toContain('Bcc: oculto@x.com');
+  });
+});

@@ -44,11 +44,10 @@ export function ColumnsVisibilityMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {/* No celular só o ícone: o rótulo "Colunas" empurrava a barra para uma
-            segunda linha. O nome segue no leitor de tela. */}
-        <Button variant="outline" size="sm" aria-label={t('trigger')}>
-          <Columns3 className="size-4 sm:mr-2" />
-          <span className="max-sm:sr-only">{t('trigger')}</span>
+        {/* Só o ícone, como o alternador de visualização ao lado: o nome vai no
+            tooltip e no leitor de tela. */}
+        <Button variant="outline" size="icon-sm" tooltip={t('trigger')}>
+          <Columns3 className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

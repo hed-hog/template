@@ -441,7 +441,13 @@ function AppContextProvider({
 	// origem, que e o do OPERADOR — renovar devolveria a aba a identidade dele no
 	// meio da simulacao. A sessao simulada nao e renovavel; quando vence, acaba.
 	const isImpersonating = Boolean(impersonation);
-	const [settingsState, setSettingsState] = useLocalStorage('settings', JSON.stringify(settings));
+	// `initializeWithValue: false`: o primeiro render do cliente usa as settings
+	// que o servidor acabou de mandar, e nao a copia salva na visita anterior. Com
+	// a copia velha (setting alterada, fetch do servidor caindo no default), o
+	// cliente renderizava outra coisa que o SSR e a hidratacao quebrava.
+	const [settingsState, setSettingsState] = useLocalStorage('settings', JSON.stringify(settings), {
+		initializeWithValue: false,
+	});
 	// O default sai da setting do sistema, e nao de `en` fixo: o idioma do
 	// dispositivo entra logo abaixo, num efeito, para nao divergir entre o render
 	// do servidor e o do cliente (`navigator` so existe num deles).

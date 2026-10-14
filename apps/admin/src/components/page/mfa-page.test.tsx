@@ -178,7 +178,7 @@ describe('MfaPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /buttonUseSecurityKey/ }));
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith('/core/account/password?required=1')
+      expect(push).toHaveBeenCalledWith('/change-password')
     );
   });
 
@@ -384,7 +384,7 @@ describe('MfaPage', () => {
     fireEvent.change(screen.getByTestId('otp-input'), { target: { value: '123456' } });
     fireEvent.click(screen.getByRole('button', { name: /buttonVerifyCode/ }));
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith('/core/account/password?required=1')
+      expect(push).toHaveBeenCalledWith('/change-password')
     );
   });
 

@@ -4,6 +4,8 @@ import {
   HardDrive,
   Mail,
   MessageCircle,
+  Clapperboard,
+  Newspaper,
   PlugZap,
   Sparkles,
 } from 'lucide-react';
@@ -24,6 +26,8 @@ const providerAliases: Record<string, string> = {
   instagram_social: 'instagram-social',
   linkedin_social: 'linkedin-social',
   x_social: 'x-social',
+  cms_blog_social: 'cms-blog-social',
+  cms_video_social: 'cms-video-social',
   youtube_social: 'youtube-social',
   google_business: 'google-business',
   google_business_social: 'google-business-social',
@@ -289,7 +293,25 @@ const providerPresentations: Record<string, ProviderPresentation> = {
   },
 };
 
+// Blog do CMS no modulo social: a rede do canal (`blog`) e o provider do
+// perfil (`cms-blog-social`). Nao e marca de terceiro: icone generico.
+const cmsBlogPresentation: ProviderPresentation = {
+  label: 'Blog',
+  icon: <Newspaper className="text-orange-500" size={20} aria-hidden="true" />,
+};
+
+// Videos do CMS no modulo social: a rede (`cms_video`) e o provider.
+const cmsVideoPresentation: ProviderPresentation = {
+  label: 'Vídeos',
+  icon: <Clapperboard className="text-rose-500" size={20} aria-hidden="true" />,
+};
+
 const categorizedFallbacks: Record<string, ProviderPresentation> = {
+  blog: cmsBlogPresentation,
+  'cms-blog-social': cmsBlogPresentation,
+  cms_video: cmsVideoPresentation,
+  'cms-video': cmsVideoPresentation,
+  'cms-video-social': cmsVideoPresentation,
   smtp: {
     label: 'SMTP',
     icon: <Mail className="text-blue-600" size={20} aria-hidden="true" />,

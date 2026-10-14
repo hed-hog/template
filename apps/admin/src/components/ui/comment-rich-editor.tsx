@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import Mention from '@tiptap/extension-mention';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Bold, Italic } from 'lucide-react';
+import { Bold, Italic, List, ListOrdered } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export type MentionItem = {
@@ -30,6 +30,11 @@ type Props = {
   className?: string;
   mentions?: MentionItem[];
   onSubmit?: () => void;
+  /** Imagens/arquivos colados no editor (ex.: print da tela vira anexo). */
+  onPasteFiles?: (files: File[]) => void;
+  /** Rótulo acessível do campo, já que o editor não é um `<textarea>`. */
+  ariaLabel?: string;
+  id?: string;
 };
 
 function getInitials(name: string) {
@@ -49,7 +54,14 @@ export function CommentRichEditor({
   className,
   mentions = [],
   onSubmit,
+  onPasteFiles,
+  ariaLabel,
+  id,
 }: Props) {
+  const onPasteFilesRef = useRef(onPasteFiles);
+  useEffect(() => {
+    onPasteFilesRef.current = onPasteFiles;
+  }, [onPasteFiles]);
   const [suggestionState, setSuggestionState] =
     useState<SuggestionState | null>(null);
   const suggestionStateRef = useRef<SuggestionState | null>(null);
@@ -164,11 +176,24 @@ export function CommentRichEditor({
     },
     editorProps: {
       attributes: {
+        ...(id ? { id } : {}),
+        ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+        role: 'textbox',
+        'aria-multiline': 'true',
         class: cn(
           'prose prose-sm max-w-none min-h-[72px] px-3 py-2 focus:outline-none text-sm leading-relaxed',
           '[&_p]:my-0 [&_p:not(:last-child)]:mb-1',
+          '[&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_li_p]:my-0',
           '[&_.mention]:bg-primary/10 [&_.mention]:text-primary [&_.mention]:rounded [&_.mention]:px-1'
         ),
+      },
+      handlePaste(_view, event) {
+        const handler = onPasteFilesRef.current;
+        const files = Array.from(event.clipboardData?.files ?? []);
+        if (!handler || files.length === 0) return false;
+        event.preventDefault();
+        handler(files);
+        return true;
       },
       handleKeyDown(_view, event) {
         if (
@@ -252,9 +277,41 @@ export function CommentRichEditor({
         >
           <Italic className="size-3.5" />
         </button>
-        <span className="ml-auto text-[10px] text-muted-foreground/60 select-none pr-1">
-          @ para mencionar
-        </span>
+        <button
+          type="button"
+          aria-label="Lista"
+          disabled={disabled}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleBulletList().run();
+          }}
+          className={cn(
+            'rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50',
+            editor?.isActive('bulletList') && 'bg-muted text-foreground'
+          )}
+        >
+          <List className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Lista numerada"
+          disabled={disabled}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleOrderedList().run();
+          }}
+          className={cn(
+            'rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50',
+            editor?.isActive('orderedList') && 'bg-muted text-foreground'
+          )}
+        >
+          <ListOrdered className="size-3.5" />
+        </button>
+        {mentions.length > 0 ? (
+          <span className="ml-auto text-[10px] text-muted-foreground/60 select-none pr-1">
+            @ para mencionar
+          </span>
+        ) : null}
       </div>
 
       <div
@@ -329,7 +386,7 @@ export function CommentContent({ content }: { content: string }) {
   }
   return (
     <div
-      className="mt-0.5 text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-0 [&_p:not(:last-child)]:mb-1 [&_.mention]:bg-primary/10 [&_.mention]:text-primary [&_.mention]:rounded [&_.mention]:px-1 [&_.mention]:py-0.5 [&_.mention]:text-xs [&_.mention]:font-medium"
+      className="mt-0.5 text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-0 [&_p:not(:last-child)]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_.mention]:bg-primary/10 [&_.mention]:text-primary [&_.mention]:rounded [&_.mention]:px-1 [&_.mention]:py-0.5 [&_.mention]:text-xs [&_.mention]:font-medium"
       // Content comes from Tiptap editor (trusted, sanitized output)
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: content }}

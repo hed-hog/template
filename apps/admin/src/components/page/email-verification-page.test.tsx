@@ -143,7 +143,7 @@ describe('EmailVerificationPage', () => {
       'successEmailVerified'
     );
     expect(navState.push).toHaveBeenCalledWith(
-      '/core/account/password?required=1'
+      '/change-password'
     );
   });
 

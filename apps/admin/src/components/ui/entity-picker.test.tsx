@@ -1407,4 +1407,69 @@ describe('EntityPicker', () => {
 
     expect(screen.queryByText('Pessoa 21')).not.toBeInTheDocument();
   });
+  it('com onCreateClick, o + chama o sheet externo e não abre o sheet interno', () => {
+    const onCreateClick = vi.fn();
+
+    render(
+      <EntityPicker
+        value={null}
+        placeholder="Selecione uma pessoa"
+        options={options}
+        createActionLabel="Nova pessoa"
+        onCreateClick={onCreateClick}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nova pessoa' }));
+
+    expect(onCreateClick).toHaveBeenCalledWith('');
+    expect(screen.queryByTestId('sheet')).not.toBeInTheDocument();
+  });
+
+  it('mostra o lápis só com seleção e entrega valor e opção ao onEditSelection', () => {
+    const onEditSelection = vi.fn();
+
+    const { rerender } = render(
+      <EntityPicker
+        value={null}
+        valueType="number"
+        placeholder="Selecione uma pessoa"
+        options={options}
+        editActionLabel="Editar pessoa"
+        onEditSelection={onEditSelection}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'Editar pessoa' }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <EntityPicker
+        value={2}
+        valueType="number"
+        placeholder="Selecione uma pessoa"
+        options={options}
+        editActionLabel="Editar pessoa"
+        onEditSelection={onEditSelection}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Editar pessoa' }));
+
+    expect(onEditSelection).toHaveBeenCalledWith(2, options[1]);
+  });
+
+  it('mostra as iniciais do avatar na lista e no campo quando não há imagem', () => {
+    render(
+      <EntityPicker
+        value={1}
+        placeholder="Selecione uma pessoa"
+        options={[{ id: 1, name: 'Alice Souza' }]}
+        getOptionAvatar={() => ({ src: null })}
+      />,
+    );
+
+    expect(screen.getAllByText('AS')).toHaveLength(2);
+  });
 });

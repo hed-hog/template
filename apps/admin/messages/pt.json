@@ -70,6 +70,7 @@
       "mcp": "Usar, em seu nome, as ferramentas do Hub que seu acesso já permite",
       "profile": "Ler seus dados básicos de perfil"
     },
+    "connectingAs": "Conectando como",
     "authorize": "Autorizar",
     "cancel": "Cancelar",
     "successTitle": "Autorizado com sucesso!",
@@ -81,6 +82,8 @@
   "DesktopAuth": {
     "title": "Autorizar HedHog Desktop",
     "subtitle": "O aplicativo desktop quer acessar sua conta.",
+    "appName": "HedHog Desktop",
+    "connectingAs": "Conectando como",
     "authorize": "Autorizar",
     "cancel": "Cancelar",
     "successTitle": "Autorizado com sucesso!",

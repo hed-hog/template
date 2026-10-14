@@ -71,8 +71,16 @@ export type SearchBarProps = {
   afterSearchButton?: ReactNode;
   actions?: ReactNode;
   showSearchButton?: boolean;
+  /** Busca em andamento: o botão "Buscar" mostra o carregando. */
+  searchLoading?: boolean;
   debounceMs?: number;
   className?: string;
+  /**
+   * Classes do grupo de filtros. Por padrão o grupo desce inteiro para a linha
+   * de baixo quando não cabe ao lado da busca; `sm:flex-1 sm:min-w-0` faz os
+   * filtros seguirem na mesma linha e quebrarem um a um.
+   */
+  controlsClassName?: string;
 };
 
 function renderControl(control: SearchBarControl, filterPlaceholder: string) {
@@ -143,8 +151,10 @@ export function SearchBar({
   afterSearchButton,
   actions,
   showSearchButton = true,
+  searchLoading = false,
   debounceMs,
   className = '',
+  controlsClassName,
 }: SearchBarProps) {
   const t = useTranslations('core.SearchBar');
   const onSearchRef = useRef(onSearch);
@@ -194,6 +204,7 @@ export function SearchBar({
             size="icon"
             className="shrink-0 lg:w-auto lg:px-4"
             type="submit"
+            loading={searchLoading}
             tooltip={t('btnBuscar')}
           >
             <Search className="h-4 w-4" />
@@ -211,7 +222,12 @@ export function SearchBar({
             cada um fica com a largura fixa dele e a linha sai desencontrada.
             A partir de `sm` voltam a fluir lado a lado. */}
         {normalizedControls.length > 0 && (
-          <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center [&>*:last-child:nth-child(odd)]:col-span-2">
+          <div
+            className={cn(
+              'grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center [&>*:last-child:nth-child(odd)]:col-span-2',
+              controlsClassName
+            )}
+          >
             {normalizedControls.map((control) => (
               <div key={control.id} className="min-w-0 sm:shrink-0">
                 {renderControl(control, t('filterPlaceholder'))}

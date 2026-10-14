@@ -57,7 +57,7 @@ export const GuardPage = ({ children }: GuardPage) => {
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const forcePasswordPath = '/core/account/password';
+  const forcePasswordPath = '/change-password';
   const requiresPasswordReset =
     (user as { requires_password_reset?: boolean } | null)
       ?.requires_password_reset === true;
@@ -103,11 +103,14 @@ export const GuardPage = ({ children }: GuardPage) => {
     setUrlAfterLogin(pathname);
   }, [pathname, setUrlAfterLogin]);
 
+  // A troca obrigatória mora fora deste layout (`(auth)/change-password`):
+  // enquanto o reset está pendente o backend responde 401 a toda rota com papel,
+  // e cada chamada da sidebar/notificações virava renovação de token + toast.
+  // Por isso nenhuma rota do app renderiza os filhos nesse estado.
   useEffect(() => {
     if (!accessToken || !requiresPasswordReset) return;
-    if (pathname === forcePasswordPath) return;
-    router.replace(`${forcePasswordPath}?required=1`);
-  }, [accessToken, requiresPasswordReset, pathname, router]);
+    router.replace(forcePasswordPath);
+  }, [accessToken, requiresPasswordReset, router]);
 
   /* v8 ignore next 3 -- pre-hydration frame: React Testing Library's act-wrapped
      render always flushes the mount effect (setIsClient(true)) synchronously
@@ -120,11 +123,7 @@ export const GuardPage = ({ children }: GuardPage) => {
     return <LoginPage />;
   }
 
-  if (isLoadingRoles) {
-    return <LoadingPage />;
-  }
-
-  if (requiresPasswordReset && pathname !== forcePasswordPath) {
+  if (isLoadingRoles || requiresPasswordReset) {
     return <LoadingPage />;
   }
 

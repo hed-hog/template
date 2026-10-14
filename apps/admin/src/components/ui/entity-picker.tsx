@@ -5,6 +5,7 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Loader2,
+  Pencil,
   Plus,
   X,
 } from 'lucide-react';
@@ -25,6 +26,7 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -96,6 +98,59 @@ export type EntityPickerLoadResult<TOption> = {
   total?: number;
 };
 
+/**
+ * Imagem que identifica a opção: avatar da pessoa, logo da empresa, avatar do
+ * cliente do projeto. Sem `src`, o círculo mostra as iniciais de `fallback`
+ * (ou do rótulo da opção).
+ */
+export type EntityPickerAvatar = {
+  src?: string | null;
+  fallback?: string;
+};
+
+function getInitials(value: string) {
+  return (
+    value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || '?'
+  );
+}
+
+function EntityPickerAvatarView({
+  avatar,
+  label,
+  shape,
+  className,
+}: {
+  avatar: EntityPickerAvatar;
+  label: string;
+  shape: 'circle' | 'square';
+  className?: string;
+}) {
+  return (
+    <Avatar
+      className={cn(
+        'size-6 shrink-0',
+        shape === 'square' && 'rounded-md',
+        className
+      )}
+    >
+      {avatar.src ? (
+        <AvatarImage src={avatar.src} alt={label} className="object-cover" />
+      ) : null}
+      <AvatarFallback
+        className={cn('text-[10px]', shape === 'square' && 'rounded-md')}
+      >
+        {getInitials(avatar.fallback || label)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
 export type EntityPickerCreateContext<TOption> = {
   values: Record<string, string>;
   setValue: (name: string, value: string) => void;
@@ -128,6 +183,11 @@ export type EntityPickerProps<
   emptySelectionLabel?: string;
   valueType?: 'string' | 'number';
   initialSelectedLabel?: string;
+  /**
+   * Avatar da opção já selecionada quando ela ainda não está carregada na
+   * lista (edição de um registro existente). Só vale com `getOptionAvatar`.
+   */
+  initialSelectedAvatar?: EntityPickerAvatar | null;
   searchPlaceholder?: string;
   emptyStateDescription?: string;
   loadingLabel?: string;
@@ -160,6 +220,14 @@ export type EntityPickerProps<
   getOptionLabel?: (option: TOption) => string;
   getOptionDescription?: (option: TOption) => string | undefined;
   getOptionSearchText?: (option: TOption) => string;
+  /**
+   * Padrão do admin: sempre que a entidade tiver uma imagem que a identifique
+   * (avatar, logo, foto, avatar do cliente), passe-a aqui. Ela aparece na lista
+   * e no campo; sem imagem, as iniciais ocupam o lugar. `null` esconde o avatar
+   * daquela opção.
+   */
+  getOptionAvatar?: (option: TOption) => EntityPickerAvatar | null | undefined;
+  avatarShape?: 'circle' | 'square';
   renderOption?: (args: {
     option: TOption;
     isSelected: boolean;
@@ -195,6 +263,18 @@ export type EntityPickerProps<
   onCreate?: (
     values: Record<string, string>
   ) => Promise<TOption | null | void> | TOption | null | void;
+  /**
+   * Abre o sheet de cadastro da própria entidade (o completo, não o resumido
+   * do picker) no lugar do sheet interno. Recebe o texto buscado para
+   * pré-preencher; quem chama seleciona o registro criado via `value`.
+   */
+  onCreateClick?: (search: string) => void;
+  /**
+   * Mostra o lápis ao lado do campo enquanto houver seleção: abre o sheet de
+   * edição da entidade selecionada.
+   */
+  onEditSelection?: (value: string | number, option: TOption | null) => void;
+  editActionLabel?: string;
   createFields?: EntityPickerCreateField[];
   mapSearchToCreateValues?: (search: string) => Record<string, string>;
   renderCreateContent?: (ctx: EntityPickerCreateContext<TOption>) => ReactNode;
@@ -325,6 +405,7 @@ export function EntityPicker<
   emptySelectionLabel,
   valueType = 'string',
   initialSelectedLabel = '',
+  initialSelectedAvatar,
   searchPlaceholder,
   emptyStateDescription = 'Nenhum resultado encontrado.',
   loadingLabel = 'Carregando...',
@@ -349,6 +430,8 @@ export function EntityPicker<
   getOptionLabel,
   getOptionDescription,
   getOptionSearchText,
+  getOptionAvatar,
+  avatarShape = 'circle',
   renderOption,
   renderSelectedValue,
   isOptionDisabled,
@@ -356,6 +439,9 @@ export function EntityPicker<
   renderListHeader,
   fillHeight = false,
   onCreate,
+  onCreateClick,
+  onEditSelection,
+  editActionLabel,
   createFields = [],
   mapSearchToCreateValues,
   renderCreateContent,
@@ -379,6 +465,11 @@ export function EntityPicker<
   const [createValues, setCreateValues] = useState<Record<string, string>>({});
   const [isCreating, setIsCreating] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState(initialSelectedLabel);
+  // A última opção escolhida: a lista remota é trocada a cada busca, e o campo
+  // continua precisando do rótulo e do avatar dela.
+  const [lastSelectedOption, setLastSelectedOption] = useState<TOption | null>(
+    null
+  );
   const [visibleCount, setVisibleCount] = useState(visibleCountStep);
   const parentScrollContainerRef = useRef<HTMLElement | null>(null);
   const parentScrollTopRef = useRef(0);
@@ -393,6 +484,11 @@ export function EntityPicker<
   const resolvedSearchPlaceholder = searchPlaceholder ?? placeholder;
   const resolvedCreateActionLabel =
     createActionLabel ?? (entityLabel ? `Criar ${entityLabel}` : 'Criar novo');
+  const resolvedEditActionLabel =
+    editActionLabel ?? (entityLabel ? `Editar ${entityLabel}` : 'Editar');
+  const canCreate =
+    showCreateButton &&
+    Boolean(onCreate || renderCreateContent || onCreateClick);
   const resolvedCreateTitle =
     createTitle ?? (entityLabel ? `Criar ${entityLabel}` : 'Criar novo item');
   const resolvedCreateDescription =
@@ -640,6 +736,11 @@ export function EntityPicker<
   };
 
   const openCreateSheet = (prefill = '') => {
+    if (onCreateClick) {
+      setOpen(false);
+      onCreateClick(prefill);
+      return;
+    }
     setCreateValues(initializeCreateValues(prefill));
     setOpen(false);
     setCreateOpen(true);
@@ -788,6 +889,7 @@ export function EntityPicker<
 
       const nextValue = optionValueResolver(created) ?? null;
       applyValueChange(nextValue, created);
+      setLastSelectedOption(created);
       setSelectedLabel(optionLabelResolver(created));
       setSearch(optionLabelResolver(created));
       setCreateOpen(false);
@@ -810,6 +912,7 @@ export function EntityPicker<
 
       const nextValue = optionValueResolver(option) ?? null;
       applyValueChange(nextValue, option);
+      setLastSelectedOption(option);
       setSelectedLabel(optionLabelResolver(option));
       setSearch(optionLabelResolver(option));
       setCreateOpen(false);
@@ -838,7 +941,11 @@ export function EntityPicker<
     const selectedOption =
       knownOptions.find(
         (option) => String(optionValueResolver(option)) === normalizedValue
-      ) ?? null;
+      ) ??
+      (lastSelectedOption &&
+      String(optionValueResolver(lastSelectedOption)) === normalizedValue
+        ? lastSelectedOption
+        : null);
 
     const resolvedSelectedLabel = selectedOption
       ? optionLabelResolver(selectedOption)
@@ -852,13 +959,32 @@ export function EntityPicker<
       ? optionLabelResolver(selectedOption)
       : fallbackLabel;
 
-    const displayValue = renderSelectedValue
-      ? renderSelectedValue({
-          option: selectedOption,
-          value: normalizedValue,
-          label: displayLabel,
-        })
-      : displayLabel;
+    const selectedAvatar =
+      getOptionAvatar && hasValue
+        ? selectedOption
+          ? getOptionAvatar(selectedOption)
+          : (initialSelectedAvatar ?? { fallback: displayLabel })
+        : null;
+
+    const displayValue = renderSelectedValue ? (
+      renderSelectedValue({
+        option: selectedOption,
+        value: normalizedValue,
+        label: displayLabel,
+      })
+    ) : selectedAvatar ? (
+      <span className="flex min-w-0 items-center gap-2">
+        <EntityPickerAvatarView
+          avatar={selectedAvatar}
+          label={displayLabel}
+          shape={avatarShape}
+          className="size-5"
+        />
+        <span className="truncate">{displayLabel}</span>
+      </span>
+    ) : (
+      displayLabel
+    );
 
     const shouldShowClear = clearable && hasValue;
 
@@ -1025,7 +1151,7 @@ export function EntityPicker<
                 <p className="text-sm text-muted-foreground">
                   {emptyStateDescription || noResultsLabel}
                 </p>
-                {showCreateButton && (onCreate || renderCreateContent) ? (
+                {canCreate ? (
                   <Button
                     type="button"
                     variant="outline"
@@ -1073,6 +1199,7 @@ export function EntityPicker<
               // diferente, fazendo o cmdk destacar todas juntas. Uma identidade única (id +
               // índice) garante destaque/seleção próprios.
               const optionIdentity = `${optionKeyResolver(option)}-${index}`;
+              const optionAvatar = getOptionAvatar?.(option);
 
               return (
                 <CommandItem
@@ -1091,6 +1218,7 @@ export function EntityPicker<
                       return;
                     }
                     setCurrentValue(optionValue ?? null, option);
+                    setLastSelectedOption(option);
                     if (closeOnSelect) {
                       setSelectedLabel(optionLabelResolver(option));
                       setSearch(optionLabelResolver(option));
@@ -1105,18 +1233,27 @@ export function EntityPicker<
                       isDisabled: optionDisabled,
                     })
                   ) : (
-                    <div className="min-w-0">
-                      <div
-                        className="truncate"
-                        title={optionLabelResolver(option)}
-                      >
-                        {optionLabelResolver(option)}
-                      </div>
-                      {optionDescriptionResolver(option) ? (
-                        <div className="truncate text-xs text-muted-foreground">
-                          {optionDescriptionResolver(option)}
-                        </div>
+                    <div className="flex min-w-0 items-center gap-2">
+                      {optionAvatar ? (
+                        <EntityPickerAvatarView
+                          avatar={optionAvatar}
+                          label={optionLabelResolver(option)}
+                          shape={avatarShape}
+                        />
                       ) : null}
+                      <div className="min-w-0">
+                        <div
+                          className="truncate"
+                          title={optionLabelResolver(option)}
+                        >
+                          {optionLabelResolver(option)}
+                        </div>
+                        {optionDescriptionResolver(option) ? (
+                          <div className="truncate text-xs text-muted-foreground">
+                            {optionDescriptionResolver(option)}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   )}
                 </CommandItem>
@@ -1260,7 +1397,27 @@ export function EntityPicker<
             </Button>
           ) : null}
 
-          {showCreateButton && (onCreate || renderCreateContent) ? (
+          {onEditSelection && hasValue ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 shrink-0"
+              disabled={disabled || isCreating}
+              onClick={() => {
+                setOpen(false);
+                onEditSelection(
+                  parseFieldValue(normalizedValue) as string | number,
+                  selectedOption
+                );
+              }}
+              tooltip={resolvedEditActionLabel}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          ) : null}
+
+          {canCreate ? (
             <Button
               type="button"
               variant="outline"

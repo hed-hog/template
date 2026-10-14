@@ -166,7 +166,7 @@ export function MfaPage() {
         setAccessToken(verifyResponse.data.accessToken);
         showToastHandler?.('success', t('successAuth'));
         if (verifyResponse.data.requiresPasswordReset) {
-          router.push('/core/account/password?required=1');
+          router.push('/change-password');
         } else {
           router.push(getUrlAfterLogin());
         }
@@ -342,7 +342,7 @@ export function MfaPage() {
         setAccessToken(response.data.accessToken);
         showToastHandler?.('success', t('successAuth'));
         if (response.data.requiresPasswordReset) {
-          router.push('/core/account/password?required=1');
+          router.push('/change-password');
         } else {
           router.push(getUrlAfterLogin());
         }

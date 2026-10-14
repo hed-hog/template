@@ -756,6 +756,7 @@ export function DateRangePicker({
 
       {hasRange && (
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="size-9 shrink-0 text-muted-foreground hover:text-foreground"

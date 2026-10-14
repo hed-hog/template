@@ -143,7 +143,7 @@ export function EmailVerificationPage() {
       setAccessToken(data.accessToken);
       showToastHandler?.('success', t('successEmailVerified'));
       if (data.requiresPasswordReset) {
-        router.push('/core/account/password?required=1');
+        router.push('/change-password');
       } else {
         router.push(getUrlAfterLogin() || '/');
       }

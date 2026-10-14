@@ -63,6 +63,8 @@ pnpm-debug.log*
 tmp/
 
 hedhog.json
+# ...mas não a prosa pt-BR do módulo hedhog na documentação do site
+!apps/hedhog/content/modules/prose/pt-BR/hedhog.json
 .build-lock-*
 .npmrc
 .claude/settings.local.json

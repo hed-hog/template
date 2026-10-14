@@ -1,11 +1,11 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { useApp } from '@hed-hog/next-app-provider';
-import { CheckCircle2, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Loader2, TriangleAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { AppConnectConsent } from '../_components/app-connect-consent';
 
 /**
  * Tela de consent do fluxo Authorization Code + PKCE.
@@ -18,7 +18,12 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
  *    code_verifier, que nunca sai da extensão.
  */
 
-type AuthorizeInfo = { clientName: string; scopes: string[]; issuer: string };
+type AuthorizeInfo = {
+  clientName: string;
+  logoUrl?: string | null;
+  scopes: string[];
+  issuer: string;
+};
 
 /**
  * Erro que o servidor marca como `redirectable`: os parâmetros que não podem ser
@@ -43,10 +48,6 @@ const SCOPE_LABEL_KEYS: Record<string, string> = {
   vaults: 'scope.vaults',
   mcp: 'scope.mcp',
   profile: 'scope.profile',
-};
-
-type VerifyResponse = {
-  user_identifier?: { type: string; value: string; enabled: boolean }[];
 };
 
 function AuthorizeApp() {
@@ -84,29 +85,6 @@ function AuthorizeApp() {
   const [loading, setLoading] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState('');
-
-  /**
-   * Numa tela de consent, mostrar em qual conta se está autorizando não é
-   * decoração. O email vem de /auth/verify: o JWT carrega só sub/sessionId, e
-   * o `user_identifier[]` é onde o endereço vive.
-   */
-  useEffect(() => {
-    if (!accessToken) return;
-    let active = true;
-    void (async () => {
-      try {
-        const { data } = await request<VerifyResponse>({ url: '/auth/verify' });
-        const email = data.user_identifier?.find((i) => i.type === 'email' && i.enabled)?.value;
-        if (active && email) setUserEmail(email);
-      } catch {
-        // Sem o email a tela ainda funciona; não vale bloquear o consent por isso.
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [accessToken, request]);
 
   /**
    * Devolve o resultado ao cliente. Sempre com `iss` (RFC 9207): os metadados do
@@ -286,69 +264,34 @@ function AuthorizeApp() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-sm p-8 flex flex-col items-center gap-6">
-        {authorized ? (
-          <>
-            <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center">
-              <CheckCircle2 className="size-7 text-green-500" strokeWidth={1.5} />
-            </div>
-            <div className="text-center">
-              <h1 className="text-xl font-semibold text-foreground">{t('successTitle')}</h1>
-              <p className="text-sm text-muted-foreground mt-1.5">{t('successMessage')}</p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <ShieldCheck className="size-7 text-primary" strokeWidth={1.5} />
-            </div>
-
-            <div className="text-center">
-              <h1 className="text-xl font-semibold text-foreground">
-                {t('title', { app: info.clientName })}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1.5">
-                {t('subtitle', { app: info.clientName })}
-              </p>
-              {userEmail && (
-                <p className="text-xs text-muted-foreground mt-1 bg-muted rounded-full px-3 py-1 inline-block">
-                  {userEmail}
-                </p>
-              )}
-            </div>
-
-            <div className="w-full rounded-lg border border-border bg-muted/40 p-3">
-              <p className="text-xs font-medium text-foreground mb-1.5">{t('permissions')}</p>
-              <ul className="flex flex-col gap-1">
-                {info.scopes.map((s) => (
-                  <li key={s} className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <CheckCircle2 className="size-3 shrink-0" />
-                    {SCOPE_LABEL_KEYS[s] ? t(SCOPE_LABEL_KEYS[s]) : s}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {error && <p className="text-xs text-destructive text-center">{error}</p>}
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button className="w-full gap-2" onClick={handleAuthorize} disabled={loading}>
-                {t('authorize')}
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full text-muted-foreground"
-                onClick={handleCancel}
-                disabled={loading}
-              >
-                {t('cancel')}
-              </Button>
-            </div>
-          </>
-        )}
+    <AppConnectConsent
+      appName={info.clientName}
+      appLogoUrl={info.logoUrl}
+      title={t('title', { app: info.clientName })}
+      subtitle={t('subtitle', { app: info.clientName })}
+      connectingAsLabel={t('connectingAs')}
+      authorizeLabel={t('authorize')}
+      cancelLabel={t('cancel')}
+      successTitle={t('successTitle')}
+      successMessage={t('successMessage')}
+      authorized={authorized}
+      loading={loading}
+      error={error}
+      onAuthorize={handleAuthorize}
+      onCancel={handleCancel}
+    >
+      <div className="rounded-2xl border border-border p-3">
+        <p className="mb-2 px-1 text-xs font-medium text-foreground">{t('permissions')}</p>
+        <ul className="flex flex-col gap-1.5">
+          {info.scopes.map((s) => (
+            <li key={s} className="flex items-start gap-2 px-1 text-xs text-muted-foreground">
+              <CheckCircle2 className="mt-px size-3.5 shrink-0 text-primary" />
+              {SCOPE_LABEL_KEYS[s] ? t(SCOPE_LABEL_KEYS[s]) : s}
+            </li>
+          ))}
+        </ul>
       </div>
-    </div>
+    </AppConnectConsent>
   );
 }
 

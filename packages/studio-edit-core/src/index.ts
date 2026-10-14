@@ -6,6 +6,7 @@ export * from './document';
 export * from './export';
 export * from './montage';
 export * from './playback';
+export * from './processing';
 export * from './sync';
 export * from './time';
 export * from './transcript';

@@ -24,6 +24,8 @@ export type { ColumnDragContextProps } from './column-drag-context';
 export { EntityTable } from './entity-table';
 export type { EntityTableProps } from './entity-table';
 
+export { StickyHorizontalScroll } from './sticky-horizontal-scroll';
+
 export { ColumnsVisibilityMenu } from './columns-visibility-menu';
 export type {
   ColumnsVisibilityMenuColumn,

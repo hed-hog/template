@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { logoIcons } from '@/generated/browser-os-logos';
 import { Icon } from '@iconify/react';
-import { Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Monitor, Moon, Smartphone, Sun, Tablet } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 /**
@@ -29,6 +29,14 @@ export type ClientOriginData = {
   osVersion?: string | null;
   screenWidth?: number | null;
   screenHeight?: number | null;
+  /** Área visível da janela, quando quem registrou mediu (Fábrica). */
+  viewportWidth?: number | null;
+  viewportHeight?: number | null;
+  pixelRatio?: number | null;
+  language?: string | null;
+  timezone?: string | null;
+  colorScheme?: string | null;
+  connection?: string | null;
   ip?: string | null;
   city?: string | null;
   country?: string | null;
@@ -293,7 +301,44 @@ export function ClientOriginDetails({
       </span>
     ) : null,
   );
-  push('resolution', resolution);
+  push(
+    'resolution',
+    resolution && origin.pixelRatio && origin.pixelRatio !== 1
+      ? `${resolution} @${Number(origin.pixelRatio.toFixed(2))}x`
+      : resolution,
+  );
+  push(
+    'viewport',
+    origin.viewportWidth && origin.viewportHeight
+      ? `${origin.viewportWidth} × ${origin.viewportHeight}`
+      : null,
+  );
+  push(
+    'language',
+    origin.language ? (
+      <span className="flex items-center gap-1.5">
+        {origin.language.split('-')[1] ? (
+          <CountryFlag code={origin.language.split('-')[1]} width={16} />
+        ) : null}
+        {origin.language}
+      </span>
+    ) : null,
+  );
+  push('timezone', origin.timezone);
+  push(
+    'colorScheme',
+    origin.colorScheme === 'dark' || origin.colorScheme === 'light' ? (
+      <span className="flex items-center gap-1.5">
+        {origin.colorScheme === 'dark' ? (
+          <Moon className="size-3.5 text-indigo-500" />
+        ) : (
+          <Sun className="size-3.5 text-amber-500" />
+        )}
+        {t(`colorSchemes.${origin.colorScheme}`)}
+      </span>
+    ) : null,
+  );
+  push('connection', origin.connection ? origin.connection.toUpperCase() : null);
   push(
     'location',
     origin.city || origin.country ? (

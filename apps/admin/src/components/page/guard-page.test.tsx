@@ -319,13 +319,13 @@ describe('GuardPage', () => {
 
     await waitFor(() =>
       expect(navState.replace).toHaveBeenCalledWith(
-        '/core/account/password?required=1'
+        '/change-password'
       )
     );
     expect(screen.getByTestId('loading-page-stub')).toBeInTheDocument();
   });
 
-  it('não redireciona quando já está na rota de redefinição de senha', async () => {
+  it('não renderiza o layout nem na página de senha da conta com reset pendente', async () => {
     appState.user = { requires_password_reset: true };
     navState.pathname = '/core/account/password';
     appState.request = vi.fn().mockResolvedValue({
@@ -340,8 +340,9 @@ describe('GuardPage', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText('conteudo protegido')).toBeInTheDocument()
+      expect(navState.replace).toHaveBeenCalledWith('/change-password')
     );
-    expect(navState.replace).not.toHaveBeenCalled();
+    expect(screen.queryByText('conteudo protegido')).not.toBeInTheDocument();
+    expect(screen.getByTestId('loading-page-stub')).toBeInTheDocument();
   });
 });

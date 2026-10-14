@@ -206,7 +206,7 @@ export function LoginPage() {
 
   const finishLogin = (requiresPasswordReset?: boolean) => {
     if (requiresPasswordReset) {
-      router.push('/core/account/password?required=1');
+      router.push('/change-password');
       return;
     }
 

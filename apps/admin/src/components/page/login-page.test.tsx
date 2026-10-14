@@ -158,7 +158,7 @@ describe('LoginPage', () => {
     );
     await fillAndSubmit();
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith('/core/account/password?required=1')
+      expect(push).toHaveBeenCalledWith('/change-password')
     );
   });
 
@@ -355,7 +355,7 @@ describe('LoginPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /securityKeyButton/ }));
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith('/core/account/password?required=1')
+      expect(push).toHaveBeenCalledWith('/change-password')
     );
   });
 

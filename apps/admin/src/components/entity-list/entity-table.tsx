@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { ColumnDragContext } from './column-drag-context';
 import { ColumnsVisibilityMenu } from './columns-visibility-menu';
 import { DraggableTableHead } from './draggable-table-head';
+import { StickyHorizontalScroll } from './sticky-horizontal-scroll';
 
 type EntityTableTanStackProps<TData, TField extends string = string> = {
   /** Tabela `@tanstack/react-table`, tipicamente de `useEntityColumnTable`. */
@@ -129,51 +130,56 @@ function EntityTableTanStack<TData, TField extends string = string>({
       columnOrder={columnPrefs.order}
       onReorder={columnPrefs.setOrder}
     >
-      <Table className={className}>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                const meta = header.column.columnDef.meta as
-                  | EntityColumnMeta
-                  | undefined;
+      <StickyHorizontalScroll>
+        <Table className={className}>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const meta = header.column.columnDef.meta as
+                    | EntityColumnMeta
+                    | undefined;
 
-                if (!draggableIds.has(header.column.id)) {
-                  return <TableHead key={header.id} />;
-                }
+                  if (!draggableIds.has(header.column.id)) {
+                    return <TableHead key={header.id} />;
+                  }
 
-                return (
-                  <DraggableTableHead
-                    key={header.id}
-                    columnId={header.column.id}
-                    label={meta?.label ?? ''}
-                    labelHidden={meta?.labelHidden}
-                    align={meta?.align}
-                    {...(meta?.sortField && getSortProps
-                      ? getSortProps(meta.sortField as TField)
-                      : {})}
-                  />
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {skeleton ??
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} {...rowProps?.(row)}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cellClassName?.(cell.column.id)}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                  return (
+                    <DraggableTableHead
+                      key={header.id}
+                      columnId={header.column.id}
+                      label={meta?.label ?? ''}
+                      labelHidden={meta?.labelHidden}
+                      align={meta?.align}
+                      {...(meta?.sortField && getSortProps
+                        ? getSortProps(meta.sortField as TField)
+                        : {})}
+                    />
+                  );
+                })}
               </TableRow>
             ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {skeleton ??
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} {...rowProps?.(row)}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={cellClassName?.(cell.column.id)}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </StickyHorizontalScroll>
     </ColumnDragContext>
   );
 }
@@ -204,7 +210,7 @@ function EntityTableItems<TItem>({
         columnOrder={columns.order}
         onReorder={columns.setOrder}
       >
-        <div className="overflow-x-auto">
+        <StickyHorizontalScroll>
           <Table className={tableClassName}>
             <TableHeader>
               <TableRow>
@@ -214,9 +220,14 @@ function EntityTableItems<TItem>({
                     columnId={column.id}
                     label={column.label}
                     labelHidden={column.labelHidden}
+                    headContent={column.headerContent}
                     align={column.align}
                     className={column.headClassName}
-                    dragDisabled={column.hideable === false}
+                    dragDisabled={
+                      column.draggable === undefined
+                        ? column.hideable === false
+                        : !column.draggable
+                    }
                     {...(column.sortProps ?? {})}
                   />
                 ))}
@@ -262,7 +273,7 @@ function EntityTableItems<TItem>({
                 })}
             </TableBody>
           </Table>
-        </div>
+        </StickyHorizontalScroll>
       </ColumnDragContext>
     </div>
   );

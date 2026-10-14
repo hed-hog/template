@@ -26,6 +26,7 @@
         "apps/admin/src/app/(app)/(libraries)/agent/_components/editor/agent-visual-config-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/editor/agent-visual-element-node.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/editor/node-config-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/editor/node-config-tool-fields.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/editor/node-input-variables.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/monitoring/agent-monitoring-page.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/runs/agent-audit-canvas.tsx",
@@ -34,6 +35,7 @@
         "apps/admin/src/app/(app)/(libraries)/agent/_components/runs/agent-run-timeline.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/runs/agent-runs-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/agent-settings-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/shared/json-viewer.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/shared/node-output-images.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/shared/status-badges.tsx",
@@ -59,6 +61,7 @@
         "agent.Placeholder",
         "agent.RunForm",
         "agent.Runs",
+        "agent.SettingsPage",
         "agent.Status",
         "agent.Toolbar",
         "agent.Triggers",
@@ -75,12 +78,20 @@
           "url": "/agent/:agentId/versions/:versionId/graph/ai-edit"
         },
         {
+          "method": "PATCH",
+          "url": "/agent/:id"
+        },
+        {
           "method": "GET",
           "url": "/agent/internal-modules"
         },
         {
           "method": "GET",
           "url": "/agent/internal-modules/:param/actions"
+        },
+        {
+          "method": "GET",
+          "url": "/agent/mcp-tools"
         },
         {
           "method": "GET",
@@ -97,6 +108,10 @@
         {
           "method": "GET",
           "url": "/setting/group/general"
+        },
+        {
+          "method": "GET",
+          "url": "/user"
         }
       ],
       "features": {
@@ -104,7 +119,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -151,6 +166,7 @@
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
@@ -183,12 +199,13 @@
         "kpis": false,
         "searchBar": false,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
@@ -207,12 +224,14 @@
         "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/agent-settings-page.tsx"
       ],
       "loc": 6,
-      "i18nNamespaces": [],
+      "i18nNamespaces": [
+        "agent.SettingsPage"
+      ],
       "endpoints": [],
       "features": {
         "pageHeader": true,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": true,
@@ -220,6 +239,7 @@
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
@@ -247,12 +267,13 @@
         "kpis": false,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
@@ -278,14 +299,15 @@
       "features": {
         "pageHeader": true,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
@@ -318,7 +340,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -331,6 +353,7 @@
         "apps/admin/src/app/(app)/(libraries)/agent/_components/runs/agent-run-audit.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/runs/agent-runs-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/agent-settings-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/agent/_components/settings/run-as-user-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/tools/agent-tools-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_components/triggers/agent-triggers-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/agent/_lib/services.ts",
@@ -434,7 +457,7 @@
         "kpis": false,
         "searchBar": false,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -1336,7 +1359,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -1393,7 +1416,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -1451,7 +1474,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -1476,6 +1499,7 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/career",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/career/_components/application-detail-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/career/_components/close-opening-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/career/_components/opening-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/career/_components/status-badges.tsx"
       ],
@@ -1513,6 +1537,14 @@
         {
           "method": "PATCH",
           "url": "/career/applications/:id/status"
+        },
+        {
+          "method": "POST",
+          "url": "/career/openings/:id/close"
+        },
+        {
+          "method": "GET",
+          "url": "/career/openings/${opening"
         }
       ],
       "features": {
@@ -1553,7 +1585,7 @@
         "apps/admin/src/app/(app)/(libraries)/career/_components/status-badges.tsx",
         "apps/admin/src/app/(app)/(libraries)/career/_lib/types.ts"
       ],
-      "loc": 554,
+      "loc": 717,
       "i18nNamespaces": [
         "career.ApplicationsPage",
         "career.Common"
@@ -1609,7 +1641,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -1631,11 +1663,12 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/career/openings",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/career/_components/opening-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/career/_components/close-opening-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/career/_components/status-badges.tsx",
         "apps/admin/src/app/(app)/(libraries)/career/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/career/_lib/utils.ts"
       ],
-      "loc": 714,
+      "loc": 764,
       "i18nNamespaces": [
         "career.Common",
         "career.OpeningsPage"
@@ -1650,8 +1683,16 @@
           "url": "/career/openings/:id"
         },
         {
+          "method": "POST",
+          "url": "/career/openings/:id/close"
+        },
+        {
           "method": "PATCH",
           "url": "/career/openings/:id/status"
+        },
+        {
+          "method": "GET",
+          "url": "/career/openings/${opening"
         },
         {
           "method": "GET",
@@ -1687,7 +1728,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/career/_lib/utils.ts"
       ],
-      "loc": 325,
+      "loc": 459,
       "i18nNamespaces": [
         "career.Common",
         "career.PremiumPage"
@@ -1707,7 +1748,479 @@
         "kpis": true,
         "searchBar": true,
         "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/catalog",
+      "library": "catalog",
+      "segments": [
+        "catalog"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/catalog/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/catalog",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/catalog-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/category-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/confirm-delete-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/group-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/locale-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/multi-select.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/option-list-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/spec-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/spec-value-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/unit-form-sheet.tsx"
+      ],
+      "loc": 7,
+      "i18nNamespaces": [
+        "catalog.Common",
+        "catalog.GroupForm",
+        "catalog.OptionListForm",
+        "catalog.SpecForm",
+        "catalog.UnitForm"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/catalog/option-lists/:listId"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/spec-groups/:groupId"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/specs/:specId"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/units/:unitId"
+        }
+      ],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
         "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
+        "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/api/dev/scaffold/context/route.ts",
+        "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
+        "apps/admin/src/lib/scaffold/validate.ts"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/catalog/categories",
+      "library": "catalog",
+      "segments": [
+        "catalog",
+        "categories"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/catalog/categories/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/catalog/categories",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/categories/_components/category-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/categories/_components/category-specs-editor.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/categories/_components/category-tree.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/categories/_components/move-category-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/catalog-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/confirm-delete-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-hooks.ts",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-types.ts"
+      ],
+      "loc": 513,
+      "i18nNamespaces": [
+        "catalog.CategoriesPage",
+        "catalog.CategoryForm",
+        "catalog.CategorySpecs",
+        "catalog.Common"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/catalog/categories"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/categories/:categoryId"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/categories/:categoryId/specs"
+        },
+        {
+          "method": "PUT",
+          "url": "/catalog/categories/:categoryId/specs"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/categories/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/categories/:id/move"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/option-lists"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/mine"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/spec-groups"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/specs/options"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/units"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/catalog/products",
+      "library": "catalog",
+      "segments": [
+        "catalog",
+        "products"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/catalog/products/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/catalog/products",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-images-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-specs-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/catalog-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/confirm-delete-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-hooks.ts",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-types.ts"
+      ],
+      "loc": 543,
+      "i18nNamespaces": [
+        "catalog.Common",
+        "catalog.ProductForm",
+        "catalog.ProductImages",
+        "catalog.ProductSpecs",
+        "catalog.ProductsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/catalog/categories"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/option-lists"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/products"
+        },
+        {
+          "method": "POST",
+          "url": "/catalog/products"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/products/:currentId"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/products/:currentId"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/products/:currentId/specs"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/products/:id"
+        },
+        {
+          "method": "PUT",
+          "url": "/catalog/products/:id/specs"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/products/:productId/images"
+        },
+        {
+          "method": "POST",
+          "url": "/catalog/products/:productId/images"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/products/:productId/images/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/products/:productId/images/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/products/:productId/images/reorder"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/products/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/mine"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/spec-groups"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/specs/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/specs/options"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/units"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/categories/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/sites/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/specifications/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/catalog/sites",
+      "library": "catalog",
+      "segments": [
+        "catalog",
+        "sites"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/catalog/sites/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/catalog/sites",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/sites/_components/site-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/sites/_components/site-users-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/catalog-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_components/confirm-delete-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-hooks.ts",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-types.ts"
+      ],
+      "loc": 449,
+      "i18nNamespaces": [
+        "catalog.Common",
+        "catalog.SiteForm",
+        "catalog.SiteUsers",
+        "catalog.SitesPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/catalog/categories"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/option-lists"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/sites/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/:siteId/users"
+        },
+        {
+          "method": "POST",
+          "url": "/catalog/sites/:siteId/users"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/sites/:siteId/users/:user_id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/sites/:siteId/users/:user_id"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/:siteId/users/candidates"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/cms-options"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/mine"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/spec-groups"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/units"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/categories/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/products/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/catalog/specifications",
+      "library": "catalog",
+      "segments": [
+        "catalog",
+        "specifications"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/catalog/specifications/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/catalog/specifications",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/catalog/specifications/_components/groups-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/specifications/_components/option-lists-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/specifications/_components/specs-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/specifications/_components/units-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/_lib/catalog-hooks.ts"
+      ],
+      "loc": 161,
+      "i18nNamespaces": [
+        "catalog.Common",
+        "catalog.GroupsTab",
+        "catalog.OptionListsTab",
+        "catalog.SpecsPage",
+        "catalog.UnitsTab"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/catalog/categories"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/option-lists"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/option-lists/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/sites/mine"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/spec-groups"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/spec-groups/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/spec-groups/reorder"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/specs"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/specs/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/specs/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/units"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/units/:id"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -1726,7 +2239,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/category/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/category",
       "components": [],
-      "loc": 1166,
+      "loc": 1098,
       "i18nNamespaces": [
         "category.Category"
       ],
@@ -1967,7 +2480,7 @@
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/lead-select.tsx",
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/partner-logo.tsx"
       ],
-      "loc": 543,
+      "loc": 529,
       "i18nNamespaces": [
         "ceia.Common",
         "ceia.Components.accountSelect",
@@ -2125,7 +2638,7 @@
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/responsible-select.tsx",
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/confirm-dialog.tsx"
       ],
-      "loc": 1391,
+      "loc": 1429,
       "i18nNamespaces": [
         "ceia.Common",
         "ceia.Components.responsibleSelect",
@@ -2191,7 +2704,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/ceia/produtos/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/ceia/produtos",
       "components": [],
-      "loc": 653,
+      "loc": 668,
       "i18nNamespaces": [
         "ceia.Common",
         "ceia.ProductsPage"
@@ -2407,7 +2920,7 @@
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/meta.tsx",
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/project-status.ts"
       ],
-      "loc": 1531,
+      "loc": 1643,
       "i18nNamespaces": [
         "ceia.Common",
         "ceia.Components.accountSelect",
@@ -2480,7 +2993,7 @@
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/participant-select.tsx",
         "apps/admin/src/app/(app)/(libraries)/ceia/_components/confirm-dialog.tsx"
       ],
-      "loc": 2611,
+      "loc": 2628,
       "i18nNamespaces": [
         "ceia.Common",
         "ceia.Components.fileChip",
@@ -2631,6 +3144,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/cms/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/cms",
       "components": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/categories-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/category-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-dashboard.tsx",
@@ -2639,6 +3153,7 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/component-fields-builder.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/component-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/components-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/dashboard/dashboard-charts.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/category-select.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/component-library-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/component-properties-panel.tsx",
@@ -2647,6 +3162,7 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/editor-canvas.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/editor-header.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-editor.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-search-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/publish-info.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/revision-history-sheet.tsx",
@@ -2660,16 +3176,27 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/pages-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/preset-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/presets-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-ai-insights.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-issues.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance-chart.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance-table.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance-tools.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/seo-ai-insight.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/seo-issue-text.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/category-icon.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/layout-preview.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/status-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/site-search-console-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/site-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/site-users-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/sites-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/translate-page-dialog.tsx"
       ],
       "loc": 6,
       "i18nNamespaces": [
+        "cms.Analytics",
         "cms.Categories",
         "cms.ComponentTypes",
         "cms.Components",
@@ -2679,13 +3206,20 @@
         "cms.Editor.pageSettings.fields",
         "cms.Editor.publishConfirm.info",
         "cms.Editor.revisions",
+        "cms.Editor.search",
         "cms.Layouts",
         "cms.Menus",
         "cms.NewPage",
         "cms.Pages",
         "cms.Presets",
+        "cms.SearchConsole",
+        "cms.SearchConsole.ai",
+        "cms.SearchConsole.inspect",
+        "cms.SearchConsole.issues",
+        "cms.SearchConsole.sitemaps",
         "cms.Settings",
         "cms.Sites",
+        "cms.Sites.users",
         "cms.Status",
         "cms.Status.cache",
         "cms.Translate",
@@ -2699,6 +3233,10 @@
         {
           "method": "GET",
           "url": "/commerce/products"
+        },
+        {
+          "method": "GET",
+          "url": "/integration-profile"
         },
         {
           "method": "GET",
@@ -2749,7 +3287,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -2782,7 +3320,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -2808,7 +3346,8 @@
       "loc": 6,
       "i18nNamespaces": [
         "cms.Dashboard",
-        "cms.Status"
+        "cms.Status",
+        "cms.Types"
       ],
       "endpoints": [],
       "features": {
@@ -2816,12 +3355,13 @@
         "kpis": true,
         "searchBar": false,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/categories-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-settings.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/components-list.tsx",
@@ -2830,6 +3370,7 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/menus-manager.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/pages-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/presets-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/sites-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/forms/[id]/submissions/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/forms/page.tsx",
@@ -2851,9 +3392,10 @@
         "apps/admin/src/app/(app)/(libraries)/cms/forms/_components/form-fields-builder.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/forms/_components/form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_lib/forms.ts",
-        "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-site-bar.tsx"
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-site-bar.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-context.tsx"
       ],
-      "loc": 387,
+      "loc": 491,
       "i18nNamespaces": [
         "cms",
         "cms.Forms"
@@ -2901,7 +3443,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -2926,9 +3468,10 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/cms/forms/[id]/submissions",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/cms/_lib/forms.ts",
-        "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-site-bar.tsx"
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-site-bar.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-context.tsx"
       ],
-      "loc": 320,
+      "loc": 325,
       "i18nNamespaces": [
         "cms",
         "cms.Forms"
@@ -3122,8 +3665,12 @@
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-dashboard.tsx",
-        "apps/admin/src/app/(app)/(libraries)/cms/_components/pages-list.tsx"
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/pages-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-ai-insights.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-issues.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance-table.tsx"
       ],
       "hasChildren": false
     },
@@ -3220,8 +3767,84 @@
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-search-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/seo-ai-insight.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/sites-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/cms/sites/:id/analytics",
+      "library": "cms",
+      "segments": [
+        "cms",
+        "sites",
+        "[id]",
+        "analytics"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/cms/sites/[id]/analytics/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/cms/sites/[id]/analytics",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx"
+      ],
+      "loc": 7,
+      "i18nNamespaces": [
+        "cms.Analytics"
+      ],
+      "endpoints": [],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-search-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/sites-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/analytics.ts"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/cms/sites/:id/search",
+      "library": "cms",
+      "segments": [
+        "cms",
+        "sites",
+        "[id]",
+        "search"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/cms/sites/[id]/search/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/cms/sites/[id]/search",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance.tsx"
+      ],
+      "loc": 7,
+      "i18nNamespaces": [
+        "cms.SearchConsole"
+      ],
+      "endpoints": [],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-search-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/sites-list.tsx"
       ],
       "hasChildren": false
     },
@@ -3463,7 +4086,7 @@
         "apps/admin/src/app/(app)/(libraries)/commerce/categorias/_components/categoria-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/commerce/categorias/_components/types.ts"
       ],
-      "loc": 406,
+      "loc": 482,
       "i18nNamespaces": [
         "commerce.CommerceCategories"
       ],
@@ -3482,7 +4105,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -3628,7 +4251,7 @@
         "apps/admin/src/app/(app)/(libraries)/commerce/estoque/_components/registrar-compra-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/commerce/estoque/_components/types.ts"
       ],
-      "loc": 395,
+      "loc": 466,
       "i18nNamespaces": [
         "commerce.CommerceStock"
       ],
@@ -3659,7 +4282,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -3685,7 +4308,7 @@
         "apps/admin/src/app/(app)/(libraries)/commerce/_lib/commerce-enums.ts",
         "apps/admin/src/app/(app)/(libraries)/commerce/_lib/fulfillment.ts"
       ],
-      "loc": 517,
+      "loc": 656,
       "i18nNamespaces": [
         "commerce.CommerceFulfillmentQueue",
         "commerce.CommerceShipment"
@@ -3721,7 +4344,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -3788,7 +4411,7 @@
         "apps/admin/src/app/(app)/(libraries)/commerce/gateway-prices/commerce-gateway-price-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/commerce/gateway-prices/types.ts"
       ],
-      "loc": 651,
+      "loc": 649,
       "i18nNamespaces": [
         "commerce.CommerceGatewayPrices"
       ],
@@ -3853,7 +4476,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/commerce/lista-de-desejos/_lib/types.ts"
       ],
-      "loc": 701,
+      "loc": 830,
       "i18nNamespaces": [
         "commerce.CommerceWishlist"
       ],
@@ -3876,7 +4499,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -4275,7 +4898,7 @@
         "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-status-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/commerce/_lib/api.ts"
       ],
-      "loc": 1541,
+      "loc": 1520,
       "i18nNamespaces": [],
       "endpoints": [
         {
@@ -4343,7 +4966,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/commerce/relatorios/lucro/_lib/types.ts"
       ],
-      "loc": 430,
+      "loc": 511,
       "i18nNamespaces": [
         "commerce.CommerceProfitReport"
       ],
@@ -4356,7 +4979,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -4460,7 +5083,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/commerce/_lib/hooks/use-store-visitors-realtime.ts"
       ],
-      "loc": 395,
+      "loc": 503,
       "i18nNamespaces": [
         "commerce.CommerceStoreVisitors"
       ],
@@ -4473,7 +5096,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -4539,7 +5162,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/core/users/user-sheet.tsx"
       ],
-      "loc": 1032,
+      "loc": 1094,
       "i18nNamespaces": [
         "core.AccessLog",
         "core.UserActivity",
@@ -4858,7 +5481,6 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
-        "apps/admin/src/components/page/guard-page.tsx",
         "apps/admin/src/components/widgets/core.account-security.tsx"
       ],
       "hasChildren": false
@@ -4942,7 +5564,7 @@
           "url": "/sessions/revoke-all-other"
         },
         {
-          "method": "DELETE",
+          "method": "GET",
           "url": "/sessions/user"
         },
         {
@@ -4953,7 +5575,7 @@
       "features": {
         "pageHeader": false,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
         "viewModeToggle": false,
         "formSheet": false,
@@ -5005,9 +5627,9 @@
       "features": {
         "pageHeader": false,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -5028,7 +5650,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/ai_agent/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/ai_agent",
       "components": [],
-      "loc": 676,
+      "loc": 750,
       "i18nNamespaces": [
         "core.AiAgentPage"
       ],
@@ -5059,7 +5681,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -5085,7 +5707,7 @@
         "apps/admin/src/app/(app)/(libraries)/core/ai_instruction/_components/prompt-diff.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/ai_instruction/_lib/types.ts"
       ],
-      "loc": 488,
+      "loc": 598,
       "i18nNamespaces": [
         "core.AiInstructionPage"
       ],
@@ -5128,7 +5750,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -5223,6 +5845,7 @@
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/seo-ai-insight.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/configurations/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/discussions/moderation/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/queue/scaling/page.tsx"
@@ -5497,7 +6120,7 @@
       "features": {
         "pageHeader": true,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": true,
@@ -5517,7 +6140,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/incidents/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/incidents",
       "components": [],
-      "loc": 430,
+      "loc": 503,
       "i18nNamespaces": [
         "core.Incidents"
       ],
@@ -5561,7 +6184,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/integration/profiles/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/integration/profiles",
       "components": [],
-      "loc": 1065,
+      "loc": 1219,
       "i18nNamespaces": [
         "core.IntegrationProfilePage"
       ],
@@ -5600,7 +6223,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -5620,7 +6243,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/integrations-webhooks/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/integrations-webhooks",
       "components": [],
-      "loc": 4439,
+      "loc": 4753,
       "i18nNamespaces": [
         "core.IntegrationsWebhooksPage"
       ],
@@ -5787,7 +6410,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -5883,7 +6506,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/mail/log/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/mail/log",
       "components": [],
-      "loc": 1006,
+      "loc": 1020,
       "i18nNamespaces": [
         "core.MailLog"
       ],
@@ -5962,7 +6585,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -5981,7 +6604,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/mail/template/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/mail/template",
       "components": [],
-      "loc": 1434,
+      "loc": 1542,
       "i18nNamespaces": [
         "core.MailPage"
       ],
@@ -6032,7 +6655,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -6112,7 +6735,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/menu/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/menu",
       "components": [],
-      "loc": 2836,
+      "loc": 3015,
       "i18nNamespaces": [
         "core.MenuPage"
       ],
@@ -6179,7 +6802,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -6256,7 +6879,7 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/system-page-types.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/use-system-pages.ts"
       ],
-      "loc": 600,
+      "loc": 597,
       "i18nNamespaces": [
         "core.PageWizard",
         "core.SystemPagesPage"
@@ -6350,7 +6973,7 @@
         "apps/admin/src/app/(app)/(libraries)/core/roles/routes.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/roles/users.tsx"
       ],
-      "loc": 1053,
+      "loc": 1186,
       "i18nNamespaces": [
         "core.RolePage"
       ],
@@ -6417,7 +7040,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -6437,7 +7060,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/routes/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/routes",
       "components": [],
-      "loc": 1378,
+      "loc": 1494,
       "i18nNamespaces": [
         "core.RoutePage"
       ],
@@ -6495,6 +7118,72 @@
       "hasChildren": false
     },
     {
+      "route": "/core/service-accounts",
+      "library": "core",
+      "segments": [
+        "core",
+        "service-accounts"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/core/service-accounts/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/core/service-accounts",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/core/service-accounts/service-account-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/service-accounts/types.ts"
+      ],
+      "loc": 422,
+      "i18nNamespaces": [
+        "core.ServiceAccounts"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/service-account"
+        },
+        {
+          "method": "POST",
+          "url": "/service-account"
+        },
+        {
+          "method": "DELETE",
+          "url": "/service-account/:accountId"
+        },
+        {
+          "method": "GET",
+          "url": "/service-account/:accountId"
+        },
+        {
+          "method": "POST",
+          "url": "/service-account/:accountId/reactivate"
+        },
+        {
+          "method": "PATCH",
+          "url": "/service-account/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/service-account/owner-options"
+        },
+        {
+          "method": "GET",
+          "url": "/service-account/stats"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
       "route": "/core/setting-list",
       "library": "core",
       "segments": [
@@ -6504,7 +7193,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/core/setting-list/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/core/setting-list",
       "components": [],
-      "loc": 751,
+      "loc": 768,
       "i18nNamespaces": [
         "core.SettingListPage"
       ],
@@ -6551,7 +7240,7 @@
         "apps/admin/src/app/(app)/(libraries)/core/users/simulate-access-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/users/user-sheet.tsx"
       ],
-      "loc": 821,
+      "loc": 785,
       "i18nNamespaces": [
         "core.AccessSimulation",
         "core.UserActivity",
@@ -6717,7 +7406,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-import-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-types.ts"
       ],
-      "loc": 1267,
+      "loc": 1175,
       "i18nNamespaces": [
         "crm.AccountsPage",
         "crm.ContactPage",
@@ -6807,7 +7496,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/activities/_components/activity-types.ts",
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/interaction-notes.tsx"
       ],
-      "loc": 789,
+      "loc": 717,
       "i18nNamespaces": [
         "crm.ContactPage",
         "crm.CrmActivities",
@@ -6865,7 +7554,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/crm/contact-type/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/crm/contact-type",
       "components": [],
-      "loc": 815,
+      "loc": 870,
       "i18nNamespaces": [
         "crm.ContactType"
       ],
@@ -6900,7 +7589,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -6977,7 +7666,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/crm/document-type/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/crm/document-type",
       "components": [],
-      "loc": 967,
+      "loc": 1032,
       "i18nNamespaces": [
         "crm.DocumentType"
       ],
@@ -7012,7 +7701,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -7034,7 +7723,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/crm/_components/person-picker.tsx"
       ],
-      "loc": 1048,
+      "loc": 973,
       "i18nNamespaces": [
         "crm.CrmFollowups",
         "crm.CrmMenu"
@@ -7150,7 +7839,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-interaction-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-types.ts"
       ],
-      "loc": 1616,
+      "loc": 1513,
       "i18nNamespaces": [
         "crm.ContactPage",
         "crm.CrmMenu",
@@ -7317,7 +8006,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/person/_components/person-types.ts",
         "apps/admin/src/app/(app)/(libraries)/crm/pipeline/_lib/pipeline-types.ts"
       ],
-      "loc": 1044,
+      "loc": 1077,
       "i18nNamespaces": [
         "crm.ContactPage",
         "crm.CrmDashboard",
@@ -7480,7 +8169,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -7507,7 +8196,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/_lib/deal-types.ts",
         "apps/admin/src/app/(app)/(libraries)/crm/pipeline/_lib/pipeline-types.ts"
       ],
-      "loc": 584,
+      "loc": 768,
       "i18nNamespaces": [
         "crm.CrmPipeline.settings",
         "crm.CrmPipeline.settings.form"
@@ -7533,9 +8222,9 @@
       "features": {
         "pageHeader": true,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -7743,7 +8432,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/reports/_components/report-types.ts",
         "apps/admin/src/app/(app)/(libraries)/crm/_lib/crm-sections.tsx"
       ],
-      "loc": 1236,
+      "loc": 1299,
       "i18nNamespaces": [
         "crm.CrmActivities",
         "crm.CrmDashboard",
@@ -7758,7 +8447,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -7768,6 +8457,390 @@
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/_lib/crm-sections.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/factory",
+      "library": "factory",
+      "segments": [
+        "factory"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/factory/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/factory",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-avatar.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-markdown.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/operations-project-create-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/project-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-attachments.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-kpis.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/requests-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/service-account-create-sheet.tsx"
+      ],
+      "loc": 6,
+      "i18nNamespaces": [
+        "factory.Common",
+        "factory.Kpis",
+        "factory.OperationsProjectSheet",
+        "factory.ProjectForm",
+        "factory.RequestSheet",
+        "factory.RequestsList",
+        "factory.ServiceAccountSheet"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/factory/project"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/project/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/lookups"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/operations-project"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/service-account"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request/:requestId"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/request/:requestId/:path"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request/stats:params"
+        },
+        {
+          "method": "GET",
+          "url": "/integration-profile"
+        }
+      ],
+      "features": {
+        "pageHeader": false,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
+        "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/api/dev/scaffold/context/route.ts",
+        "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
+        "apps/admin/src/lib/scaffold/validate.ts"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/factory/pedidos",
+      "library": "factory",
+      "segments": [
+        "factory",
+        "pedidos"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/factory/pedidos/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/factory/pedidos",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-kpis.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/requests-list.tsx"
+      ],
+      "loc": 42,
+      "i18nNamespaces": [
+        "factory.Common",
+        "factory.Kpis",
+        "factory.RequestsList",
+        "factory.RequestsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/factory/project"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request/stats:params"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/factory/projetos",
+      "library": "factory",
+      "segments": [
+        "factory",
+        "projetos"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/factory/projetos/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/factory/projetos",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/project-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-badges.tsx"
+      ],
+      "loc": 535,
+      "i18nNamespaces": [
+        "factory.Common",
+        "factory.ProjectForm",
+        "factory.ProjectsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/factory/project"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/project/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/lookups"
+        },
+        {
+          "method": "GET",
+          "url": "/integration-profile"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/pedidos/page.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/factory/projetos/:id",
+      "library": "factory",
+      "segments": [
+        "factory",
+        "projetos",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/changelog-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/credits-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/members-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/size-rules-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/project-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-kpis.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/requests-list.tsx"
+      ],
+      "loc": 286,
+      "i18nNamespaces": [
+        "factory.Changelog",
+        "factory.Common",
+        "factory.Credits",
+        "factory.Kpis",
+        "factory.Members",
+        "factory.ProjectDetail",
+        "factory.ProjectForm",
+        "factory.RequestsList",
+        "factory.SizeRules"
+      ],
+      "endpoints": [
+        {
+          "method": "PATCH",
+          "url": "/factory/changelog/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/project/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/project/:projectId"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId/changelog"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId/credit:params"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/credit/period"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/project/:projectId/credit/period/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/credit/period/:id/adjustment"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId/member"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/member"
+        },
+        {
+          "method": "DELETE",
+          "url": "/factory/project/:projectId/member/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/project/:projectId/member/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId/size-rule"
+        },
+        {
+          "method": "PUT",
+          "url": "/factory/project/:projectId/size-rule"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/lookups"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request/stats:params"
+        },
+        {
+          "method": "GET",
+          "url": "/integration-profile"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/factory/suporte",
+      "library": "factory",
+      "segments": [
+        "factory",
+        "suporte"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/factory/suporte/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/factory/suporte",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/approvals.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/changelog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/credits.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/forum-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/forum-topic-view.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/my-requests.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/support-request-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/support-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/support-ui.tsx"
+      ],
+      "loc": 174,
+      "i18nNamespaces": [
+        "factory.Common"
+      ],
+      "endpoints": [],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/components/support/support-client.ts"
       ],
       "hasChildren": false
     },
@@ -7791,9 +8864,11 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_components/finance-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/finance-title-actions-menu.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/finance-title-delete-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/finance/_components/payment-schedule-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/project-allocations-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/recurrence-scope-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/settlement-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/finance/_components/title-currency-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/title-extraction-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_components/title-file-attachments.tsx"
       ],
@@ -7803,6 +8878,7 @@
         "finance.FinanceEntityFieldWithCreate",
         "finance.ProjectAllocationsField",
         "finance.SettlementSheet",
+        "finance.TitleCurrencyField",
         "finance.TitleExtraction",
         "finance.TitleFileAttachments"
       ],
@@ -7922,7 +8998,7 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts"
       ],
-      "loc": 599,
+      "loc": 572,
       "i18nNamespaces": [
         "finance.PayableApprovalsPage"
       ],
@@ -7947,11 +9023,11 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
-        "dataTable": true,
+        "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
@@ -7978,12 +9054,15 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-access.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-settings.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-currencies.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_components/title-currency-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-title-extraction.ts"
       ],
-      "loc": 2859,
+      "loc": 3115,
       "i18nNamespaces": [
         "finance.PayableInstallmentsPage",
+        "finance.TitleCurrencyField",
         "finance.TitleExtraction"
       ],
       "endpoints": [
@@ -8000,6 +9079,10 @@
           "url": "/finance/accounts-payable/installments"
         },
         {
+          "method": "PATCH",
+          "url": "/finance/accounts-payable/installments/:id/payment-schedule"
+        },
+        {
           "method": "DELETE",
           "url": "/finance/accounts-payable/installments/:titleId"
         },
@@ -8012,6 +9095,10 @@
           "url": "/finance/accounts-payable/installments/:titleId/cancel"
         },
         {
+          "method": "PATCH",
+          "url": "/finance/accounts-payable/installments/:titleId/revert-to-draft"
+        },
+        {
           "method": "GET",
           "url": "/finance/accounts-payable/installments/summary"
         },
@@ -8022,6 +9109,10 @@
         {
           "method": "GET",
           "url": "/finance/cost-centers"
+        },
+        {
+          "method": "GET",
+          "url": "/finance/currencies"
         },
         {
           "method": "POST",
@@ -8045,9 +9136,9 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
-        "dataTable": true,
+        "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
@@ -8072,9 +9163,10 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/title-action-rules.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-access.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-settings.ts",
-        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts"
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-currencies.ts"
       ],
-      "loc": 1259,
+      "loc": 1418,
       "i18nNamespaces": [
         "finance.PayableInstallmentDetailPage",
         "finance.PayableInstallmentsPage"
@@ -8098,6 +9190,14 @@
         },
         {
           "method": "PATCH",
+          "url": "/finance/accounts-payable/installments/:id/payment-schedule"
+        },
+        {
+          "method": "PATCH",
+          "url": "/finance/accounts-payable/installments/:id/revert-to-draft"
+        },
+        {
+          "method": "PATCH",
           "url": "/finance/accounts-payable/installments/:id/tags"
         },
         {
@@ -8111,6 +9211,10 @@
         {
           "method": "GET",
           "url": "/finance/cost-centers"
+        },
+        {
+          "method": "GET",
+          "url": "/finance/currencies"
         },
         {
           "method": "POST",
@@ -8171,7 +9275,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts"
       ],
-      "loc": 1061,
+      "loc": 1033,
       "i18nNamespaces": [
         "finance.CollectionsDefaultPage"
       ],
@@ -8192,11 +9296,11 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
-        "dataTable": true,
+        "dataTable": false,
         "widgets": false
       },
       "referencedBy": [],
@@ -8222,11 +9326,14 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-access.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-settings.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-currencies.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_components/title-currency-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts"
       ],
-      "loc": 2802,
+      "loc": 2948,
       "i18nNamespaces": [
         "finance.ReceivableInstallmentsPage",
+        "finance.TitleCurrencyField",
         "finance.TitleExtraction"
       ],
       "endpoints": [
@@ -8255,8 +9362,16 @@
           "url": "/finance/accounts-receivable/installments/:titleId/cancel"
         },
         {
+          "method": "PATCH",
+          "url": "/finance/accounts-receivable/installments/:titleId/revert-to-draft"
+        },
+        {
           "method": "GET",
           "url": "/finance/accounts-receivable/installments/summary"
+        },
+        {
+          "method": "GET",
+          "url": "/finance/currencies"
         },
         {
           "method": "POST",
@@ -8280,9 +9395,9 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
-        "dataTable": true,
+        "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
@@ -8305,9 +9420,11 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/title-action-rules.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-access.ts",
-        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts"
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/hooks/use-finance-settings.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-currencies.ts"
       ],
-      "loc": 1010,
+      "loc": 1098,
       "i18nNamespaces": [
         "finance.ReceivableInstallmentDetailPage",
         "finance.ReceivableInstallmentsPage"
@@ -8323,6 +9440,10 @@
         },
         {
           "method": "PATCH",
+          "url": "/finance/accounts-receivable/installments/:id/revert-to-draft"
+        },
+        {
+          "method": "PATCH",
           "url": "/finance/accounts-receivable/installments/:id/tags"
         },
         {
@@ -8332,6 +9453,10 @@
         {
           "method": "GET",
           "url": "/finance/cost-centers"
+        },
+        {
+          "method": "GET",
+          "url": "/finance/currencies"
         },
         {
           "method": "POST",
@@ -8352,6 +9477,10 @@
         {
           "method": "GET",
           "url": "/person/:personId"
+        },
+        {
+          "method": "GET",
+          "url": "/setting/group/financeiro"
         }
       ],
       "features": {
@@ -8426,7 +9555,7 @@
         "apps/admin/src/app/(app)/(libraries)/finance/administration/categories/_components/category-tree-node.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/administration/categories/_components/category-tree.tsx"
       ],
-      "loc": 264,
+      "loc": 547,
       "i18nNamespaces": [
         "finance.AdminCategoriesPage"
       ],
@@ -8465,7 +9594,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -8622,7 +9751,7 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_components/finance-layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts"
       ],
-      "loc": 517,
+      "loc": 525,
       "i18nNamespaces": [
         "finance.BankAccountsPage"
       ],
@@ -8690,22 +9819,18 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts"
       ],
-      "loc": 1025,
+      "loc": 1478,
       "i18nNamespaces": [
         "finance.BankReconciliationPage"
       ],
       "endpoints": [
         {
           "method": "GET",
-          "url": "/finance/accounts-payable/installments"
-        },
-        {
-          "method": "GET",
-          "url": "/finance/accounts-receivable/installments"
-        },
-        {
-          "method": "GET",
           "url": "/finance/bank-accounts"
+        },
+        {
+          "method": "GET",
+          "url": "/finance/bank-reconciliation/suggestions"
         },
         {
           "method": "GET",
@@ -8755,7 +9880,7 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts"
       ],
-      "loc": 2117,
+      "loc": 2108,
       "i18nNamespaces": [
         "finance.BankAccountsPage",
         "finance.StatementsPage"
@@ -8801,11 +9926,11 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
-        "dataTable": true,
+        "dataTable": false,
         "widgets": false
       },
       "referencedBy": [],
@@ -8825,7 +9950,7 @@
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts"
       ],
-      "loc": 899,
+      "loc": 1092,
       "i18nNamespaces": [
         "finance.TransfersPage"
       ],
@@ -8841,6 +9966,14 @@
         {
           "method": "POST",
           "url": "/finance/transfers"
+        },
+        {
+          "method": "DELETE",
+          "url": "/finance/transfers/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/finance/transfers/:id"
         },
         {
           "method": "GET",
@@ -9037,17 +10170,19 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/finance/reports/cash-flow/_components/cash-flow-matrix.tsx",
         "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/cash-flow-rows.ts",
-        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts"
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_components/report-currency-control.tsx"
       ],
-      "loc": 349,
+      "loc": 456,
       "i18nNamespaces": [
-        "finance.AnnualCashFlowReportPage"
+        "finance.AnnualCashFlowReportPage",
+        "finance.ReportCurrencyControl"
       ],
       "endpoints": [],
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -9104,11 +10239,13 @@
       "file": "apps/admin/src/app/(app)/(libraries)/finance/reports/overview-results/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/finance/reports/overview-results",
       "components": [
-        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts"
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_components/report-currency-control.tsx"
       ],
-      "loc": 458,
+      "loc": 508,
       "i18nNamespaces": [
-        "finance.OverviewResultsReportPage"
+        "finance.OverviewResultsReportPage",
+        "finance.ReportCurrencyControl"
       ],
       "endpoints": [],
       "features": {
@@ -9137,10 +10274,12 @@
       "file": "apps/admin/src/app/(app)/(libraries)/finance/reports/top-customers/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/finance/reports/top-customers",
       "components": [
-        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts"
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_components/report-currency-control.tsx"
       ],
-      "loc": 592,
+      "loc": 621,
       "i18nNamespaces": [
+        "finance.ReportCurrencyControl",
         "finance.TopCustomersReportPage"
       ],
       "endpoints": [],
@@ -9170,10 +10309,12 @@
       "file": "apps/admin/src/app/(app)/(libraries)/finance/reports/top-operational-expenses/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/finance/reports/top-operational-expenses",
       "components": [
-        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts"
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_lib/use-finance-reports.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/reports/_components/report-currency-control.tsx"
       ],
-      "loc": 584,
+      "loc": 618,
       "i18nNamespaces": [
+        "finance.ReportCurrencyControl",
         "finance.TopOperationalExpensesReportPage"
       ],
       "endpoints": [],
@@ -9204,7 +10345,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/fiscal/documents/_components/fiscal-document-types.ts"
       ],
-      "loc": 501,
+      "loc": 599,
       "i18nNamespaces": [
         "fiscal.FiscalDocumentsPage",
         "fiscal.breadcrumbs"
@@ -9236,7 +10377,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -9256,7 +10397,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/fiscal/issuers/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/fiscal/issuers",
       "components": [],
-      "loc": 556,
+      "loc": 658,
       "i18nNamespaces": [
         "fiscal.FiscalIssuersPage",
         "fiscal.breadcrumbs"
@@ -9292,7 +10433,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -9312,7 +10453,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/fiscal/service-codes/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/fiscal/service-codes",
       "components": [],
-      "loc": 517,
+      "loc": 623,
       "i18nNamespaces": [
         "fiscal.FiscalServiceCodesPage",
         "fiscal.breadcrumbs"
@@ -9340,7 +10481,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -9401,7 +10542,7 @@
         "apps/admin/src/app/(app)/(libraries)/hedhog/license/_components/license-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/hedhog/license/_components/reactivate-license-dialog.tsx"
       ],
-      "loc": 307,
+      "loc": 448,
       "i18nNamespaces": [
         "hedhog.LicensePage"
       ],
@@ -9432,7 +10573,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -9688,7 +10829,7 @@
         "apps/admin/src/app/(app)/(libraries)/integrity/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/integrity/_lib/types.ts"
       ],
-      "loc": 498,
+      "loc": 629,
       "i18nNamespaces": [
         "integrity.Common",
         "integrity.DeclarationsPage"
@@ -9708,7 +10849,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -9783,7 +10924,7 @@
         "apps/admin/src/app/(app)/(libraries)/integrity/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/integrity/_lib/types.ts"
       ],
-      "loc": 376,
+      "loc": 494,
       "i18nNamespaces": [
         "integrity.Common",
         "integrity.PoliciesPage"
@@ -9803,7 +10944,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -9881,7 +11022,7 @@
         "apps/admin/src/app/(app)/(libraries)/integrity/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/integrity/_lib/types.ts"
       ],
-      "loc": 373,
+      "loc": 522,
       "i18nNamespaces": [
         "integrity.Common",
         "integrity.ReportsPage"
@@ -9901,7 +11042,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -10230,7 +11371,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/achievements/_components/achievement-card-preview-panel.tsx"
       ],
-      "loc": 1333,
+      "loc": 1416,
       "i18nNamespaces": [
         "lms.AchievementsPage"
       ],
@@ -10269,7 +11410,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -10289,7 +11430,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/bitcode-rules/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/bitcode-rules",
       "components": [],
-      "loc": 730,
+      "loc": 827,
       "i18nNamespaces": [
         "lms.BitcodeRulesPage"
       ],
@@ -10310,9 +11451,9 @@
       "features": {
         "pageHeader": true,
         "kpis": false,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -10334,7 +11475,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-person-picker.ts"
       ],
-      "loc": 1126,
+      "loc": 1209,
       "i18nNamespaces": [
         "lms.BitcodesPage"
       ],
@@ -10377,7 +11518,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -10397,8 +11538,10 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/bulk-upload-sessions/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/bulk-upload-sessions",
       "components": [],
-      "loc": 2259,
-      "i18nNamespaces": [],
+      "loc": 2396,
+      "i18nNamespaces": [
+        "lms.BulkUploadSessionsPage"
+      ],
       "endpoints": [
         {
           "method": "GET",
@@ -10466,7 +11609,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -10491,7 +11634,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/edit-issued-certificate-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/manual-issue-certificate-sheet.tsx"
       ],
-      "loc": 1023,
+      "loc": 1032,
       "i18nNamespaces": [
         "lms.CertificateTemplateEditor.fields",
         "lms.IssuedCertificatesPage",
@@ -10596,7 +11739,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/test-emission-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/versions-sheet.tsx"
       ],
-      "loc": 1238,
+      "loc": 1242,
       "i18nNamespaces": [
         "lms.CertificateTemplateEditor",
         "lms.CertificateTemplateEditor.leftPanel.brandFonts",
@@ -10762,7 +11905,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/class-checklist/_components/checklist-template-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/class-checklist/_components/checklist-template-types.ts"
       ],
-      "loc": 668,
+      "loc": 641,
       "i18nNamespaces": [
         "lms.ClassChecklistPage"
       ],
@@ -10803,7 +11946,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
         "viewModeToggle": false,
         "formSheet": true,
@@ -10826,12 +11969,14 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/classes",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/classes/_components/classes-calendar-view.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/_components/delete-classes-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/duplicate-class-sheet.tsx"
       ],
-      "loc": 2024,
+      "loc": 1954,
       "i18nNamespaces": [
         "lms.ClassesPage",
+        "lms.ClassesPage.deleteDialog",
         "lms.ClassesPage.duplicateSheet",
         "lms.CoursesPage"
       ],
@@ -10875,6 +12020,10 @@
         {
           "method": "POST",
           "url": "/lms/classes/bulk-tags"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/classes/delete-impact"
         },
         {
           "method": "GET",
@@ -11317,6 +12466,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/duplicate-class-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/bulk-upload-sessions/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/_components/classes-calendar-view.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/_components/delete-classes-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/course-scheduled-classes-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-classes-calendar-tab.tsx",
@@ -11387,7 +12537,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/course-materials/_components/course-material-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/course-materials/_components/course-material-types.ts"
       ],
-      "loc": 502,
+      "loc": 589,
       "i18nNamespaces": [
         "lms.CourseMaterialsPage"
       ],
@@ -11454,7 +12604,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -11481,7 +12631,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-avatar.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-form-sheet.tsx"
       ],
-      "loc": 2135,
+      "loc": 2141,
       "i18nNamespaces": [
         "lms.CoursesPage",
         "lms.CoursesPage.aiWizard"
@@ -11712,6 +12862,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/editor-bulk.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/editor-course.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/editor-lesson.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/editor-recording-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/editor-session.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/frames/frame-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/frames/frame-time.ts",
@@ -11750,6 +12901,7 @@
         "lms.CoursesPage.StructurePage.copyToCourseDialog",
         "lms.CoursesPage.StructurePage.displaySettings",
         "lms.CoursesPage.StructurePage.dragHandle",
+        "lms.CoursesPage.StructurePage.editorRecording",
         "lms.CoursesPage.StructurePage.generateQuiz",
         "lms.CoursesPage.StructurePage.lessonRow",
         "lms.CoursesPage.StructurePage.multiSelectBar",
@@ -11856,6 +13008,14 @@
         {
           "method": "GET",
           "url": "/lms/courses/:courseId/structure/video-processing-stats"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/lessons/:lessonId/preview/editor-recording"
+        },
+        {
+          "method": "GET",
+          "url": "/lms/lessons/:lessonId/preview/hls-token"
         },
         {
           "method": "GET",
@@ -12033,7 +13193,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/hooks/use-lms-realtime-refresh.ts"
       ],
-      "loc": 452,
+      "loc": 454,
       "i18nNamespaces": [
         "lms.DiscussionsReportsPage"
       ],
@@ -12100,7 +13260,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-user-distribution-chart.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/format-study-hours.ts"
       ],
-      "loc": 855,
+      "loc": 826,
       "i18nNamespaces": [
         "lms.CoursesPage",
         "lms.EnterpriseDetailPage",
@@ -12351,7 +13511,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/evaluations/_components/evaluation-topic-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/evaluations/_components/evaluation-topic-types.ts"
       ],
-      "loc": 722,
+      "loc": 794,
       "i18nNamespaces": [
         "lms.EvaluationTopicsPage"
       ],
@@ -12384,9 +13544,9 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -12411,7 +13571,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/evaluations/options/_components/evaluation-option-types.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/evaluations/_components/evaluation-topic-types.ts"
       ],
-      "loc": 501,
+      "loc": 604,
       "i18nNamespaces": [
         "lms.EvaluationOptionsPage",
         "lms.EvaluationTopicsPage"
@@ -12447,7 +13607,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -12465,7 +13625,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/exams/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/exams",
       "components": [],
-      "loc": 2251,
+      "loc": 2248,
       "i18nNamespaces": [
         "lms.ExamsPage"
       ],
@@ -12951,7 +14111,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/instructor-skills/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/instructor-skills",
       "components": [],
-      "loc": 584,
+      "loc": 633,
       "i18nNamespaces": [
         "lms.InstructorSkillsPage"
       ],
@@ -12982,7 +14142,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -13010,7 +14170,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/instructors/_components/instructor-training-status-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/instructors/_components/instructor-types.ts"
       ],
-      "loc": 876,
+      "loc": 823,
       "i18nNamespaces": [
         "lms.InstructorsPage",
         "lms.InstructorsPage.trainingInvite",
@@ -13115,7 +14275,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/onboarding-questions/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/onboarding-questions",
       "components": [],
-      "loc": 908,
+      "loc": 917,
       "i18nNamespaces": [
         "lms.OnboardingQuestionsPage"
       ],
@@ -13169,7 +14329,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/onboarding-questions/report/_components/student-answers-sheet.tsx"
       ],
-      "loc": 601,
+      "loc": 672,
       "i18nNamespaces": [
         "lms.OnboardingQuestionsReportPage"
       ],
@@ -13192,7 +14352,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -13221,7 +14381,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/paths/_components/path-sequence-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/paths/_components/path-students-tab.tsx"
       ],
-      "loc": 1027,
+      "loc": 1031,
       "i18nNamespaces": [
         "lms.TrainingDetailPage",
         "lms.TrainingPage"
@@ -13343,7 +14503,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/reports/_components/rankings-card.tsx"
       ],
-      "loc": 893,
+      "loc": 952,
       "i18nNamespaces": [
         "lms.ReportsDashboardPage"
       ],
@@ -13385,7 +14545,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/hooks/use-lms-activity-realtime.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/reports/activity/_lib/enum-label.ts"
       ],
-      "loc": 1094,
+      "loc": 1085,
       "i18nNamespaces": [
         "lms.ReportsActivityPage"
       ],
@@ -13431,7 +14591,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/reports/courses/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/reports/courses",
       "components": [],
-      "loc": 966,
+      "loc": 1043,
       "i18nNamespaces": [
         "lms.ReportsCoursesPage"
       ],
@@ -13468,7 +14628,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-avatar.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/reports/_components/rankings-card.tsx"
       ],
-      "loc": 1102,
+      "loc": 1123,
       "i18nNamespaces": [
         "lms.ReportsDashboardPage"
       ],
@@ -13502,7 +14662,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/reports/evaluations/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/reports/evaluations",
       "components": [],
-      "loc": 1824,
+      "loc": 1878,
       "i18nNamespaces": [
         "lms.EvaluationsPage"
       ],
@@ -13531,7 +14691,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
         "viewModeToggle": true,
         "formSheet": true,
@@ -13552,7 +14712,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/reports/searches/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/reports/searches",
       "components": [],
-      "loc": 814,
+      "loc": 827,
       "i18nNamespaces": [
         "crm.ContactPage",
         "lms.ReportsSearchesPage"
@@ -13599,7 +14759,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/reports/skill-gaps/_lib/format.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/reports/skill-gaps/_lib/types.ts"
       ],
-      "loc": 650,
+      "loc": 685,
       "i18nNamespaces": [
         "lms.ReportsSkillGapsPage"
       ],
@@ -13647,7 +14807,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_lib/format.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/reports/skills/_lib/types.ts"
       ],
-      "loc": 838,
+      "loc": 911,
       "i18nNamespaces": [
         "lms.ReportsSkillsPage"
       ],
@@ -13687,7 +14847,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/_components/student-detail-sheet.tsx"
       ],
-      "loc": 1056,
+      "loc": 1080,
       "i18nNamespaces": [
         "lms.ReportsStudentsPage"
       ],
@@ -13743,7 +14903,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/send-direct-message-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/student-detail-sheet.tsx"
       ],
-      "loc": 711,
+      "loc": 688,
       "i18nNamespaces": [
         "lms.DirectMessage",
         "lms.StudentsPage"
@@ -13811,7 +14971,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/training/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/training",
       "components": [],
-      "loc": 2326,
+      "loc": 2369,
       "i18nNamespaces": [
         "lms.CoursesPage",
         "lms.ExamsPage",
@@ -13981,7 +15141,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/lms/xp/_components/xp-card-preview-panel.tsx"
       ],
-      "loc": 1083,
+      "loc": 1160,
       "i18nNamespaces": [
         "lms.XpAreasPage"
       ],
@@ -14041,7 +15201,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/xp/learning-types/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/xp/learning-types",
       "components": [],
-      "loc": 787,
+      "loc": 851,
       "i18nNamespaces": [
         "lms.XpLearningTypesPage"
       ],
@@ -14076,7 +15236,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -14099,7 +15259,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/xp/_components/xp-skill-files.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/xp/_components/xp-card-theme.ts"
       ],
-      "loc": 1305,
+      "loc": 1384,
       "i18nNamespaces": [
         "lms.XpSkillsPage"
       ],
@@ -14253,6 +15413,12 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/department-select-with-create.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/expense-limit-source-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/intake-fields-editor.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-catalog-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-approval-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-detail-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-task-banner.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/my-project-summary-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-calendar-view.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
@@ -14277,15 +15443,18 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/section-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-logo.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-seats-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/status-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/system-user-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/system-user-select-with-create.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/task-actions-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-detail-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-file-attachments.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-form-fields.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-info-display.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-watchers-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/tasks-gantt-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/time-off-status-icon.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/timesheet-entry-create-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/timesheet-task-create-sheet.tsx",
@@ -14304,11 +15473,16 @@
         "operations.ContractFormPage",
         "operations.ExpenseReimbursementPage",
         "operations.IntakeFields",
+        "operations.LicenseRequestsPage",
+        "operations.LicenseRequestsPage.form",
+        "operations.LicenseRequestsPage.statuses",
+        "operations.LicenseRequestsPage.taskBanner",
         "operations.ProjectCostPlanSheet",
         "operations.ProjectCostPlansSection",
         "operations.ProjectCostReport",
         "operations.ProjectCostsSection",
         "operations.ProjectDetailsPage",
+        "operations.ProjectDetailsPage.actionsSection",
         "operations.ProjectDetailsPage.activitiesSection",
         "operations.ProjectDetailsPage.commentsSection",
         "operations.ProjectExpenseRequestSheet",
@@ -14318,11 +15492,13 @@
         "operations.ProjectFormPage",
         "operations.ProjectStatement",
         "operations.ProjectsPage",
+        "operations.SoftwareLicensesPage",
         "operations.SoftwareLicensesPage.billingCycles",
         "operations.SoftwareLicensesPage.cardPicker",
         "operations.SoftwareLicensesPage.cards",
         "operations.SoftwareLicensesPage.licensePicker",
         "operations.TaskFileAttachments",
+        "operations.TasksGanttPage",
         "operations.TimeOffPage",
         "operations.TimesheetsPage"
       ],
@@ -14395,7 +15571,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": true,
         "formSheet": true,
@@ -14470,6 +15646,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/operations/approvals/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/operations/approvals",
       "components": [
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-approval-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-calendar-view.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-avatar.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
@@ -14479,10 +15656,11 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 1933,
+      "loc": 1982,
       "i18nNamespaces": [
         "operations.ApprovalsPage",
-        "operations.Common"
+        "operations.Common",
+        "operations.LicenseRequestsPage"
       ],
       "endpoints": [
         {
@@ -14496,6 +15674,10 @@
         {
           "method": "POST",
           "url": "/operations/approvals/:id/:action"
+        },
+        {
+          "method": "GET",
+          "url": "/operations/projects/options"
         },
         {
           "method": "GET",
@@ -14534,7 +15716,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 865,
+      "loc": 895,
       "i18nNamespaces": [
         "operations.CollaboratorFormPage",
         "operations.CollaboratorTypesPage",
@@ -14588,7 +15770,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 1216,
+      "loc": 1198,
       "i18nNamespaces": [
         "operations.CollaboratorDetailsPage",
         "operations.CollaboratorFormPage",
@@ -14669,10 +15851,10 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-details-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-form-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/project-details-screen.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-seats-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/collaborators/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/my-reimbursements/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/software-licenses/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/timesheets/page.tsx"
       ],
       "hasChildren": true
@@ -14754,8 +15936,8 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-details-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-form-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/project-details-screen.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/collaborators/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/software-licenses/page.tsx"
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-seats-section.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/collaborators/page.tsx"
       ],
       "hasChildren": false
     },
@@ -14777,7 +15959,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 794,
+      "loc": 818,
       "i18nNamespaces": [
         "operations.Common",
         "operations.ContractDetailsPage",
@@ -14985,7 +16167,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 900,
+      "loc": 878,
       "i18nNamespaces": [
         "operations.CollaboratorFormPage",
         "operations.Common",
@@ -15056,6 +16238,57 @@
       "hasChildren": false
     },
     {
+      "route": "/operations/license-requests",
+      "library": "operations",
+      "segments": [
+        "operations",
+        "license-requests"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/operations/license-requests/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/operations/license-requests",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-detail-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/license-request-status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts",
+        "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
+      ],
+      "loc": 612,
+      "i18nNamespaces": [
+        "operations.Common",
+        "operations.LicenseRequestsPage",
+        "operations.LicenseRequestsPage.statuses"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/file"
+        },
+        {
+          "method": "GET",
+          "url": "/operations/collaborators/options"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts"
+      ],
+      "hasChildren": false
+    },
+    {
       "route": "/operations/my-projects",
       "library": "operations",
       "segments": [
@@ -15071,7 +16304,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 616,
+      "loc": 599,
       "i18nNamespaces": [
         "operations.Common",
         "operations.MyProjectsPage",
@@ -15131,7 +16364,6 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/operations/my-projects/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/my-tasks/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/tasks-gantt-director/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/tasks-gantt/page.tsx"
       ],
@@ -15193,18 +16425,18 @@
       "file": "apps/admin/src/app/(app)/(libraries)/operations/my-tasks/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/operations/my-tasks",
       "components": [
+        "apps/admin/src/app/(app)/(libraries)/operations/my-tasks/_components/multi-select-filter.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/my-tasks/_components/task-board-card.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/my-tasks/_components/use-task-board.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/_components/status-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-detail-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/timesheet-entry-create-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-task-realtime-refresh.ts",
-        "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
-        "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
-        "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/task-ui.ts"
+        "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts"
       ],
-      "loc": 1621,
+      "loc": 1189,
       "i18nNamespaces": [
         "operations.Common",
         "operations.MyTasksPage",
@@ -15218,17 +16450,13 @@
         {
           "method": "POST",
           "url": "/file"
-        },
-        {
-          "method": "GET",
-          "url": "/setting/group/general"
         }
       ],
       "features": {
         "pageHeader": true,
         "kpis": true,
         "searchBar": true,
-        "pagination": true,
+        "pagination": false,
         "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
@@ -15254,7 +16482,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-access.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts"
       ],
-      "loc": 779,
+      "loc": 766,
       "i18nNamespaces": [
         "operations.Common",
         "operations.ProjectCostCategoriesPage"
@@ -15305,7 +16533,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 952,
+      "loc": 935,
       "i18nNamespaces": [
         "operations.Common",
         "operations.ProjectCostTypesPage"
@@ -15360,7 +16588,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 1522,
+      "loc": 1490,
       "i18nNamespaces": [
         "operations.CollaboratorFormPage",
         "operations.Common",
@@ -15456,11 +16684,11 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/contract-projects-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/project-details-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/project-form-screen.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-seats-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/approvals/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/projects/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/reports/activity/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/reports/projects/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/software-licenses/page.tsx"
+        "apps/admin/src/app/(app)/(libraries)/operations/reports/projects/page.tsx"
       ],
       "hasChildren": true
     },
@@ -15554,11 +16782,11 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/contract-projects-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/project-details-screen.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/project-form-screen.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-seats-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/approvals/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/projects/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/reports/activity/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/reports/projects/page.tsx",
-        "apps/admin/src/app/(app)/(libraries)/operations/software-licenses/page.tsx"
+        "apps/admin/src/app/(app)/(libraries)/operations/reports/projects/page.tsx"
       ],
       "hasChildren": false
     },
@@ -15583,7 +16811,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/reports/activity/_lib/use-activity-report.ts"
       ],
-      "loc": 905,
+      "loc": 1057,
       "i18nNamespaces": [
         "operations.ReportsActivityPage"
       ],
@@ -15596,7 +16824,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -15624,7 +16852,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 470,
+      "loc": 566,
       "i18nNamespaces": [
         "operations.ReportsCollaboratorsPage"
       ],
@@ -15641,7 +16869,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -15668,7 +16896,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 603,
+      "loc": 736,
       "i18nNamespaces": [
         "operations.ReportsProjectsPage"
       ],
@@ -15685,7 +16913,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -15710,7 +16938,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-access.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts"
       ],
-      "loc": 606,
+      "loc": 715,
       "i18nNamespaces": [
         "operations.Common",
         "operations.RequestTypesPage"
@@ -15734,7 +16962,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -15762,7 +16990,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/forms.ts"
       ],
-      "loc": 1133,
+      "loc": 1123,
       "i18nNamespaces": [
         "operations.Common",
         "operations.ScheduleAdjustmentsPage"
@@ -15812,13 +17040,14 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/payment-cards-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-logo.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/software-license-seats-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-access.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/task-ui.ts"
       ],
-      "loc": 1382,
+      "loc": 1503,
       "i18nNamespaces": [
         "operations.Common",
         "operations.SoftwareLicensesPage",
@@ -15850,7 +17079,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -15874,7 +17103,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts"
       ],
-      "loc": 693,
+      "loc": 853,
       "i18nNamespaces": [],
       "endpoints": [
         {
@@ -15905,9 +17134,9 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -15929,6 +17158,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/tasks-gantt-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-detail-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-access.ts",
@@ -15936,7 +17166,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/task-ui.ts"
       ],
-      "loc": 1234,
+      "loc": 1351,
       "i18nNamespaces": [
         "operations.Common",
         "operations.ProjectDetailsPage",
@@ -15959,7 +17189,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -15981,6 +17211,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/tasks-gantt-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/task-detail-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-access.ts",
@@ -15988,7 +17219,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/task-ui.ts"
       ],
-      "loc": 1370,
+      "loc": 1509,
       "i18nNamespaces": [
         "operations.Common",
         "operations.ProjectDetailsPage",
@@ -16011,7 +17242,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": false,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -16043,7 +17274,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/time-off-status.ts"
       ],
-      "loc": 1252,
+      "loc": 1356,
       "i18nNamespaces": [
         "operations.ApprovalsPage",
         "operations.Common",
@@ -16095,13 +17326,14 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/operations/_components/operations-header.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-avatar.tsx",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/hooks/use-operations-access.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/forms.ts"
       ],
-      "loc": 847,
+      "loc": 872,
       "i18nNamespaces": [
         "operations.Common",
         "operations.TimeOffPage"
@@ -16193,7 +17425,7 @@
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/types.ts"
       ],
-      "loc": 498,
+      "loc": 641,
       "i18nNamespaces": [
         "queue.DashboardPage"
       ],
@@ -16286,7 +17518,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -16324,7 +17556,7 @@
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/types.ts"
       ],
-      "loc": 1117,
+      "loc": 1060,
       "i18nNamespaces": [
         "queue.DefinitionsPage",
         "queue.PerformanceReport"
@@ -16452,7 +17684,7 @@
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/job-messages.ts",
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/types.ts"
       ],
-      "loc": 1203,
+      "loc": 1194,
       "i18nNamespaces": [
         "queue.JobsPage"
       ],
@@ -16557,7 +17789,7 @@
         "pagination": true,
         "viewModeToggle": true,
         "formSheet": true,
-        "dataTable": true,
+        "dataTable": false,
         "widgets": false
       },
       "referencedBy": [
@@ -16704,7 +17936,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/queue/scaling/_lib/api.ts"
       ],
-      "loc": 523,
+      "loc": 550,
       "i18nNamespaces": [
         "queue.ScalingPage"
       ],
@@ -16733,7 +17965,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": true,
         "viewModeToggle": false,
         "formSheet": false,
@@ -16758,7 +17990,7 @@
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/queue/_lib/types.ts"
       ],
-      "loc": 1362,
+      "loc": 1366,
       "i18nNamespaces": [
         "queue.WorkersPage"
       ],
@@ -16986,7 +18218,7 @@
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/sac-ui.ts",
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts"
       ],
-      "loc": 495,
+      "loc": 614,
       "i18nNamespaces": [
         "sac.CategoriesPage",
         "sac.SacMenu",
@@ -17031,7 +18263,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -17054,7 +18286,7 @@
         "apps/admin/src/app/(app)/(libraries)/sac/channels/_components/channel-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts"
       ],
-      "loc": 465,
+      "loc": 579,
       "i18nNamespaces": [
         "sac.ChannelsPage",
         "sac.SacMenu",
@@ -17096,7 +18328,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -17157,7 +18389,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts"
       ],
-      "loc": 440,
+      "loc": 433,
       "i18nNamespaces": [
         "sac.InboundLogPage",
         "sac.SacMenu",
@@ -17208,7 +18440,7 @@
         "apps/admin/src/app/(app)/(libraries)/sac/_components/inbound-setup-guide.tsx",
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts"
       ],
-      "loc": 509,
+      "loc": 603,
       "i18nNamespaces": [
         "sac.InboundSetup",
         "sac.MailboxesPage",
@@ -17265,7 +18497,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -17289,7 +18521,7 @@
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/sac-ui.ts",
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts"
       ],
-      "loc": 450,
+      "loc": 553,
       "i18nNamespaces": [
         "sac.SacMenu",
         "sac.SlaPoliciesPage",
@@ -17326,7 +18558,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -17354,7 +18586,7 @@
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/use-ticket-url-param.ts"
       ],
-      "loc": 1055,
+      "loc": 1071,
       "i18nNamespaces": [
         "sac.SacMenu",
         "sac.TicketDetail",
@@ -17475,7 +18707,7 @@
         "apps/admin/src/app/(app)/(libraries)/sac/_components/inbound-setup-guide.tsx",
         "apps/admin/src/app/(app)/(libraries)/sac/_lib/types.ts"
       ],
-      "loc": 440,
+      "loc": 530,
       "i18nNamespaces": [
         "sac.InboundSetup",
         "sac.SacMenu",
@@ -17524,7 +18756,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -17618,7 +18850,7 @@
         "apps/admin/src/app/(app)/(libraries)/scheduling/_components/scheduling-types.ts",
         "apps/admin/src/app/(app)/(libraries)/scheduling/_components/scheduling-utils.ts"
       ],
-      "loc": 755,
+      "loc": 740,
       "i18nNamespaces": [
         "scheduling.Appointments",
         "scheduling.Common",
@@ -17683,7 +18915,7 @@
         "apps/admin/src/app/(app)/(libraries)/scheduling/locations/_components/location-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/scheduling/_components/scheduling-types.ts"
       ],
-      "loc": 609,
+      "loc": 542,
       "i18nNamespaces": [
         "scheduling.Common",
         "scheduling.Locations",
@@ -17735,7 +18967,7 @@
         "apps/admin/src/app/(app)/(libraries)/scheduling/resources/_components/resource-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/scheduling/_components/scheduling-types.ts"
       ],
-      "loc": 714,
+      "loc": 651,
       "i18nNamespaces": [
         "scheduling.Common",
         "scheduling.Menu",
@@ -17808,7 +19040,7 @@
         "apps/admin/src/app/(app)/(libraries)/scheduling/_components/scheduling-types.ts",
         "apps/admin/src/app/(app)/(libraries)/scheduling/_components/scheduling-utils.ts"
       ],
-      "loc": 625,
+      "loc": 559,
       "i18nNamespaces": [
         "scheduling.Common",
         "scheduling.Menu",
@@ -17943,7 +19175,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/analytics/_lib/channel-sort.ts",
         "apps/admin/src/app/(app)/(libraries)/social/analytics/_lib/use-analytics-queries.ts"
       ],
-      "loc": 450,
+      "loc": 472,
       "i18nNamespaces": [
         "social.AnalyticsPage",
         "social.AnalyticsPage.channels",
@@ -18004,7 +19236,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/approvals/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/social/approvals/_lib/use-approval-inbox.ts"
       ],
-      "loc": 838,
+      "loc": 847,
       "i18nNamespaces": [
         "social.ApprovalsPage",
         "social.Common",
@@ -18072,7 +19304,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/_lib/connect-errors.ts",
         "apps/admin/src/app/(app)/(libraries)/social/brands/_lib/use-date-formatters.ts"
       ],
-      "loc": 676,
+      "loc": 688,
       "i18nNamespaces": [
         "social.BrandDetailsPage",
         "social.BrandDetailsPage.audit",
@@ -18189,7 +19421,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/calendar/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/social/calendar/_lib/use-calendar-posts.ts"
       ],
-      "loc": 442,
+      "loc": 454,
       "i18nNamespaces": [
         "social.CalendarPage",
         "social.Common",
@@ -18254,7 +19486,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-breadcrumbs.ts",
         "apps/admin/src/app/(app)/(libraries)/social/channels/_lib/channel-list-params.ts"
       ],
-      "loc": 703,
+      "loc": 808,
       "i18nNamespaces": [
         "social.BrandDetailsPage.channels",
         "social.BrandDetailsPage.connect",
@@ -18284,7 +19516,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": false,
         "dataTable": false,
         "widgets": false
@@ -18342,7 +19574,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/inbox/_lib/use-inbox-queries.ts",
         "apps/admin/src/app/(app)/(libraries)/social/inbox/_lib/use-inbox-selection.ts"
       ],
-      "loc": 676,
+      "loc": 685,
       "i18nNamespaces": [
         "social.Common",
         "social.InboxPage",
@@ -18444,7 +19676,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/posts/_lib/use-post-url-param.ts",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_lib/use-social-timezone.ts"
       ],
-      "loc": 1057,
+      "loc": 1068,
       "i18nNamespaces": [
         "social.Common",
         "social.Networks",
@@ -18461,6 +19693,8 @@
         "social.PostErrors",
         "social.PostMedia",
         "social.PostPreview",
+        "social.PostPreview.blog",
+        "social.PostPreview.cmsVideo",
         "social.PostTimeline",
         "social.PostValidation",
         "social.PostsPage",
@@ -18498,16 +19732,19 @@
         "apps/admin/src/app/(app)/(libraries)/studio/_components/capture-profile-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/course-lesson-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/delete-recording-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/edit-status-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/lesson-link.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recorder-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recording-calendar.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recording-plan-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recording-week-view.tsx",
-        "apps/admin/src/app/(app)/(libraries)/studio/_components/schedule-course-sheet.tsx"
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/schedule-course-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/take-thumbnail.tsx"
       ],
       "loc": 8,
       "i18nNamespaces": [
         "studio.DeleteRecording",
+        "studio.EditStatus",
         "studio.PlanSheet",
         "studio.PlanningPage",
         "studio.RecordingDetailPage",
@@ -18515,6 +19752,10 @@
         "studio.Situation"
       ],
       "endpoints": [
+        {
+          "method": "GET",
+          "url": "/studio-edit/processing"
+        },
         {
           "method": "GET",
           "url": "/studio/capabilities"
@@ -18567,6 +19808,234 @@
         "apps/admin/src/lib/scaffold/validate.ts"
       ],
       "hasChildren": true
+    },
+    {
+      "route": "/studio-edit/metrics",
+      "library": "studio-edit",
+      "segments": [
+        "studio-edit",
+        "metrics"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/studio-edit/metrics/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/studio-edit/metrics",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/suggestion-style.ts"
+      ],
+      "loc": 381,
+      "i18nNamespaces": [
+        "studio-edit.Metrics",
+        "studio-edit.Suggestions.kind"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/studio-edit/metrics${query "
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/studio-edit/recordings/:id",
+      "library": "studio-edit",
+      "segments": [
+        "studio-edit",
+        "recordings",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/studio-edit/recordings/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/studio-edit/recordings/[id]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/analysis-runs.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/batch-approval-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/decision-history.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/direction-stage.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/export-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/final-check-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/media-elements.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/layout-menu.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/mic-monitor.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/processing-indicator.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/review-timeline.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/source-strip.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/suggestion-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/take-list.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/transcript-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/transport-bar.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/visual-editor.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_components/video-layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/direction-model.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/hooks/use-playback.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/hooks/use-review-layout.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/hooks/use-studio-edit-realtime.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/hooks/use-track-sources.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/hooks/use-visual-assets.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/playback-engine.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/review-model.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/review-queue.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/visual-model.ts"
+      ],
+      "loc": 1716,
+      "i18nNamespaces": [
+        "studio-edit.Automation",
+        "studio-edit.Automation.finalCheck",
+        "studio-edit.Batch",
+        "studio-edit.Direction",
+        "studio-edit.Direction.activity",
+        "studio-edit.Direction.pip",
+        "studio-edit.Errors",
+        "studio-edit.Export",
+        "studio-edit.History",
+        "studio-edit.Layout",
+        "studio-edit.Mics",
+        "studio-edit.Player",
+        "studio-edit.Player.layout",
+        "studio-edit.Processing",
+        "studio-edit.ReviewPage",
+        "studio-edit.Runs",
+        "studio-edit.Sources",
+        "studio-edit.Suggestions",
+        "studio-edit.Suggestions.kind",
+        "studio-edit.Suggestions.state",
+        "studio-edit.Takes",
+        "studio-edit.Takes.job",
+        "studio-edit.Takes.kind",
+        "studio-edit.Timeline",
+        "studio-edit.Timeline.legend",
+        "studio-edit.Timeline.marker",
+        "studio-edit.Transcript",
+        "studio-edit.Visual"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/studio-edit/projects/:projectId/approve"
+        },
+        {
+          "method": "POST",
+          "url": "/studio-edit/projects/:projectId/commands"
+        },
+        {
+          "method": "POST",
+          "url": "/studio-edit/projects/:projectId/exports"
+        },
+        {
+          "method": "POST",
+          "url": "/studio-edit/projects/:projectId/suggestions"
+        },
+        {
+          "method": "POST",
+          "url": "/studio-edit/recordings/:id/prepare"
+        },
+        {
+          "method": "GET",
+          "url": "/studio-edit/recordings/:recordingId"
+        },
+        {
+          "method": "POST",
+          "url": "/studio-edit/recordings/:recordingId/prepare"
+        },
+        {
+          "method": "GET",
+          "url": "/studio-edit/recordings/:recordingId/project"
+        },
+        {
+          "method": "POST",
+          "url": "/studio-edit/takes/:id/reanalyze"
+        },
+        {
+          "method": "GET",
+          "url": "/studio-edit/takes/${activeTake"
+        },
+        {
+          "method": "GET",
+          "url": "/studio-edit/tracks/:trackId/sources"
+        },
+        {
+          "method": "PATCH",
+          "url": "/studio-edit/transcript-words/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/studio-edit/visual-assets${query "
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/metrics/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/edit-status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/recordings/[id]/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/recordings/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/studio-edit/visual-assets",
+      "library": "studio-edit",
+      "segments": [
+        "studio-edit",
+        "visual-assets"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/studio-edit/visual-assets/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/studio-edit/visual-assets",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/visual-assets/_components/visual-asset-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/hooks/use-visual-assets.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/_lib/review-model.ts"
+      ],
+      "loc": 495,
+      "i18nNamespaces": [
+        "studio-edit.VisualAssets"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/file"
+        },
+        {
+          "method": "DELETE",
+          "url": "/studio-edit/visual-assets/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/studio-edit/visual-assets${query "
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
     },
     {
       "route": "/studio/live",
@@ -18625,7 +20094,7 @@
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/planning.ts",
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/week-layout.ts"
       ],
-      "loc": 443,
+      "loc": 436,
       "i18nNamespaces": [
         "studio.PlanSheet",
         "studio.PlanningPage",
@@ -18680,16 +20149,34 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/studio/recordings",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/studio/_components/delete-recording-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/edit-status-badge.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/lesson-link.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/recorder-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/take-thumbnail.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/format.ts",
+        "apps/admin/src/app/(app)/(libraries)/studio/_lib/hooks/use-studio-live-realtime.ts",
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/planning.ts"
       ],
-      "loc": 508,
+      "loc": 651,
       "i18nNamespaces": [
         "studio.DeleteRecording",
+        "studio.EditStatus",
+        "studio.PlanSheet",
         "studio.RecordingsPage"
       ],
       "endpoints": [
+        {
+          "method": "GET",
+          "url": "/studio-edit/processing"
+        },
+        {
+          "method": "GET",
+          "url": "/studio/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/studio/recorders"
+        },
         {
           "method": "GET",
           "url": "/studio/recordings"
@@ -18715,6 +20202,9 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/metrics/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/recordings/[id]/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/visual-assets/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recording-plan-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/planning/page.tsx",
@@ -18737,10 +20227,11 @@
         "apps/admin/src/app/(app)/(libraries)/studio/_components/delete-recording-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/lesson-link.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recorder-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/studio/_components/take-thumbnail.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/format.ts",
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/planning.ts"
       ],
-      "loc": 538,
+      "loc": 682,
       "i18nNamespaces": [
         "studio.DeleteRecording",
         "studio.PlanSheet",
@@ -18786,6 +20277,7 @@
         "widgets": false
       },
       "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/studio-edit/recordings/[id]/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/delete-recording-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/recording-plan-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/studio/_components/schedule-course-sheet.tsx",
@@ -18812,7 +20304,7 @@
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/format.ts",
         "apps/admin/src/app/(app)/(libraries)/studio/_lib/planning.ts"
       ],
-      "loc": 437,
+      "loc": 544,
       "i18nNamespaces": [
         "studio.PlanSheet",
         "studio.ReportsPage",
@@ -18835,7 +20327,7 @@
       "features": {
         "pageHeader": true,
         "kpis": true,
-        "searchBar": false,
+        "searchBar": true,
         "pagination": false,
         "viewModeToggle": false,
         "formSheet": false,
@@ -18856,7 +20348,7 @@
       "file": "apps/admin/src/app/(app)/(libraries)/tag/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/tag",
       "components": [],
-      "loc": 816,
+      "loc": 819,
       "i18nNamespaces": [
         "tag.Tag"
       ],
@@ -18963,7 +20455,7 @@
         "apps/admin/src/app/(app)/(libraries)/vaults/_crypto/vault-gate.tsx",
         "apps/admin/src/app/(app)/(libraries)/vaults/_lib/types.ts"
       ],
-      "loc": 543,
+      "loc": 575,
       "i18nNamespaces": [
         "vaults.AutoLock",
         "vaults.ChangeMasterPassword",
@@ -19394,7 +20886,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/colors/_components/color-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 508,
+      "loc": 591,
       "i18nNamespaces": [
         "vehicle.ColorsPage",
         "vehicle.Common",
@@ -19427,7 +20919,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -19500,7 +20992,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 486,
+      "loc": 561,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.CountriesPage",
@@ -19545,7 +21037,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -19621,7 +21113,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-format.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 590,
+      "loc": 654,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.GenerationsPage",
@@ -19663,7 +21155,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -19686,7 +21178,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/imports/_components/import-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 425,
+      "loc": 396,
       "i18nNamespaces": [
         "core.Sheet",
         "vehicle.Common",
@@ -19744,7 +21236,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-format.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 440,
+      "loc": 525,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.MaintenanceItemsPage",
@@ -19781,7 +21273,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -19805,7 +21297,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 564,
+      "loc": 651,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.ManufacturersPage",
@@ -19850,7 +21342,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -19876,7 +21368,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-format.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 590,
+      "loc": 648,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.ModelsPage",
@@ -19925,7 +21417,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -19949,7 +21441,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/options/_lib/option-categories.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 495,
+      "loc": 573,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.OptionsPage",
@@ -19986,7 +21478,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -20011,7 +21503,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 573,
+      "loc": 649,
       "i18nNamespaces": [
         "core.PaginationFooter",
         "vehicle.Common",
@@ -20069,7 +21561,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -20093,7 +21585,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/spec-definitions/_components/spec-definition-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 700,
+      "loc": 779,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.SpecDefinitionsPage",
@@ -20126,7 +21618,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -20152,7 +21644,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 516,
+      "loc": 597,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.TaxonomiesPage",
@@ -20197,7 +21689,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -20227,7 +21719,7 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-format.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 727,
+      "loc": 827,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.ImportsPage",
@@ -20321,7 +21813,7 @@
         "kpis": true,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -20402,7 +21894,7 @@
         "apps/admin/src/app/(app)/(libraries)/video/_components/pipeline-steps.tsx",
         "apps/admin/src/app/(app)/(libraries)/video/_components/video-types.ts"
       ],
-      "loc": 690,
+      "loc": 743,
       "i18nNamespaces": [
         "video.VideoDetail",
         "video.VideoProcessing",
@@ -20462,7 +21954,7 @@
         "apps/admin/src/app/(app)/(libraries)/video/_components/video-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/video/_components/video-types.ts"
       ],
-      "loc": 501,
+      "loc": 490,
       "i18nNamespaces": [
         "video.VideoForm",
         "video.VideosPage"
@@ -20680,7 +22172,7 @@
         "apps/admin/src/app/(app)/(libraries)/whitelabel/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/whitelabel/_lib/types.ts"
       ],
-      "loc": 675,
+      "loc": 778,
       "i18nNamespaces": [
         "whitelabel.DomainsPage"
       ],
@@ -20739,7 +22231,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false
@@ -20763,7 +22255,7 @@
         "apps/admin/src/app/(app)/(libraries)/whitelabel/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/whitelabel/_lib/types.ts"
       ],
-      "loc": 529,
+      "loc": 634,
       "i18nNamespaces": [
         "whitelabel.ReleasesPage"
       ],
@@ -20822,7 +22314,7 @@
         "kpis": false,
         "searchBar": true,
         "pagination": true,
-        "viewModeToggle": false,
+        "viewModeToggle": true,
         "formSheet": true,
         "dataTable": false,
         "widgets": false

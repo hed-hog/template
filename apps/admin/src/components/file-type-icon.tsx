@@ -77,12 +77,30 @@ interface FileTypeIconProps {
   className?: string;
 }
 
-export function FileTypeIcon({ filename, mimeType, size = 16, className }: FileTypeIconProps) {
-  const [imgError, setImgError] = useState(false);
-  const iconFilename = resolveIconFilename(filename, mimeType);
-  const iconUrl = `${CDN_BASE}/${iconFilename}`;
+/**
+ * Ícone colorido da categoria, para quando o específico some do CDN (o
+ * `file_type_webp.svg`, por exemplo, deixou de existir no vscode-icons).
+ */
+function categoryIconFilename(filename: string, mimeType?: string): string | null {
+  const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+  const mime = mimeType ?? '';
+  if (mime.startsWith('image/') || ['webp', 'avif', 'heic', 'gif', 'bmp', 'png', 'jpg', 'jpeg'].includes(ext))
+    return 'file_type_image.svg';
+  if (mime.startsWith('video/')) return 'file_type_video.svg';
+  if (mime.startsWith('audio/')) return 'file_type_audio.svg';
+  if (mime === 'application/pdf' || ext === 'pdf') return 'file_type_pdf.svg';
+  return null;
+}
 
-  if (imgError) {
+export function FileTypeIcon({ filename, mimeType, size = 16, className }: FileTypeIconProps) {
+  const iconFilename = resolveIconFilename(filename, mimeType);
+  const category = categoryIconFilename(filename, mimeType);
+  const candidates = [iconFilename, category, DEFAULT_FILE].filter(
+    (name, index, all): name is string => Boolean(name) && all.indexOf(name) === index
+  );
+  const [attempt, setAttempt] = useState(0);
+
+  if (attempt >= candidates.length) {
     return (
       <FileIcon
         style={{ width: size, height: size }}
@@ -93,12 +111,12 @@ export function FileTypeIcon({ filename, mimeType, size = 16, className }: FileT
 
   return (
     <img
-      src={iconUrl}
+      src={`${CDN_BASE}/${candidates[attempt]}`}
       alt=""
       width={size}
       height={size}
       className={cn('shrink-0', className)}
-      onError={() => setImgError(true)}
+      onError={() => setAttempt((value) => value + 1)}
     />
   );
 }

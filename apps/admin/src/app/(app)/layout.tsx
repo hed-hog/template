@@ -5,6 +5,7 @@ import { NotificationsProvider } from '@/components/notification-bell';
 import { GuardPage } from '@/components/page/guard-page';
 import { PresenceHeartbeat } from '@/components/presence/presence-heartbeat';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
+import { SupportSheets } from '@/components/support/support-sheets';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { cookies } from 'next/headers';
 import { ReactNode } from 'react';
@@ -29,6 +30,7 @@ export default async function Layout({ children }: LayoutProps) {
               {children}
             </SidebarInset>
             <McpFloatingChat />
+            <SupportSheets />
             <PresenceHeartbeat />
           </SidebarProvider>
         </NotificationsProvider>
