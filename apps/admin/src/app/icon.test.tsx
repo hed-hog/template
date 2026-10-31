@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const fetchAdminApiJson = vi.fn();
-const buildAdminApiUrl = vi.fn((path: string) => `http://api.test${path}`);
+const buildAdminApiUrl = vi.fn(
+  (...args: unknown[]) => `http://api.test${String(args[0])}`,
+);
 
 vi.mock('@/lib/admin-api', () => ({
   fetchAdminApiJson: (...args: unknown[]) => fetchAdminApiJson(...args),
@@ -92,7 +94,7 @@ describe('Icon (dynamic favicon route)', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = (await Icon({})) as { __isImageResponse: boolean };
+    const response = (await Icon({})) as unknown as { __isImageResponse: boolean };
 
     expect(response.__isImageResponse).toBe(true);
     expect(console.warn).toHaveBeenCalled();
@@ -160,7 +162,7 @@ describe('Icon (dynamic favicon route)', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = (await Icon({})) as { __isImageResponse: boolean };
+    const response = (await Icon({})) as unknown as { __isImageResponse: boolean };
 
     expect(response.__isImageResponse).toBe(true);
     expect(console.warn).toHaveBeenCalled();
@@ -170,7 +172,7 @@ describe('Icon (dynamic favicon route)', () => {
   it('sem icon-url definido cai para renderFallbackIcon', async () => {
     fetchAdminApiJson.mockResolvedValueOnce({ setting: {} });
 
-    const response = (await Icon({})) as { __isImageResponse: boolean };
+    const response = (await Icon({})) as unknown as { __isImageResponse: boolean };
 
     expect(response.__isImageResponse).toBe(true);
     expect(console.error).not.toHaveBeenCalled();
@@ -179,7 +181,7 @@ describe('Icon (dynamic favicon route)', () => {
   it('fetchAdminApiJson lança erro -> catch externo -> fallback', async () => {
     fetchAdminApiJson.mockRejectedValueOnce(new Error('network down'));
 
-    const response = (await Icon({})) as { __isImageResponse: boolean };
+    const response = (await Icon({})) as unknown as { __isImageResponse: boolean };
 
     expect(response.__isImageResponse).toBe(true);
     expect(console.error).toHaveBeenCalledWith(

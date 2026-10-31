@@ -71,8 +71,8 @@ vi.mock('sonner', () => ({
 }));
 
 const fetchAdminApiJson = vi.fn();
-const getAdminApiBaseUrl = vi.fn(() => 'http://api.test');
-const isRetryableAdminApiError = vi.fn(() => false);
+const getAdminApiBaseUrl = vi.fn((..._args: unknown[]) => 'http://api.test');
+const isRetryableAdminApiError = vi.fn((..._args: unknown[]) => false);
 
 vi.mock('@/lib/admin-api', () => ({
   fetchAdminApiJson: (...args: unknown[]) => fetchAdminApiJson(...args),
