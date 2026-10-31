@@ -20,9 +20,14 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { AttachmentsField, useAddAttachments } from './attachments-field';
 import {
-  SUPPORT_API,
+  NotifyEmailField,
+  isInvalidNotifyEmail,
+  useNotifyEmail,
+} from './notify-email-field';
+import {
+  supportApi,
   SUPPORT_CHANGED_EVENT,
-  SUPPORT_PAGE,
+  supportPage,
   collectClientContext,
   imagesFromPaste,
   isBlankRichText,
@@ -90,12 +95,14 @@ export function ReportBugSheet({
   );
   const [submitted, setSubmitted] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [notifyEmail, setNotifyEmail] = useNotifyEmail();
 
   const errors = {
     title: !form.title.trim(),
     attemptedAction: isBlankRichText(form.attemptedAction),
     whatHappened: isBlankRichText(form.whatHappened),
     impact: !form.impact,
+    notifyEmail: isInvalidNotifyEmail(notifyEmail),
   };
   const set = <K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -105,7 +112,7 @@ export function ReportBugSheet({
     if (Object.values(errors).some(Boolean)) return;
     try {
       const response = await request<{ code: string; attachmentsFailed: number }>({
-        url: `${SUPPORT_API}/bugs`,
+        url: `${supportApi()}/bugs`,
         method: 'POST',
         data: supportFormData(
           {
@@ -119,12 +126,13 @@ export function ReportBugSheet({
             pageUrl: context.pageUrl,
             clientContext: JSON.stringify(collectClientContext() ?? {}),
             idempotencyKey,
+            notifyEmail: notifyEmail.trim() || undefined,
           },
           files
         ),
       });
       toast.success(t('bugSent', { code: response.data.code }), {
-        action: { label: t('follow'), onClick: () => router.push(SUPPORT_PAGE) },
+        action: { label: t('follow'), onClick: () => router.push(supportPage()) },
       });
       if (response.data.attachmentsFailed > 0) {
         toast.warning(t('attachmentsFailed', { count: response.data.attachmentsFailed }));
@@ -212,6 +220,11 @@ export function ReportBugSheet({
               ))}
             </div>
           </Field>
+          <NotifyEmailField
+            value={notifyEmail}
+            onChange={setNotifyEmail}
+            showError={submitted}
+          />
           <Field label={t('attachments')} optional={t('optional')}>
             <AttachmentsField files={files} onChange={setFiles} />
           </Field>

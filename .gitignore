@@ -109,3 +109,6 @@ infra/digitalocean/do-k8s/k8s/umami/umami.yaml
 tfplan
 *.tfplan
 crash.log
+
+# Caminhos do template e do CLI nesta máquina (skill hedhog-bootstrap)
+.claude/hedhog-bootstrap.local.json

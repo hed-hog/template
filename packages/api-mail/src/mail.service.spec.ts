@@ -190,3 +190,81 @@ describe('MailService.buildMimeMessage', () => {
     ).toContain('Bcc: oculto@x.com');
   });
 });
+
+const formatSesSource = (email: string, name?: string): string =>
+  (MailService as any).formatSesSource(email, name);
+
+describe('MailService.formatSesSource', () => {
+  it('sem nome, devolve o endereço cru', () => {
+    expect(formatSesSource('contato@exemplo.com.br')).toBe('contato@exemplo.com.br');
+    expect(formatSesSource('contato@exemplo.com.br', '  ')).toBe('contato@exemplo.com.br');
+  });
+
+  it('nome ASCII simples vai sem aspas', () => {
+    expect(formatSesSource('contato@exemplo.com.br', 'Compara Hardware')).toBe(
+      'Compara Hardware <contato@exemplo.com.br>',
+    );
+  });
+
+  // O SES recusa caractere fora do ASCII no Source: o nome com acento tem de
+  // ir como encoded-word.
+  it('nome com acento vai em MIME encoded-word', () => {
+    const out = formatSesSource('contato@exemplo.com.br', 'João');
+    expect(out).toBe(`=?UTF-8?B?${Buffer.from('João', 'utf8').toString('base64')}?= <contato@exemplo.com.br>`);
+  });
+
+  it('nome com vírgula vai entre aspas', () => {
+    expect(formatSesSource('a@b.com', 'Hcode, Cursos')).toBe('"Hcode, Cursos" <a@b.com>');
+  });
+
+  it('endereço que já tem nome não é embrulhado de novo', () => {
+    expect(formatSesSource('Fulano <a@b.com>', 'Outro')).toBe('Fulano <a@b.com>');
+  });
+});
+
+describe('MailService.send com configuração por envio', () => {
+  const globalConfig = {
+    type: 'SES',
+    region: 'us-east-1',
+    accessKeyId: 'A',
+    secretAccessKey: 'A',
+    from: 'global@hcode.com.br',
+  } as any;
+  const profileConfig = {
+    type: 'SES',
+    region: 'us-east-1',
+    accessKeyId: 'B',
+    secretAccessKey: 'B',
+    from: 'contato@comparahardware.com.br',
+    fromName: 'Compara Hardware',
+  } as any;
+
+  function makeService() {
+    const service = new MailService(globalConfig, {} as any, null as any, {} as any);
+    const calls: any[] = [];
+    (service as any).sendWithSES = async (mail: any, config: any) => {
+      calls.push(config);
+      // devolve o controle ao event loop, como o SES de verdade
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return { result: { MessageId: config.from }, mail };
+    };
+    return { service, calls };
+  }
+
+  const mail = { to: 'x@y.com', subject: 's', body: '<p>b</p>', skipLayout: true, layout: 'x' } as any;
+
+  it('usa a configuração passada e não troca a global', async () => {
+    const { service, calls } = makeService();
+    await service.send(mail, profileConfig);
+    expect(calls[0]).toBe(profileConfig);
+    expect((service as any).mailConfig).toBe(globalConfig);
+  });
+
+  it('envios simultâneos de perfis diferentes não se misturam', async () => {
+    const { service, calls } = makeService();
+    const [a, b] = await Promise.all([service.send(mail), service.send(mail, profileConfig)]);
+    expect((a as any).result.MessageId).toBe('global@hcode.com.br');
+    expect((b as any).result.MessageId).toBe('contato@comparahardware.com.br');
+    expect(calls).toEqual(expect.arrayContaining([globalConfig, profileConfig]));
+  });
+});

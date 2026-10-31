@@ -18,10 +18,10 @@
   "dependencies": {
     "@loancrate/prisma-schema-parser": "^3.0.0",
     "@nestjs/common": "*",
-    "@prisma/client": "6.18.0"
+    "@prisma/client": "6.19.3"
   },
   "devDependencies": {
-    "prisma": "6.18.0",
+    "prisma": "6.19.3",
     "@hed-hog/jest-config": "workspace:*",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.14",

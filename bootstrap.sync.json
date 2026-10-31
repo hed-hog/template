@@ -120,6 +120,8 @@
     "docs/vaults-publishing-pending.md",
     "packages/api-types/src/contracts/lms.ts",
     "docs/lms-decisoes-pendentes.md",
+    "docs/auto/**",
+    "docs/training-mentorias-e-atividades.md",
     "apps/api/test/commerce-payment-webhook.e2e-spec.ts",
     "apps/api/test/contact-reports.e2e-spec.ts",
     "apps/api/test/finance-reports.e2e-spec.ts",

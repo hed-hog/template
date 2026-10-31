@@ -1,4 +1,4 @@
-FROM node:24-alpine AS base
+FROM node:24.22.1-alpine AS base
 
 # Keep pnpm version deterministic across all stages.
 RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
@@ -51,7 +51,39 @@ RUN test -d /app/node_modules/.prisma/client && \
 # mark-compacts near heap limit" (exit 134), derrubando o job Deploy API e
 # pulando todos os deploys que dependem dele. O runner `ubuntu-latest` tem 16 GB,
 # entao 8 GB aqui sobram — o mesmo teto que destrava o build local.
-RUN NODE_OPTIONS="--max-old-space-size=8192" pnpm run build:docker
+#
+# Faz o mesmo que o `build:docker` (libraries, `nest build`, assets do core), mas
+# as libraries saem do turbo, e nao do `pnpm -r`: com o cache dele num mount do
+# BuildKit, um deploy recompila so as libraries que mudaram e as que dependem
+# delas. O mount so sobrevive entre builds num builder persistente, como o do
+# runner self-hosted do deploy (infra/digitalocean/github-runner); num builder
+# novo o cache comeca vazio e o passo custa o mesmo que antes.
+#
+# Os pre-scripts ficam desligados. O `prebuild` de cada library roda o
+# scripts/build-dependencies.ts, que recompila as dependencias quando nao acha o
+# cache dele no hedhog.json, e o hedhog.json nao entra na imagem: no build de
+# 27/10/2026 foram 28 dependencias ja compiladas compiladas de novo, metade dos
+# ~31 min do passo. O turbo ja segue o grafo (`dependsOn: ^build`), e o unico
+# pre-script com efeito, o `prisma:update` do api-prisma, gera o mesmo client
+# que o `prisma generate` acima.
+#
+# `--env-mode=loose` porque o modo estrito (padrao do turbo 2) so repassa as
+# variaveis declaradas no turbo.json: sem ele o `npm_config_enable_pre_post_scripts`
+# e o NODE_OPTIONS nao chegam as libraries, o prebuild roda mesmo assim e, sem o
+# cache do hedhog.json, recompila em cadeia as dependencias que o turbo acabou
+# de restaurar (um build com so o lms alterado passou de 80 min em 27/10/2026).
+# As duas variaveis porque o prefixo mudou: o pnpm 11 (o `packageManager` do
+# package.json, que o corepack usa aqui dentro) so le `pnpm_config_*`, e o pnpm
+# 10 so le `npm_config_*`.
+RUN --mount=type=cache,id=turbo-api,target=/turbo-cache \
+    export NODE_OPTIONS="--max-old-space-size=8192" \
+      pnpm_config_enable_pre_post_scripts=false \
+      npm_config_enable_pre_post_scripts=false \
+      TURBO_TELEMETRY_DISABLED=1 && \
+    pnpm exec turbo run build --filter='api^...' --cache-dir=/turbo-cache \
+      --env-mode=loose --concurrency=4 --output-logs=new-only && \
+    pnpm exec nest build && \
+    pnpm run copy:core-assets
 
 # Portao de subida: um provider injetado sem que o modulo o enxergue ("Nest
 # can't resolve dependencies of X") so estoura quando o processo sobe — sem esta
@@ -228,11 +260,22 @@ RUN find /prod/api/dist -type f \( -name "*.map" -o -name "*.d.ts" -o -name "*.t
 # export `cache-to: type=gha,mode=max,scope=api`.
 
 # Stage 4: Migrator - dedicated image for running Prisma migrations only
-FROM node:24-alpine AS migrator
+FROM node:24.22.1-alpine AS migrator
 
+# O prisma fica num diretorio proprio, e nao em `npm install -g`, porque o
+# install global ignora `overrides`: o @prisma/config do 6.19.3 ainda traz o
+# deepmerge-ts 7.1.5 (CVE-2026-40345). Depois do install o npm sai da imagem:
+# o entrypoint chama o binario do prisma, e o npm que vem na imagem do Node
+# carrega brace-expansion e undici vulneraveis.
 RUN apk add --no-cache dumb-init \
-  && npm install -g prisma@6.18.0 \
-  && npm cache clean --force
+  && mkdir -p /opt/prisma \
+  && cd /opt/prisma \
+  && echo '{"private":true,"dependencies":{"prisma":"6.19.3"},"overrides":{"deepmerge-ts":"^8.0.2"}}' > package.json \
+  && npm install --omit=dev --no-audit --no-fund \
+  && ln -s /opt/prisma/node_modules/.bin/prisma /usr/local/bin/prisma \
+  && npm cache clean --force \
+  && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /root/.npm
 
 WORKDIR /app/apps/api
 
@@ -243,10 +286,19 @@ RUN chmod +x ./docker-entrypoint-migrate.sh
 ENTRYPOINT ["dumb-init", "sh", "./docker-entrypoint-migrate.sh"]
 
 # Stage 5: Production - minimal runtime image
-FROM node:24-alpine AS production
+FROM node:24.22.1-alpine AS production
 
 # Install dumb-init and runtime binaries (PDF + video conversion).
-RUN apk add --no-cache dumb-init chromium nss freetype harfbuzz ca-certificates ttf-freefont ffmpeg
+# iputils: o `ping` do monitor de saude (libraries/status) usa socket ICMP sem
+# privilegio, que o ping do busybox nao abre; o pod precisa do sysctl
+# net.ipv4.ping_group_range (k8s/queue-workers/worker-deployment.yaml).
+RUN apk add --no-cache dumb-init chromium nss freetype harfbuzz ca-certificates ttf-freefont ffmpeg iputils
+
+# O runtime so roda `node` (o SystemService consulta o registry por HTTP, sem o
+# CLI): o npm que vem na imagem do Node carrega brace-expansion e undici
+# vulneraveis, e nem ele nem npx/corepack sao usados aqui.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+  /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 
 ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV CHROMIUM_NO_SANDBOX=true

@@ -4,15 +4,26 @@ import { useApp, useQuery } from '@hed-hog/next-app-provider';
 import { toBlob } from 'html-to-image';
 
 /**
- * Suporte e Melhorias do próprio admin, como cliente da Fábrica de Software
- * (app `hub` em `/factory/client/hub/*`). Este arquivo e os componentes desta
- * pasta são do shell: não importam nada da biblioteca factory. Em projeto sem
- * a Fábrica a rota de status não existe e o suporte simplesmente não aparece.
+ * Suporte e Melhorias do próprio admin, como cliente da Fábrica de Software do
+ * Hub. Este arquivo e os componentes desta pasta são do shell: não importam
+ * nada das bibliotecas. O backend é descoberto pela rota de status, na ordem
+ * abaixo; em projeto sem nenhum deles o suporte simplesmente não aparece.
  */
-export const SUPPORT_APP = 'hub';
-export const SUPPORT_API = `/factory/client/${SUPPORT_APP}`;
-/** Tela de Suporte e Melhorias (asset da biblioteca factory). */
-export const SUPPORT_PAGE = '/factory/suporte';
+const SUPPORT_BACKENDS = [
+  // @hed-hog-pro/factory-client: qualquer sistema HedHog, um projeto por instalação.
+  { api: '/factory-client', page: '/factory-client' },
+  // Client embutido no @hed-hog-pro/factory do próprio Hub (app `hub`).
+  { api: '/factory/client/hub', page: '/factory/suporte' },
+] as const;
+
+type SupportBackend = (typeof SUPPORT_BACKENDS)[number];
+
+let activeBackend: SupportBackend = SUPPORT_BACKENDS[0];
+
+/** Base das rotas do suporte, a do backend que respondeu o status. */
+export const supportApi = () => activeBackend.api;
+/** Tela de Suporte e Melhorias do backend que respondeu o status. */
+export const supportPage = () => activeBackend.page;
 
 /** Pede a abertura do "Propor melhoria" (ex.: botão dentro do fórum). */
 export const PROPOSE_IMPROVEMENT_EVENT = 'support-propose-improvement';
@@ -40,22 +51,26 @@ export type SupportStatus = {
 
 /**
  * Disponibilidade do suporte para o usuário logado. `null` quando o projeto não
- * tem a Fábrica (rota inexistente) ou a primeira consulta não voltou.
+ * tem nenhum backend de suporte ou a primeira consulta não voltou.
  */
 export function useSupportStatus() {
   const { request } = useApp();
   const query = useQuery<SupportStatus | null>({
-    queryKey: ['support-status', SUPPORT_APP],
+    queryKey: ['support-status'],
     queryFn: async () => {
-      try {
-        const response = await request<SupportStatus>({
-          url: `${SUPPORT_API}/status`,
-          showErrors: false,
-        });
-        return response.data;
-      } catch {
-        return null;
+      for (const backend of SUPPORT_BACKENDS) {
+        try {
+          const response = await request<SupportStatus>({
+            url: `${backend.api}/status`,
+            showErrors: false,
+          });
+          activeBackend = backend;
+          return response.data;
+        } catch {
+          // Rota inexistente neste projeto: tenta o próximo backend.
+        }
       }
+      return null;
     },
     staleTime: 60_000,
   });

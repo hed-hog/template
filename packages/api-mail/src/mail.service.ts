@@ -365,6 +365,23 @@ export class MailService implements OnModuleInit {
    * um endereco so, e quebra-lo produziria dois pedacos invalidos. Caixa e nome
    * de exibicao ficam intactos — minusculizar aqui estragaria o nome.
    */
+  /**
+   * `Source` do SES com o nome exibido. Nome fora do ASCII imprimível (acento)
+   * vai em MIME encoded-word, que é o que o SES exige; com vírgula, ponto e
+   * vírgula ou aspas, entre aspas.
+   */
+  private static formatSesSource(email: string, name?: string): string {
+    const display = String(name ?? '').trim();
+    if (!email || !display || email.includes('<')) return email;
+    if (!/^[\x20-\x7E]*$/.test(display)) {
+      return `=?UTF-8?B?${Buffer.from(display, 'utf8').toString('base64')}?= <${email}>`;
+    }
+    if (/[",;:<>@()[\]\\]/.test(display)) {
+      return `"${display.replace(/(["\\])/g, '\\$1')}" <${email}>`;
+    }
+    return `${display} <${email}>`;
+  }
+
   private static splitAddresses(
     value?: string | string[] | null,
   ): string[] {
@@ -565,9 +582,17 @@ export class MailService implements OnModuleInit {
       .trim();
   }
 
-  async send(mail: Mail) {
+  /**
+   * Envia com a configuração passada ou, sem ela, com a global (`setConfig`).
+   *
+   * Quem envia por um perfil que não é o global passa `config` aqui em vez de
+   * trocar o singleton: com o `setConfig` + envio + restaurar, dois envios
+   * simultâneos de perfis diferentes saíam um com o remetente e a credencial
+   * do outro.
+   */
+  async send(mail: Mail, config?: MailModuleOptions) {
     // Reload configuration from database if current config is invalid
-    if (!this.isConfigValid()) {
+    if (!config && !this.isConfigValid()) {
       this.logger.warn('Mail configuration is invalid or missing, reloading from database...');
       this.logger.warn(`Current config type: ${this.mailConfig?.type || 'undefined'}`);
       await this.reloadConfigFromDatabase();
@@ -605,8 +630,10 @@ export class MailService implements OnModuleInit {
           }),
     };
 
+    const activeConfig = config ?? this.mailConfig;
+
     this.log('Sending mail:', preparedMail);
-    this.log('Mail config:', this.mailConfig);
+    this.log('Mail config:', activeConfig);
 
     let resolvedRecipientUsers: Array<{
       user_id: number;
@@ -625,17 +652,17 @@ export class MailService implements OnModuleInit {
     try {
 
       let result;
-      switch (this.mailConfig.type) {
+      switch (activeConfig.type) {
         case MailConfigurationTypeEnum.SES:
-          result = await this.sendWithSES(preparedMail);
+          result = await this.sendWithSES(preparedMail, activeConfig);
           break;
 
         case MailConfigurationTypeEnum.GMAIL:
-          result = await this.sendWithGmail(preparedMail);
+          result = await this.sendWithGmail(preparedMail, activeConfig);
           break;
 
         case MailConfigurationTypeEnum.SMTP:
-          result = await this.sendWithSMTP(preparedMail);
+          result = await this.sendWithSMTP(preparedMail, activeConfig);
           break;
 
         default:
@@ -647,7 +674,7 @@ export class MailService implements OnModuleInit {
       // Sem esta linha, "enviou e nao chegou" e indepuravel: o id do provedor e
       // a unica chave que liga o nosso registro ao evento de entrega/bounce dele.
       this.logger.log(
-        `Mail sent via ${this.mailConfig.type} to ${
+        `Mail sent via ${activeConfig.type} to ${
           Array.isArray(preparedMail.to) ? preparedMail.to.join(';') : preparedMail.to
         } (providerMessageId=${providerMessageId ?? 'none'})`,
       );
@@ -730,9 +757,9 @@ export class MailService implements OnModuleInit {
    * de entregar; no SES os destinatarios ocultos vao em `Destinations`.
    */
   static async buildMimeMessage(mail: Mail, options: { keepBcc?: boolean } = {}): Promise<Buffer> {
-    // Caminho com `index.js`: com moduleResolution NodeNext o import() resolve
-    // como ESM, que recusa importar diretório (ERR_UNSUPPORTED_DIR_IMPORT).
-    const { default: MailComposer } = await import('nodemailer/lib/mail-composer/index.js');
+    // Subcaminho sem `index.js`: o nodemailer 10 o publica no exports map (ESM e
+    // CJS) e no typesVersions, que e o que o moduleResolution Node10 enxerga.
+    const { default: MailComposer } = await import('nodemailer/lib/mail-composer');
 
     const composer = new MailComposer({
       from: mail.from,
@@ -767,8 +794,8 @@ export class MailService implements OnModuleInit {
       .replace(/=+$/, '');
   }
 
-  async sendWithSMTP(mail: Mail) {
-    if (this.mailConfig.type !== 'SMTP') {
+  async sendWithSMTP(mail: Mail, config: MailModuleOptions = this.mailConfig) {
+    if (config.type !== 'SMTP') {
       throw new Error('Invalid mail configuration type');
     }
 
@@ -779,7 +806,7 @@ export class MailService implements OnModuleInit {
       port,
       secure = false,
       rejectUnauthorized = true,
-    } = this.mailConfig;
+    } = config;
 
     const nodemailer = await import('nodemailer');
 
@@ -838,11 +865,11 @@ export class MailService implements OnModuleInit {
     return { result, mail };
   }
 
-  async sendWithGmail(mail: Mail) {
-    if (this.mailConfig.type !== 'GMAIL') {
+  async sendWithGmail(mail: Mail, config: MailModuleOptions = this.mailConfig) {
+    if (config.type !== 'GMAIL') {
       throw new Error('Invalid mail configuration type');
     }
-    const { clientId, clientSecret, from, refreshToken } = this.mailConfig;
+    const { clientId, clientSecret, from, refreshToken } = config;
     const redirectURI = 'https://developers.google.com/oauthplayground';
 
     this.log(`Sending mail with Gmail`, {
@@ -886,11 +913,11 @@ export class MailService implements OnModuleInit {
     return { result, mail };
   }
 
-  async sendWithSES(mail: Mail) {
-    if (this.mailConfig.type !== 'SES') {
+  async sendWithSES(mail: Mail, config: MailModuleOptions = this.mailConfig) {
+    if (config.type !== 'SES') {
       throw new Error('Invalid mail configuration type');
     }
-    const { region, from, accessKeyId, secretAccessKey } = this.mailConfig;
+    const { region, from, fromName, accessKeyId, secretAccessKey } = config;
 
     this.log(`Sending mail with AWS SES`, {
       region,
@@ -916,7 +943,9 @@ export class MailService implements OnModuleInit {
 
     // O remetente vem do perfil de integracao e pode chegar com espaco sobrando;
     // o SES recusa o `Source` exatamente como recusa um destinatario sujo.
-    const source = MailService.splitAddresses(from)[0] ?? '';
+    // Com `fromName` no perfil o `Source` leva o nome exibido; sem ele, o
+    // e-mail chegava só com o endereço cru.
+    const source = MailService.formatSesSource(MailService.splitAddresses(from)[0] ?? '', fromName);
 
     const hasAttachments = mail.attachments instanceof Array && mail.attachments.length > 0;
     const hasHeaders = Boolean(mail.headers && Object.keys(mail.headers).length > 0);

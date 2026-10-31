@@ -28,7 +28,6 @@ vi.mock('@/generated/integration-logos', () => ({
     facebook: { body: '<path d="M17"/>', width: 256, height: 256 },
     'youtube-icon': { body: '<path d="M18"/>', width: 256, height: 180 },
     'google-maps': { body: '<path d="M19"/>', width: 256, height: 367 },
-    'instagram-icon': { body: '<path d="M20"/>', width: 256, height: 256 },
     x: { body: '<path d="M21"/>', width: 251, height: 256 },
   },
 }));
@@ -238,12 +237,13 @@ describe('IntegrationLogo', () => {
   });
 
   it.each(['instagram', 'instagram-social', 'instagram_social'])(
-    'renderiza o logo do Instagram para %s (rede do canal e provider do perfil)',
+    'renderiza o logo colorido do Instagram para %s (rede do canal e provider do perfil)',
     (provider) => {
       const { container } = render(
         <IntegrationLogo provider={provider} decorative={false} />
       );
-      expect(container.querySelector('svg')).toBeTruthy();
+      expect(container.querySelector('#instagram-gradient')).toBeTruthy();
+      expect(formatIntegrationProviderName(provider)).toBe('Instagram');
       expect(container.querySelector('svg.lucide-plug-zap')).toBeFalsy();
       expect(container.querySelector('[role="img"]')).toHaveAttribute(
         'aria-label',

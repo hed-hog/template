@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import path from 'path';
 
 /**
@@ -124,9 +124,37 @@ function setNestedValue(
   return result;
 }
 
+const SUPPORTED_LOCALES = ['en', 'pt'];
+
+/**
+ * Primeiro idioma do `Accept-Language` que o admin tem (`pt-BR` → `pt`), na
+ * ordem de preferência do navegador.
+ */
+function localeFromAcceptLanguage(header: string | null): string | null {
+  const ranked = (header ?? '')
+    .split(',')
+    .map((part) => {
+      const [tag = '', ...params] = part.trim().split(';');
+      const q = params.find((p) => p.trim().startsWith('q='));
+      return {
+        base: tag.trim().toLowerCase().split('-')[0] ?? '',
+        q: q ? Number(q.trim().slice(2)) || 0 : 1,
+      };
+    })
+    .filter((item) => item.q > 0)
+    .sort((a, b) => b.q - a.q);
+  return ranked.find((item) => SUPPORTED_LOCALES.includes(item.base))?.base ?? null;
+}
+
 export default getRequestConfig(async () => {
   const store = await cookies();
-  const locale = store.get('locale')?.value || 'en';
+  // Sem cookie (o LanguageSelector só o grava no cliente), o idioma do
+  // navegador decide: antes caía em 'en' e a tela saía em inglês com o menu,
+  // que vem da API, em português (HCD-0002).
+  const locale =
+    store.get('locale')?.value ||
+    localeFromAcceptLanguage((await headers()).get('accept-language')) ||
+    'en';
 
   // Load messages from the messages directory and all subdirectories
   const messagesDir = path.join(process.cwd(), 'messages');

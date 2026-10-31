@@ -132,6 +132,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -743,6 +745,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -1565,6 +1569,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -1822,6 +1828,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -1927,6 +1935,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-images-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-offers-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/catalog/products/_components/product-specs-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/catalog/_components/catalog-badges.tsx",
         "apps/admin/src/app/(app)/(libraries)/catalog/_components/confirm-delete-dialog.tsx",
@@ -1938,6 +1947,7 @@
         "catalog.Common",
         "catalog.ProductForm",
         "catalog.ProductImages",
+        "catalog.ProductOffers",
         "catalog.ProductSpecs",
         "catalog.ProductsPage"
       ],
@@ -1997,6 +2007,18 @@
         {
           "method": "PATCH",
           "url": "/catalog/products/:productId/images/reorder"
+        },
+        {
+          "method": "GET",
+          "url": "/catalog/products/:productId/offers"
+        },
+        {
+          "method": "DELETE",
+          "url": "/catalog/products/:productId/offers/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/catalog/products/:productId/offers/:id"
         },
         {
           "method": "GET",
@@ -2299,6 +2321,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -2420,6 +2444,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -3145,6 +3171,10 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/cms",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/author-form-parts.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/author-profile.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/author-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/authors-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/categories-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/category-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-dashboard.tsx",
@@ -3154,6 +3184,7 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/component-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/components-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/dashboard/dashboard-charts.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/dashboard/site-comparison.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/category-select.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/component-library-panel.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/component-properties-panel.tsx",
@@ -3165,6 +3196,7 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-search-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/page-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/publish-info.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/ranking-image-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/revision-history-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/seo-preview.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/layout-sheet.tsx",
@@ -3197,6 +3229,9 @@
       "loc": 6,
       "i18nNamespaces": [
         "cms.Analytics",
+        "cms.AuthorProfile",
+        "cms.Authors",
+        "cms.Authors.create",
         "cms.Categories",
         "cms.ComponentTypes",
         "cms.Components",
@@ -3241,6 +3276,10 @@
         {
           "method": "GET",
           "url": "/setting/group/general"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images"
         }
       ],
       "features": {
@@ -3259,11 +3298,81 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
       ],
       "hasChildren": true
+    },
+    {
+      "route": "/cms/author-profile",
+      "library": "cms",
+      "segments": [
+        "cms",
+        "author-profile"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/cms/author-profile/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/cms/author-profile",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/author-profile.tsx"
+      ],
+      "loc": 6,
+      "i18nNamespaces": [
+        "cms.AuthorProfile",
+        "cms.Authors"
+      ],
+      "endpoints": [],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/cms/authors",
+      "library": "cms",
+      "segments": [
+        "cms",
+        "authors"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/cms/authors/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/cms/authors",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/authors-list.tsx"
+      ],
+      "loc": 6,
+      "i18nNamespaces": [
+        "cms.Authors",
+        "cms.Authors.create"
+      ],
+      "endpoints": [],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/services.ts",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
     },
     {
       "route": "/cms/categories",
@@ -3362,6 +3471,8 @@
       },
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/analytics-performance.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/author-profile.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/authors-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/categories-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/cms-settings.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/components-list.tsx",
@@ -3603,7 +3714,7 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/cms/_components/pages-list.tsx"
       ],
-      "loc": 6,
+      "loc": 26,
       "i18nNamespaces": [
         "cms.Editor",
         "cms.Pages",
@@ -3632,6 +3743,36 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_lib/services.ts",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/cms/pages/:id",
+      "library": "cms",
+      "segments": [
+        "cms",
+        "pages",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/cms/pages/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/cms/pages/[id]",
+      "components": [],
+      "loc": 12,
+      "i18nNamespaces": [],
+      "endpoints": [],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/dashboard-stats.ts",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/services.ts"
       ],
       "hasChildren": true
     },
@@ -3670,7 +3811,10 @@
         "apps/admin/src/app/(app)/(libraries)/cms/_components/pages-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/search-ai-insights.tsx",
         "apps/admin/src/app/(app)/(libraries)/cms/_components/search-issues.tsx",
-        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance-table.tsx"
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/search-performance-table.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/seo-ai-insight.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/post-variants.tsx"
       ],
       "hasChildren": false
     },
@@ -4067,6 +4211,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -7033,6 +7179,10 @@
         {
           "method": "GET",
           "url": "/user"
+        },
+        {
+          "method": "GET",
+          "url": "/user/${currentUser"
         }
       ],
       "features": {
@@ -7321,6 +7471,7 @@
         "apps/admin/src/app/(app)/(libraries)/crm/_components/crm-owner-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/_components/document-type-picker-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/_components/person-edit-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/crm/_components/person-files-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/_components/person-picker-field-with-edit.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/_components/person-picker-with-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/crm/_components/person-picker.tsx",
@@ -7330,7 +7481,8 @@
       "i18nNamespaces": [
         "crm.CrmMenu",
         "crm.components.contactTypePicker",
-        "crm.components.documentTypePicker"
+        "crm.components.documentTypePicker",
+        "crm.components.personFiles"
       ],
       "endpoints": [
         {
@@ -7364,6 +7516,18 @@
         {
           "method": "PATCH",
           "url": "/person/:personId"
+        },
+        {
+          "method": "GET",
+          "url": "/person/:personId/files"
+        },
+        {
+          "method": "POST",
+          "url": "/person/:personId/files"
+        },
+        {
+          "method": "DELETE",
+          "url": "/person/:personId/files/:id"
         }
       ],
       "features": {
@@ -7384,6 +7548,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/scaffold-fixtures.ts",
@@ -8285,6 +8451,10 @@
           "url": "/person/:selectedPersonId"
         },
         {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
           "method": "DELETE",
           "url": "/proposal"
         },
@@ -8377,6 +8547,10 @@
         "crm.ProposalsPage"
       ],
       "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
         {
           "method": "DELETE",
           "url": "/proposal"
@@ -8555,11 +8729,65 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
       ],
       "hasChildren": true
+    },
+    {
+      "route": "/factory/ia",
+      "library": "factory",
+      "segments": [
+        "factory",
+        "ia"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/factory/ia/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/factory/ia",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/factory/_components/request-sheet.tsx"
+      ],
+      "loc": 514,
+      "i18nNamespaces": [
+        "factory.AiPanel",
+        "factory.Common",
+        "factory.RequestSheet"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/factory/ai/panel"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/request/:requestId"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/request/:requestId/:path"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
     },
     {
       "route": "/factory/pedidos",
@@ -8680,8 +8908,18 @@
       "file": "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]",
       "components": [
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/ai-agent-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/ai-agents-section.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/ai-test-case-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/ai-test-run-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/ai-tests-section.tsx",
         "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/changelog-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/credits-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/forum-ai-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/knowledge-document-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/knowledge-preview-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/knowledge-release-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/knowledge-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/members-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/factory/projetos/[id]/_components/size-rules-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/factory/_components/factory-types.ts",
@@ -8690,11 +8928,13 @@
         "apps/admin/src/app/(app)/(libraries)/factory/_components/request-kpis.tsx",
         "apps/admin/src/app/(app)/(libraries)/factory/_components/requests-list.tsx"
       ],
-      "loc": 286,
+      "loc": 302,
       "i18nNamespaces": [
         "factory.Changelog",
         "factory.Common",
         "factory.Credits",
+        "factory.ForumAi",
+        "factory.Knowledge",
         "factory.Kpis",
         "factory.Members",
         "factory.ProjectDetail",
@@ -8705,7 +8945,43 @@
       "endpoints": [
         {
           "method": "PATCH",
+          "url": "/factory/ai-agents/:agent"
+        },
+        {
+          "method": "DELETE",
+          "url": "/factory/ai-tests/case/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/ai-tests/case/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/ai-tests/run/:runId"
+        },
+        {
+          "method": "PATCH",
           "url": "/factory/changelog/:id"
+        },
+        {
+          "method": "DELETE",
+          "url": "/factory/knowledge/document/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/knowledge/document/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/factory/knowledge/document/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/knowledge/release/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/knowledge/release/:id/activate"
         },
         {
           "method": "GET",
@@ -8729,6 +9005,26 @@
         },
         {
           "method": "GET",
+          "url": "/factory/project/:projectId/ai-agents"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId/ai-tests"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/ai-tests/case"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/ai-tests/defaults"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/ai-tests/run"
+        },
+        {
+          "method": "GET",
           "url": "/factory/project/:projectId/changelog"
         },
         {
@@ -8746,6 +9042,26 @@
         {
           "method": "POST",
           "url": "/factory/project/:projectId/credit/period/:id/adjustment"
+        },
+        {
+          "method": "GET",
+          "url": "/factory/project/:projectId/knowledge"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/knowledge/document"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/knowledge/import"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/knowledge/preview"
+        },
+        {
+          "method": "POST",
+          "url": "/factory/project/:projectId/knowledge/release"
         },
         {
           "method": "GET",
@@ -8823,7 +9139,7 @@
         "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/support-types.ts",
         "apps/admin/src/app/(app)/(libraries)/factory/suporte/_components/support-ui.tsx"
       ],
-      "loc": 174,
+      "loc": 175,
       "i18nNamespaces": [
         "factory.Common"
       ],
@@ -8978,6 +9294,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -9948,9 +10266,11 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/finance/cash-and-banks/transfers",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/formatters.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-currencies.ts",
+        "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-data.ts",
         "apps/admin/src/app/(app)/(libraries)/finance/_lib/use-finance-realtime-refresh.ts"
       ],
-      "loc": 1092,
+      "loc": 1237,
       "i18nNamespaces": [
         "finance.TransfersPage"
       ],
@@ -9958,6 +10278,10 @@
         {
           "method": "GET",
           "url": "/finance/bank-accounts"
+        },
+        {
+          "method": "GET",
+          "url": "/finance/currencies"
         },
         {
           "method": "GET",
@@ -10523,6 +10847,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -10712,6 +11038,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -10760,6 +11088,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -11115,6 +11445,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/calendar-feed-button.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-availability.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_components/class-timeline-settings.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-avatar.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/course-image-specs.ts",
@@ -11353,6 +11684,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -11630,11 +11963,13 @@
       "file": "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued",
       "components": [
+        "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/certificate-pdf-filename.ts",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/certificate-preview-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/edit-issued-certificate-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/issued-certificate-thumbnail.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/issued/_components/manual-issue-certificate-sheet.tsx"
       ],
-      "loc": 1032,
+      "loc": 1048,
       "i18nNamespaces": [
         "lms.CertificateTemplateEditor.fields",
         "lms.IssuedCertificatesPage",
@@ -11739,12 +12074,13 @@
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/test-emission-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/certificates/models/_components/versions-sheet.tsx"
       ],
-      "loc": 1242,
+      "loc": 1303,
       "i18nNamespaces": [
         "lms.CertificateTemplateEditor",
         "lms.CertificateTemplateEditor.leftPanel.brandFonts",
         "lms.CertificateTemplateEditor.leftPanel.library",
         "lms.CertificateTemplateEditor.newTemplate",
+        "lms.CertificateTemplateEditor.rightPanel.page",
         "lms.CertificateTemplateEditor.shortcutsSheet",
         "lms.CertificateTemplateEditor.sides",
         "lms.CertificateTemplateEditor.starters",
@@ -11973,7 +12309,7 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/class-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/duplicate-class-sheet.tsx"
       ],
-      "loc": 2243,
+      "loc": 2247,
       "i18nNamespaces": [
         "lms.ClassesPage",
         "lms.ClassesPage.deleteDialog",
@@ -12097,7 +12433,11 @@
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/checklist-item-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/checklist-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/checklist-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/class-timeline-parts.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/class-timeline-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/event-summary-popover.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/invite-qr-code.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/link-qr-code.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/quick-create-session-popover.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/session-evaluations-tab.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/classes/[id]/_components/session-recording-dialog.tsx",
@@ -12114,8 +12454,13 @@
         "apps/admin/src/app/(app)/(libraries)/lms/_components/add-class-students-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_components/create-lms-person-sheet.tsx"
       ],
-      "loc": 7286,
+      "loc": 7545,
       "i18nNamespaces": [
+        "lms.ClassTimeline",
+        "lms.ClassTimeline.linkPreview",
+        "lms.ClassTimeline.qrCode",
+        "lms.ClassTimeline.reactions",
+        "lms.ClassTimeline.time",
         "lms.ClassesPage",
         "lms.ClassesPage.DetailPage",
         "lms.ClassesPage.DetailPage.assignments",
@@ -12124,6 +12469,7 @@
         "lms.ClassesPage.DetailPage.attendanceImport",
         "lms.ClassesPage.DetailPage.bitcodeAdjust",
         "lms.ClassesPage.DetailPage.checklist",
+        "lms.ClassesPage.DetailPage.dialogs.inviteLink",
         "lms.ClassesPage.DetailPage.eventSummary",
         "lms.ClassesPage.DetailPage.sessionEvaluations",
         "lms.ClassesPage.DetailPage.sessionsTable.recording",
@@ -12379,12 +12725,16 @@
           "url": "/lms/classes/:id/students/:id"
         },
         {
-          "method": "DELETE",
+          "method": "GET",
           "url": "/lms/classes/:id/students/:personId"
         },
         {
+          "method": "POST",
+          "url": "/lms/classes/:id/students/bulk-enroll"
+        },
+        {
           "method": "GET",
-          "url": "/lms/classes/:id/students/:personId"
+          "url": "/lms/classes/:id/timeline/settings"
         },
         {
           "method": "GET",
@@ -15376,6 +15726,8 @@
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_components/collaborator-microsoft-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -15554,6 +15906,10 @@
         },
         {
           "method": "GET",
+          "url": "/operations/tasks/:taskId/files/:relationId/open-url"
+        },
+        {
+          "method": "GET",
           "url": "/person-contact-type"
         },
         {
@@ -15587,6 +15943,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -17388,7 +17746,7 @@
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/operations/_lib/utils/format.ts"
       ],
-      "loc": 1464,
+      "loc": 1469,
       "i18nNamespaces": [
         "operations.Common",
         "operations.TimesheetsPage"
@@ -17404,6 +17762,881 @@
         "kpis": true,
         "searchBar": false,
         "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing",
+      "library": "pricing",
+      "segments": [
+        "pricing"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/collaborator-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/estimate-vs-actual-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/start-proposal-dialog.tsx"
+      ],
+      "loc": 6,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.EstimateVsActual",
+        "pricing.StartProposal"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/estimate-vs-actual/:proposalId"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/clients"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/collaborators"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/deals"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/proposals"
+        }
+      ],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
+        "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/api/dev/scaffold/context/route.ts",
+        "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
+        "apps/admin/src/lib/scaffold/validate.ts"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/pricing/assumptions",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "assumptions"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/assumptions/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/assumptions",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 428,
+      "i18nNamespaces": [
+        "pricing.Assumptions",
+        "pricing.Common"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/assumption-sets"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/assumption-sets"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/assumption-sets/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/pricing/assumption-sets/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/assumption-sets/:id/publish"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/assumption-sets/:source/new-version"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/assumption-sets/current"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/rate-profiles"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/audit-log",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "audit-log"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/audit-log/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/audit-log",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 145,
+      "i18nNamespaces": [
+        "pricing.Audit",
+        "pricing.Common"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/audit-log"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/catalog",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "catalog"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/catalog/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/catalog",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 761,
+      "i18nNamespaces": [
+        "pricing.Catalog",
+        "pricing.Common",
+        "pricing.Editor"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/rate-profiles"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/sellable-items"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/sellable-items/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/sellable-items/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/sellable-items/${editing"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/sellable-items/import-sources"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/sellable-items/import/:source"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/unit-cost-items"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/collaborator-overrides",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "collaborator-overrides"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/collaborator-overrides/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/collaborator-overrides",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/collaborator-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 240,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.Overrides"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/collaborator-overrides"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/collaborator-overrides/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/collaborators"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/estimate-vs-actual",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "estimate-vs-actual"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/estimate-vs-actual/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/estimate-vs-actual",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/estimate-vs-actual-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 276,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.EstimateVsActual"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/estimate-vs-actual"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/estimate-vs-actual/:proposalId"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/overhead",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "overhead"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/overhead/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/overhead",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 608,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.Overhead"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/fixed-cost-categories"
+        },
+        {
+          "method": "PATCH",
+          "url": "/pricing/fixed-cost-categories/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/fixed-cost-categories/finance-categories"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/overhead-periods"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/overhead-periods"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/overhead-periods/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/overhead-periods/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/pricing/overhead-periods/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/overhead-periods/:id/:path"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/policies",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "policies"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/policies/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/policies",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 235,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.Policies"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/permission-policies"
+        },
+        {
+          "method": "PUT",
+          "url": "/pricing/permission-policies"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/price-lists",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "price-lists"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/price-lists/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/price-lists",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 381,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.PriceLists"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/price-lists"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/price-lists/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/price-lists/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/price-lists/:id/:path"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/sellable-items"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/proposals",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "proposals"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/proposals/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/proposals",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/start-proposal-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 266,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.CrmStatus",
+        "pricing.Proposals",
+        "pricing.StartProposal",
+        "pricing.Verdict"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/clients"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/deals"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/proposals"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/proposals"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/start-proposal-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/page.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/pricing/proposals/:proposalId",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "proposals",
+        "[proposalId]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/costs-section.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/items-section.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/labor-section.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/packages-compare.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/result-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/scenarios-section.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/_components/snapshot-history.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/estimate-vs-actual-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 1113,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.CrmStatus",
+        "pricing.Editor",
+        "pricing.Editor.result",
+        "pricing.Editor.scenarios",
+        "pricing.EstimateVsActual",
+        "pricing.Snapshots",
+        "pricing.Verdict"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/pricing/calculate"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/estimate-vs-actual/:proposalId"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/my-policy"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/price-lists"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/price-lists/:selectedPriceListId"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/proposal-pricings"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/proposal-pricings/:activeId"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/proposal-pricings/:activeId"
+        },
+        {
+          "method": "PATCH",
+          "url": "/pricing/proposal-pricings/:activeId"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/proposal-pricings/:activeId/apply-to-proposal"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/proposal-pricings/:activeId/duplicate"
+        },
+        {
+          "method": "PATCH",
+          "url": "/pricing/proposal-pricings/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/proposal-pricings/:pricingId/snapshots"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/proposals/:proposalId"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/rate-profiles"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/sellable-items"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/sellable-items/:id/explode"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/snapshots/:id/recalculate"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/unit-cost-items"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/crm/proposals/_components/proposal-detail-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/crm/proposals/_components/proposals-management-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/start-proposal-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/rate-profiles",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "rate-profiles"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/rate-profiles/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/rate-profiles",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 342,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.RateProfiles"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/assumption-sets/current"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/capabilities"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/lookups/groupings"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/rate-profiles"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/rate-profiles/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/rate-profiles/${editing"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/assumptions/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/catalog/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/proposals/[proposalId]/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/taxes",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "taxes"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/taxes/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/taxes",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 412,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.Taxes"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/tax-profiles"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/tax-profiles"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/tax-profiles/:id"
+        },
+        {
+          "method": "PATCH",
+          "url": "/pricing/tax-profiles/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/tax-profiles/:id/publish"
+        },
+        {
+          "method": "POST",
+          "url": "/pricing/tax-profiles/:source/new-version"
+        },
+        {
+          "method": "GET",
+          "url": "/pricing/tax-profiles/current"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/pricing/unit-costs",
+      "library": "pricing",
+      "segments": [
+        "pricing",
+        "unit-costs"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/pricing/unit-costs/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/pricing/unit-costs",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/pricing/_components/decimal-input.tsx",
+        "apps/admin/src/app/(app)/(libraries)/pricing/_lib/pricing.ts"
+      ],
+      "loc": 307,
+      "i18nNamespaces": [
+        "pricing.Common",
+        "pricing.Editor",
+        "pricing.UnitCosts"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/pricing/unit-cost-items"
+        },
+        {
+          "method": "DELETE",
+          "url": "/pricing/unit-cost-items/:id"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": true,
+        "pagination": true,
         "viewModeToggle": false,
         "formSheet": true,
         "dataTable": false,
@@ -17535,6 +18768,8 @@
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
         "apps/admin/src/app/(app)/(libraries)/social/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/(app)/(libraries)/whitelabel/page.tsx",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
@@ -18831,6 +20066,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -19141,6 +20378,7 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -19176,7 +20414,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/analytics/_lib/channel-sort.ts",
         "apps/admin/src/app/(app)/(libraries)/social/analytics/_lib/use-analytics-queries.ts"
       ],
-      "loc": 472,
+      "loc": 480,
       "i18nNamespaces": [
         "social.AnalyticsPage",
         "social.AnalyticsPage.channels",
@@ -19355,7 +20593,8 @@
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/_lib/api.ts",
-        "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-breadcrumbs.ts"
+        "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-breadcrumbs.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/page.tsx"
       ],
       "hasChildren": true
     },
@@ -19392,7 +20631,9 @@
       "referencedBy": [
         "apps/admin/src/app/(app)/(libraries)/social/_lib/api.ts",
         "apps/admin/src/app/(app)/(libraries)/social/brands/_lib/brand-queries.ts",
-        "apps/admin/src/app/(app)/(libraries)/social/brands/page.tsx"
+        "apps/admin/src/app/(app)/(libraries)/social/brands/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-brand-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_lib/api.ts"
       ],
       "hasChildren": false
     },
@@ -19640,6 +20881,7 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/social/posts",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/approval-badges.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/composer-channel-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/composer-media-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/composer-variant-media-field.tsx",
@@ -19658,6 +20900,7 @@
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/post-timeline.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/post-validation-list.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_components/post-variants.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/reel-cover-field.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/_components/brand-picker.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/_components/brand-logo.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/_components/load-error-state.tsx",
@@ -19677,15 +20920,17 @@
         "apps/admin/src/app/(app)/(libraries)/social/posts/_lib/use-post-url-param.ts",
         "apps/admin/src/app/(app)/(libraries)/social/posts/_lib/use-social-timezone.ts"
       ],
-      "loc": 1068,
+      "loc": 1084,
       "i18nNamespaces": [
         "social.Common",
         "social.Networks",
         "social.PostApprovals",
         "social.PostComposer",
         "social.PostComposer.customize",
+        "social.PostComposer.customize.blog",
         "social.PostComposer.customize.googleBusiness",
         "social.PostComposer.customize.media",
+        "social.PostComposer.customize.reelCover",
         "social.PostComposer.customize.youtube",
         "social.PostComposer.customize.youtube.privacyOptions",
         "social.PostComposer.editor",
@@ -19718,6 +20963,711 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-breadcrumbs.ts",
         "apps/admin/src/app/(app)/(libraries)/social/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/social/topics",
+      "library": "social",
+      "segments": [
+        "social",
+        "topics"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/social/topics/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/social/topics",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-brand-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-card.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-channel-label.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-composer.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-status-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-urgency-badge.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_components/topic-vote-button.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/_components/load-error-state.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-brands.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-breadcrumbs.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/topics/_lib/use-topics.ts"
+      ],
+      "loc": 335,
+      "i18nNamespaces": [
+        "social.Common",
+        "social.SocialMenu",
+        "social.TopicsPage",
+        "social.TopicsPage.composer",
+        "social.TopicsPage.status",
+        "social.TopicsPage.urgency",
+        "social.TopicsPage.vote"
+      ],
+      "endpoints": [],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/_lib/use-social-breadcrumbs.ts"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status",
+      "library": "status",
+      "segments": [
+        "status"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/application-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/channel-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/discovery-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/incident-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/monitor-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/response-time-chart.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/subscriptions-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/use-status-realtime.ts"
+      ],
+      "loc": 234,
+      "i18nNamespaces": [
+        "status.ApplicationForm",
+        "status.ChannelForm",
+        "status.Common",
+        "status.DiscoveryDialog",
+        "status.IncidentSheet",
+        "status.MonitorDetailPage.chart",
+        "status.MonitorForm",
+        "status.OverviewPage",
+        "status.Subscriptions"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "GET",
+          "url": "/status/channels"
+        },
+        {
+          "method": "POST",
+          "url": "/status/discovery/import"
+        },
+        {
+          "method": "GET",
+          "url": "/status/discovery/kubernetes${namespace "
+        },
+        {
+          "method": "GET",
+          "url": "/status/incidents/:incidentId"
+        },
+        {
+          "method": "POST",
+          "url": "/status/incidents/:incidentId/:action"
+        },
+        {
+          "method": "POST",
+          "url": "/status/incidents/:incidentId/comments"
+        },
+        {
+          "method": "GET",
+          "url": "/status/monitors/:monitorId/series"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/test"
+        },
+        {
+          "method": "GET",
+          "url": "/status/overview"
+        },
+        {
+          "method": "GET",
+          "url": "/status/policies"
+        },
+        {
+          "method": "GET",
+          "url": "/status/subscriptions"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/subscriptions/:id"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/shared/redirect-target-field.tsx",
+        "apps/admin/src/app/(app)/(libraries)/cms/_lib/site-url.ts",
+        "apps/admin/src/app/(app)/(libraries)/commerce/_components/commerce-entity-page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/account/layout.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/api/dev/scaffold/context/route.ts",
+        "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
+        "apps/admin/src/lib/scaffold/validate.ts"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/status/alerts",
+      "library": "status",
+      "segments": [
+        "status",
+        "alerts"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/alerts/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/alerts",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/channel-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/subscriptions-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts"
+      ],
+      "loc": 190,
+      "i18nNamespaces": [
+        "status.AlertsPage",
+        "status.ChannelForm",
+        "status.Common",
+        "status.Subscriptions"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "GET",
+          "url": "/status/channels"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/channels/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/status/channels/:id/test"
+        },
+        {
+          "method": "GET",
+          "url": "/status/notifications"
+        },
+        {
+          "method": "GET",
+          "url": "/status/subscriptions"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/subscriptions/:id"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status/applications",
+      "library": "status",
+      "segments": [
+        "status",
+        "applications"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/applications/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/applications",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/application-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/discovery-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/use-status-realtime.ts"
+      ],
+      "loc": 424,
+      "i18nNamespaces": [
+        "status.ApplicationForm",
+        "status.ApplicationsPage",
+        "status.Common",
+        "status.DiscoveryDialog"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "POST",
+          "url": "/status/discovery/import"
+        },
+        {
+          "method": "GET",
+          "url": "/status/discovery/kubernetes${namespace "
+        },
+        {
+          "method": "GET",
+          "url": "/status/overview"
+        },
+        {
+          "method": "GET",
+          "url": "/status/policies"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/application-form-sheet.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/status/applications/:id",
+      "library": "status",
+      "segments": [
+        "status",
+        "applications",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/applications/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/applications/[id]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/application-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/incident-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/monitor-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/subscriptions-panel.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/use-status-realtime.ts"
+      ],
+      "loc": 381,
+      "i18nNamespaces": [
+        "status.ApplicationDetailPage",
+        "status.ApplicationForm",
+        "status.Common",
+        "status.IncidentSheet",
+        "status.MonitorForm",
+        "status.Subscriptions"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/applications/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/status/applications/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/status/applications/:id/history"
+        },
+        {
+          "method": "GET",
+          "url": "/status/channels"
+        },
+        {
+          "method": "GET",
+          "url": "/status/incidents/:incidentId"
+        },
+        {
+          "method": "POST",
+          "url": "/status/incidents/:incidentId/:action"
+        },
+        {
+          "method": "POST",
+          "url": "/status/incidents/:incidentId/comments"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/:id/:action"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/test"
+        },
+        {
+          "method": "GET",
+          "url": "/status/policies"
+        },
+        {
+          "method": "GET",
+          "url": "/status/subscriptions"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/subscriptions/:id"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/incident-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/applications/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/monitors/[id]/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/page.tsx",
+        "apps/admin/src/components/widgets/status.status-overview.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status/incidents",
+      "library": "status",
+      "segments": [
+        "status",
+        "incidents"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/incidents/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/incidents",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/incident-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/use-status-realtime.ts"
+      ],
+      "loc": 231,
+      "i18nNamespaces": [
+        "status.Common",
+        "status.IncidentSheet",
+        "status.IncidentsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/incidents"
+        },
+        {
+          "method": "GET",
+          "url": "/status/incidents/:incidentId"
+        },
+        {
+          "method": "POST",
+          "url": "/status/incidents/:incidentId/:action"
+        },
+        {
+          "method": "POST",
+          "url": "/status/incidents/:incidentId/comments"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status/maintenances",
+      "library": "status",
+      "segments": [
+        "status",
+        "maintenances"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/maintenances/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/maintenances",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts"
+      ],
+      "loc": 277,
+      "i18nNamespaces": [
+        "status.Common",
+        "status.MaintenancesPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "GET",
+          "url": "/status/maintenances"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/maintenances/:id"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status/monitors",
+      "library": "status",
+      "segments": [
+        "status",
+        "monitors"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/monitors/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/monitors",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/monitor-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/use-status-realtime.ts"
+      ],
+      "loc": 275,
+      "i18nNamespaces": [
+        "status.Common",
+        "status.MonitorForm",
+        "status.MonitorsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "GET",
+          "url": "/status/monitors"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/test"
+        },
+        {
+          "method": "GET",
+          "url": "/status/overview"
+        },
+        {
+          "method": "GET",
+          "url": "/status/policies"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/monitor-form-sheet.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/status/monitors/:id",
+      "library": "status",
+      "segments": [
+        "status",
+        "monitors",
+        "[id]"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/monitors/[id]/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/monitors/[id]",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/monitor-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/response-time-chart.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/use-status-realtime.ts"
+      ],
+      "loc": 302,
+      "i18nNamespaces": [
+        "status.Common",
+        "status.MonitorDetailPage",
+        "status.MonitorDetailPage.chart",
+        "status.MonitorForm"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/applications"
+        },
+        {
+          "method": "DELETE",
+          "url": "/status/monitors/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/status/monitors/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/:id/:name"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/:id/check"
+        },
+        {
+          "method": "GET",
+          "url": "/status/monitors/:id/heartbeats"
+        },
+        {
+          "method": "GET",
+          "url": "/status/monitors/:monitorId/series"
+        },
+        {
+          "method": "POST",
+          "url": "/status/monitors/test"
+        },
+        {
+          "method": "GET",
+          "url": "/status/policies"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/monitor-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/applications/[id]/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/monitors/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status/policies",
+      "library": "status",
+      "segments": [
+        "status",
+        "policies"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/policies/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/policies",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts"
+      ],
+      "loc": 206,
+      "i18nNamespaces": [
+        "status.Common",
+        "status.PoliciesPage"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/status/policies"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/status/runners",
+      "library": "status",
+      "segments": [
+        "status",
+        "runners"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/status/runners/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/status/runners",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/status/_components/status-ui.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts"
+      ],
+      "loc": 63,
+      "i18nNamespaces": [
+        "status.Common",
+        "status.RunnersPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/status/runners"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
       "hasChildren": false
     },
@@ -19804,6 +21754,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -20406,6 +22358,8 @@
         "apps/admin/src/app/(app)/(libraries)/lms/classes/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/courses/[id]/structure/_components/editor-course.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/enterprise/_components/enterprise-students-tab.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -20553,10 +22507,6 @@
         },
         {
           "method": "GET",
-          "url": "/user"
-        },
-        {
-          "method": "GET",
           "url": "/vaults"
         },
         {
@@ -20602,6 +22552,10 @@
         {
           "method": "GET",
           "url": "/vaults/people/:personId"
+        },
+        {
+          "method": "GET",
+          "url": "/vaults/users/candidates"
         }
       ],
       "features": {
@@ -20622,6 +22576,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -20724,10 +22680,6 @@
         },
         {
           "method": "GET",
-          "url": "/user"
-        },
-        {
-          "method": "GET",
           "url": "/vaults"
         },
         {
@@ -20789,6 +22741,10 @@
         {
           "method": "GET",
           "url": "/vaults/people/:personId"
+        },
+        {
+          "method": "GET",
+          "url": "/vaults/users/candidates"
         }
       ],
       "features": {
@@ -21058,18 +23014,24 @@
       "file": "apps/admin/src/app/(app)/(libraries)/vehicle/dashboard/page.tsx",
       "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/dashboard",
       "components": [
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/registrations-summary-card.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
       ],
-      "loc": 328,
+      "loc": 331,
       "i18nNamespaces": [
         "vehicle.Common",
         "vehicle.DashboardPage",
+        "vehicle.Registrations",
         "vehicle.VehicleMenu"
       ],
       "endpoints": [
         {
           "method": "GET",
           "url": "/vehicle/dashboard"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/registrations/summary"
         }
       ],
       "features": {
@@ -21094,7 +23056,11 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/models/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/options/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/parts/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/ranking-images/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/aliases/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/imports/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/spec-definitions/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/spec-sheets/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/taxonomies/page.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/versions/page.tsx"
       ],
@@ -21296,12 +23262,15 @@
       "components": [
         "apps/admin/src/app/(app)/(libraries)/vehicle/manufacturers/_components/manufacturer-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
-        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/data-source.tsx"
       ],
-      "loc": 651,
+      "loc": 683,
       "i18nNamespaces": [
         "vehicle.Common",
+        "vehicle.DataSource",
         "vehicle.ManufacturersPage",
+        "vehicle.Registrations",
         "vehicle.VehicleMenu"
       ],
       "endpoints": [
@@ -21365,14 +23334,19 @@
       "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/models",
       "components": [
         "apps/admin/src/app/(app)/(libraries)/vehicle/models/_components/model-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/ranking-image-dialog.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-format.ts",
-        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/data-source.tsx"
       ],
-      "loc": 648,
+      "loc": 702,
       "i18nNamespaces": [
         "vehicle.Common",
+        "vehicle.DataSource",
         "vehicle.ModelsPage",
+        "vehicle.RankingImages",
+        "vehicle.Registrations",
         "vehicle.VehicleMenu"
       ],
       "endpoints": [
@@ -21406,7 +23380,35 @@
         },
         {
           "method": "GET",
+          "url": "/vehicle/models/options"
+        },
+        {
+          "method": "GET",
           "url": "/vehicle/models/stats"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/ranking-images"
+        },
+        {
+          "method": "DELETE",
+          "url": "/vehicle/ranking-images/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/ranking-images/:id/regenerate"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/ranking-images/:id/save"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images/:imageId"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images/position"
         },
         {
           "method": "GET",
@@ -21574,6 +23576,235 @@
       "hasChildren": false
     },
     {
+      "route": "/vehicle/ranking-images",
+      "library": "vehicle",
+      "segments": [
+        "vehicle",
+        "ranking-images"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/vehicle/ranking-images/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/ranking-images",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/ranking-image-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/ranking-image.ts"
+      ],
+      "loc": 575,
+      "i18nNamespaces": [
+        "vehicle.Common",
+        "vehicle.RankingImages",
+        "vehicle.VehicleMenu"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/vehicle/models/options"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/ranking-images"
+        },
+        {
+          "method": "DELETE",
+          "url": "/vehicle/ranking-images/:id"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/ranking-images/:id/regenerate"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/ranking-images/:id/save"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images/:imageId"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images/months"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/ranking-images/position"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/cms/_components/editor/ranking-image-picker.tsx",
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/model-ranking-images.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/ranking-image-dialog.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/vehicle/registrations",
+      "library": "vehicle",
+      "segments": [
+        "vehicle",
+        "registrations"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/registrations",
+      "components": [],
+      "loc": 6,
+      "i18nNamespaces": [],
+      "endpoints": [],
+      "features": {
+        "pageHeader": false,
+        "kpis": false,
+        "searchBar": false,
+        "pagination": false,
+        "viewModeToggle": false,
+        "formSheet": false,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/registrations-panel.tsx"
+      ],
+      "hasChildren": true
+    },
+    {
+      "route": "/vehicle/registrations/aliases",
+      "library": "vehicle",
+      "segments": [
+        "vehicle",
+        "registrations",
+        "aliases"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/aliases/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/aliases",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/aliases/_components/confirm-alias-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/aliases/_components/model-form-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/_lib/auto-types.ts"
+      ],
+      "loc": 432,
+      "i18nNamespaces": [
+        "vehicle.RegistrationsAliasesPage",
+        "vehicle.RegistrationsCommon"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/auto/aliases"
+        },
+        {
+          "method": "PATCH",
+          "url": "/auto/aliases/:id"
+        },
+        {
+          "method": "GET",
+          "url": "/auto/aliases/stats"
+        },
+        {
+          "method": "GET",
+          "url": "/auto/brands"
+        },
+        {
+          "method": "POST",
+          "url": "/auto/brands"
+        },
+        {
+          "method": "GET",
+          "url": "/auto/models"
+        },
+        {
+          "method": "POST",
+          "url": "/auto/models"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [],
+      "hasChildren": false
+    },
+    {
+      "route": "/vehicle/registrations/imports",
+      "library": "vehicle",
+      "segments": [
+        "vehicle",
+        "registrations",
+        "imports"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/imports/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/imports",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/imports/_components/import-detail-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/imports/_components/run-import-dialog.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/imports/_components/upload-import-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/_lib/auto-types.ts"
+      ],
+      "loc": 497,
+      "i18nNamespaces": [
+        "vehicle.RegistrationsCommon",
+        "vehicle.RegistrationsImportsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/auto/imports"
+        },
+        {
+          "method": "GET",
+          "url": "/auto/imports/:importId"
+        },
+        {
+          "method": "POST",
+          "url": "/auto/imports/inbox/complete"
+        },
+        {
+          "method": "POST",
+          "url": "/auto/imports/inbox/start"
+        },
+        {
+          "method": "POST",
+          "url": "/auto/imports/run"
+        },
+        {
+          "method": "GET",
+          "url": "/auto/imports/stats"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/page.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
       "route": "/vehicle/spec-definitions",
       "library": "vehicle",
       "segments": [
@@ -21628,6 +23859,83 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/parts/_components/part-form-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/versions/_components/version-extra-specs-tab.tsx"
+      ],
+      "hasChildren": false
+    },
+    {
+      "route": "/vehicle/spec-sheets",
+      "library": "vehicle",
+      "segments": [
+        "vehicle",
+        "spec-sheets"
+      ],
+      "file": "apps/admin/src/app/(app)/(libraries)/vehicle/spec-sheets/page.tsx",
+      "directory": "apps/admin/src/app/(app)/(libraries)/vehicle/spec-sheets",
+      "components": [
+        "apps/admin/src/app/(app)/(libraries)/vehicle/spec-sheets/_components/new-spec-sheet-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/spec-sheets/_components/spec-sheet-review-sheet.tsx",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/registrations/_lib/auto-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/spec-sheets/_lib/spec-sheet-types.ts"
+      ],
+      "loc": 368,
+      "i18nNamespaces": [
+        "vehicle.RegistrationsCommon",
+        "vehicle.SpecSheetsPage"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/file"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/models/options"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/spec-sheets"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/spec-sheets"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/spec-sheets/:id/run"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/spec-sheets/:sheetId"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/spec-sheets/:sheetId/apply"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/spec-sheets/:sheetId/reject"
+        },
+        {
+          "method": "POST",
+          "url": "/vehicle/spec-sheets/:sheetId/source"
+        },
+        {
+          "method": "GET",
+          "url": "/vehicle/spec-sheets/stats"
+        }
+      ],
+      "features": {
+        "pageHeader": true,
+        "kpis": true,
+        "searchBar": true,
+        "pagination": true,
+        "viewModeToggle": true,
+        "formSheet": true,
+        "dataTable": false,
+        "widgets": false
+      },
+      "referencedBy": [
+        "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx"
       ],
       "hasChildren": false
     },
@@ -21718,11 +24026,13 @@
         "apps/admin/src/app/(app)/(libraries)/vehicle/versions/_components/version-specs-fields.tsx",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/use-vehicle-taxonomies.ts",
         "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-format.ts",
-        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts"
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_lib/vehicle-types.ts",
+        "apps/admin/src/app/(app)/(libraries)/vehicle/_components/data-source.tsx"
       ],
-      "loc": 827,
+      "loc": 852,
       "i18nNamespaces": [
         "vehicle.Common",
+        "vehicle.DataSource",
         "vehicle.ImportsPage",
         "vehicle.VehicleMenu",
         "vehicle.VersionsPage"
@@ -21876,6 +24186,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -22117,6 +24429,8 @@
         "apps/admin/src/app/(app)/(libraries)/core/pages/_components/page-wizard-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"
@@ -22154,6 +24468,8 @@
         "apps/admin/src/app/(app)/(libraries)/inbox/_components/inbox-settings-sheet.tsx",
         "apps/admin/src/app/(app)/(libraries)/lms/_lib/store/useTemplateStore.ts",
         "apps/admin/src/app/(app)/(libraries)/social/page.tsx",
+        "apps/admin/src/app/(app)/(libraries)/social/posts/_components/blog-cms-fields.tsx",
+        "apps/admin/src/app/(app)/(libraries)/status/_lib/types.ts",
         "apps/admin/src/app/api/dev/scaffold/context/route.ts",
         "apps/admin/src/components/media-upload/media-upload-url-field.tsx",
         "apps/admin/src/lib/scaffold/validate.ts"

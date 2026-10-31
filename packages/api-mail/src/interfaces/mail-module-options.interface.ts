@@ -9,6 +9,8 @@ export type MailModuleOptions =
     accessKeyId: string;
     secretAccessKey: string;
     from: string;
+    /** Nome exibido do remetente ("Compara Hardware"); o SES usa `from` cru sem ele. */
+    fromName?: string;
   }
   | {
     global?: boolean;

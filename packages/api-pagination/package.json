@@ -18,7 +18,7 @@
     "@hed-hog/api": "workspace:*",
     "@hed-hog/api-prisma": "workspace:*",
     "class-validator": "*",
-    "mysql2": "3.14.1",
+    "mysql2": "3.24.6",
     "pg": "8.16.0",
     "typeorm": "^0.3.25",
     "@hed-hog/api-types": "workspace:*"

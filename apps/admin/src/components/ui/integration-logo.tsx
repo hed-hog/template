@@ -94,11 +94,8 @@ const providerLogoIcons: Record<
   microsoft: { slug: 'microsoft-icon', label: 'Microsoft' },
   facebook: { slug: 'facebook', label: 'Facebook' },
   linkedin: { slug: 'linkedin-icon', label: 'LinkedIn' },
-  instagram: { slug: 'instagram-icon', label: 'Instagram' },
   // App do HedHog na Meta (modulo social): cobre Facebook e Instagram.
   'meta-social': { slug: 'meta-icon', label: 'Meta' },
-  // App do HedHog na API do Instagram com login do Instagram (modulo social).
-  'instagram-social': { slug: 'instagram-icon', label: 'Instagram' },
   // App do HedHog na Community Management API do LinkedIn (modulo social). A
   // rede do canal (`linkedin`) ja usa o mesmo logo.
   'linkedin-social': { slug: 'linkedin-icon', label: 'LinkedIn' },
@@ -293,6 +290,61 @@ const providerPresentations: Record<string, ProviderPresentation> = {
   },
 };
 
+// Instagram: o conjunto `logos` so tem o glifo preto, que some no tema escuro.
+// Vale para a rede do canal (`instagram`) e para o app do HedHog na API do
+// Instagram com login do Instagram (`instagram-social`).
+const instagramPresentation: ProviderPresentation = {
+  label: 'Instagram',
+  icon: (
+    <svg width="100%" height="100%" viewBox="0 0 24 24" aria-hidden="true">
+      <defs>
+        <radialGradient id="instagram-gradient" cx="0.3" cy="1.07" r="1.5">
+          <stop offset="0%" stopColor="#FFDD55" />
+          <stop offset="10%" stopColor="#FFDD55" />
+          <stop offset="50%" stopColor="#FF543E" />
+          <stop offset="100%" stopColor="#C837AB" />
+        </radialGradient>
+        <radialGradient
+          id="instagram-gradient-blue"
+          cx="-0.17"
+          cy="0.07"
+          r="0.67"
+        >
+          <stop offset="0%" stopColor="#3771C8" />
+          <stop offset="13%" stopColor="#3771C8" />
+          <stop offset="100%" stopColor="#6600FF" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="24" height="24" rx="6" fill="url(#instagram-gradient)" />
+      <rect
+        width="24"
+        height="24"
+        rx="6"
+        fill="url(#instagram-gradient-blue)"
+      />
+      <rect
+        x="5"
+        y="5"
+        width="14"
+        height="14"
+        rx="4"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.8"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="3.3"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.8"
+      />
+      <circle cx="16.1" cy="7.9" r="1.05" fill="#fff" />
+    </svg>
+  ),
+};
+
 // Blog do CMS no modulo social: a rede do canal (`blog`) e o provider do
 // perfil (`cms-blog-social`). Nao e marca de terceiro: icone generico.
 const cmsBlogPresentation: ProviderPresentation = {
@@ -307,6 +359,8 @@ const cmsVideoPresentation: ProviderPresentation = {
 };
 
 const categorizedFallbacks: Record<string, ProviderPresentation> = {
+  instagram: instagramPresentation,
+  'instagram-social': instagramPresentation,
   blog: cmsBlogPresentation,
   'cms-blog-social': cmsBlogPresentation,
   cms_video: cmsVideoPresentation,

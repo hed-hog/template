@@ -53,6 +53,7 @@ type PublicProposal = {
   subtotal_amount_cents: number;
   discount_amount_cents: number;
   tax_amount_cents: number;
+  tax_included?: boolean;
   total_amount_cents: number;
   payment_method: string | null;
   payment_notes: string | null;
@@ -252,7 +253,9 @@ export default function PublicProposalPage() {
   const proposal = state.proposal;
   const currency = proposal.currency_code || 'BRL';
   const hasDiscount = proposal.discount_amount_cents > 0;
-  const hasTax = proposal.tax_amount_cents > 0;
+  // Imposto embutido no preço (precificação por dentro) não soma ao total.
+  const taxIncluded = Boolean(proposal.tax_included) && proposal.tax_amount_cents > 0;
+  const hasTax = proposal.tax_amount_cents > 0 && !taxIncluded;
 
   return (
     <Shell>
@@ -310,6 +313,9 @@ export default function PublicProposalPage() {
                 ) : null}
                 {hasTax ? <Row label="Impostos" value={money(proposal.tax_amount_cents, currency)} /> : null}
                 <Row label="Total" value={money(proposal.total_amount_cents, currency)} strong />
+                {taxIncluded ? (
+                  <Row label="Impostos inclusos no total" value={money(proposal.tax_amount_cents, currency)} />
+                ) : null}
               </div>
             </div>
           ) : null}

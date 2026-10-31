@@ -71,7 +71,6 @@ const TARGETS = [
       'google-icon',
       'google-maps',
       'google-play-icon',
-      'instagram-icon',
       'kubernetes',
       'linkedin-icon',
       'meta-icon',

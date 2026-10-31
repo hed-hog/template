@@ -25,15 +25,20 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { AttachmentsField, useAddAttachments } from './attachments-field';
 import {
+  NotifyEmailField,
+  isInvalidNotifyEmail,
+  useNotifyEmail,
+} from './notify-email-field';
+import {
   ContextChip,
   Field,
   SupportContext,
   supportFormData,
 } from './report-bug-sheet';
 import {
-  SUPPORT_API,
+  supportApi,
   SUPPORT_CHANGED_EVENT,
-  SUPPORT_PAGE,
+  supportPage,
   collectClientContext,
   imagesFromPaste,
   isBlankRichText,
@@ -43,7 +48,7 @@ const EMPTY = { title: '', situation: '', problem: '', solution: '' };
 
 /** Link do tópico no fórum (aba + tópico aberto). */
 export const forumTopicPath = (id: number) =>
-  `${SUPPORT_PAGE}?aba=forum&topico=${id}`;
+  `${supportPage()}?aba=forum&topico=${id}`;
 
 /**
  * "Propor melhoria": vira um tópico no Fórum de melhorias. Os colegas apoiam
@@ -73,11 +78,13 @@ export function ProposeImprovementSheet({
   const [submitted, setSubmitted] = useState(false);
   const [created, setCreated] = useState<{ id: number; code: string } | null>(null);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [notifyEmail, setNotifyEmail] = useNotifyEmail();
 
   const errors = {
     title: !form.title.trim(),
     situation: isBlankRichText(form.situation),
     problem: isBlankRichText(form.problem),
+    notifyEmail: isInvalidNotifyEmail(notifyEmail),
   };
   const set = (key: keyof typeof EMPTY, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -91,7 +98,7 @@ export function ProposeImprovementSheet({
         code: string;
         attachmentsFailed: number;
       }>({
-        url: `${SUPPORT_API}/improvements`,
+        url: `${supportApi()}/improvements`,
         method: 'POST',
         data: supportFormData(
           {
@@ -104,6 +111,7 @@ export function ProposeImprovementSheet({
             pageUrl: context.pageUrl,
             clientContext: JSON.stringify(collectClientContext() ?? {}),
             idempotencyKey,
+            notifyEmail: notifyEmail.trim() || undefined,
           },
           files
         ),
@@ -178,6 +186,11 @@ export function ProposeImprovementSheet({
                 onChange={(html) => set('solution', html)}
               />
             </Field>
+            <NotifyEmailField
+              value={notifyEmail}
+              onChange={setNotifyEmail}
+              showError={submitted}
+            />
             <Field label={t('attachments')} optional={t('optional')}>
               <AttachmentsField files={files} onChange={setFiles} />
             </Field>

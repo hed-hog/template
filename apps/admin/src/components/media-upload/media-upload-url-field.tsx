@@ -67,6 +67,12 @@ export interface MediaUploadUrlFieldProps {
    * editor mostra um campo quebrado para uma imagem que está no ar.
    */
   previewBaseUrl?: string;
+  /**
+   * Botões extras na linha de ações, ao lado do envio — outras origens para o
+   * mesmo campo (ex.: escolher uma imagem já gerada). Quem passa decide o valor
+   * e chama `onChange` com a URL.
+   */
+  extraActions?: React.ReactNode;
 }
 
 /**
@@ -92,6 +98,7 @@ export function MediaUploadUrlField({
   previewClassName = 'h-28 w-full',
   hideUrlInput,
   previewBaseUrl,
+  extraActions,
 }: MediaUploadUrlFieldProps) {
   const { request } = useApp();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -298,6 +305,8 @@ export function MediaUploadUrlField({
             />
           </>
         )}
+
+        {extraActions}
 
         {hasValue ? (
           <Button

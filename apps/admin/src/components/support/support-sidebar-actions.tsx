@@ -16,7 +16,7 @@ import {
   REPORT_BUG_EVENT,
   SCREENSHOT_IGNORE_ATTR,
   SUPPORT_CAPTURING_EVENT,
-  SUPPORT_PAGE,
+  supportPage,
   useSupportStatus,
 } from './support-client';
 import type { SupportFlow } from './support-sheets';
@@ -30,7 +30,7 @@ import type { SupportFlow } from './support-sheets';
  *
  * O bloco inteiro some quando não há suporte: em projeto sem a Fábrica de
  * Software (a consulta de status falha) e com o suporte indisponível (token
- * ausente ou inválido nas settings do grupo `factory`, ou suporte suspenso
+ * ausente ou inválido nas settings da Fábrica de Software, ou suporte suspenso
  * pela Hcode).
  */
 export function SupportSidebarActions() {
@@ -80,10 +80,10 @@ export function SupportSidebarActions() {
       <SidebarMenuItem>
         <SidebarMenuButton
           className={cn('cursor-pointer', collapsed && 'justify-center')}
-          isActive={pathname?.startsWith(SUPPORT_PAGE)}
+          isActive={pathname?.startsWith(supportPage())}
           tooltip={t('supportPage')}
           onClick={() => {
-            router.push(SUPPORT_PAGE);
+            router.push(supportPage());
             if (isMobile) setOpenMobile(false);
           }}
         >

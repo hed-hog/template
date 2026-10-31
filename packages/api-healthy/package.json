@@ -15,7 +15,7 @@
     "@nestjs/common": "*",
     "@nestjs/mapped-types": "*",
     "@hed-hog/api": "workspace:*",
-    "mysql2": "3.14.1",
+    "mysql2": "3.24.6",
     "pg": "^8.16.0"
   },
   "exports": {

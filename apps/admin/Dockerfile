@@ -1,5 +1,5 @@
 # Stage 1: Base
-FROM node:24-alpine AS base
+FROM node:24.22.1-alpine AS base
 RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 WORKDIR /app
 
@@ -84,7 +84,11 @@ ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN pnpm build --filter admin
 
 # Stage 4: Runner (Production)
-FROM node:24-alpine AS runner
+FROM node:24.22.1-alpine AS runner
+# O runtime so roda `node`: o npm que vem na imagem do Node carrega
+# brace-expansion e undici vulneraveis, e nem ele nem npx/corepack sao usados aqui.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+  /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 WORKDIR /app
 
 # Default environment (can be overridden at runtime)

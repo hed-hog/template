@@ -441,7 +441,8 @@ function ensureNewMigrationsResolveSettingGroup() {
 // 24s de lock, e como toda requisicao grava em access_log, as 5 conexoes de cada pod
 // ficaram presas esperando — pool esgotado em todos os pods no mesmo segundo
 // (Sentry 7692792694, que estourou numa rota que nem toca access_log).
-const HOT_TABLES = ['access_log'];
+// status_heartbeat: uma linha por checagem de cada monitor da library status.
+const HOT_TABLES = ['access_log', 'status_heartbeat'];
 
 // Pura de proposito, como migrationResolvesGroupFromSibling: da para testar contra as
 // migrations reais sem git. Devolve os comandos que acusam (vazio = passa).
@@ -657,6 +658,10 @@ const BUILD_TARGET_BY_APP = {
   'hcode-site': 'hcode-site',
   'hcode-store': 'hcode-store',
   brclick: 'brclick',
+  comparahardware: 'comparahardware',
+  comparafitness: 'comparafitness',
+  sbcweb: 'sbcweb',
+  emplacometro: 'emplacometro',
 };
 
 const API_BUILD_HINT =
@@ -778,6 +783,10 @@ function promote() {
     'hcode-site',
     'hcode-store',
     'brclick',
+    'comparahardware',
+    'comparafitness',
+    'sbcweb',
+    'emplacometro',
     'queue-workers',
   ];
   const SKIP_BUILD_FLAGS = ['--skip-build', '--no-build'];
