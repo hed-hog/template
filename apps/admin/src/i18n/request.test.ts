@@ -10,8 +10,10 @@ vi.mock('next-intl/server', () => ({
 }));
 
 const cookieStore = { get: vi.fn() };
+const headerStore = { get: vi.fn() };
 vi.mock('next/headers', () => ({
   cookies: vi.fn(async () => cookieStore),
+  headers: vi.fn(async () => headerStore),
 }));
 
 type FsNode =
@@ -73,6 +75,7 @@ describe('i18n/request', () => {
   beforeEach(() => {
     fsMap = new Map();
     cookieStore.get.mockReset();
+    headerStore.get.mockReset().mockReturnValue(null);
   });
 
   afterEach(() => {
@@ -107,6 +110,21 @@ describe('i18n/request', () => {
     const result = await requestConfig();
     expect(result.locale).toBe('pt');
     expect(result.messages).toEqual({ ola: 'Ola' });
+  });
+
+  it('sem cookie, usa o idioma suportado de maior peso do Accept-Language', async () => {
+    cookieStore.get.mockReturnValue(undefined);
+    headerStore.get.mockReturnValue('fr-FR,pt-BR;q=0.9,en;q=0.8');
+    fsMap = buildFsTree(messagesDir, {
+      'pt.json': JSON.stringify({ ola: 'Ola' }),
+    });
+
+    const requestConfig = (await import('./request')).default as (
+      ...args: unknown[]
+    ) => Promise<{ locale: string; messages: Record<string, unknown> }>;
+
+    const result = await requestConfig();
+    expect(result.locale).toBe('pt');
   });
 
   it('retorna mensagens vazias quando o diretório de mensagens não existe', async () => {
