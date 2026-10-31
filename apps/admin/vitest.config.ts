@@ -7,7 +7,14 @@ import { fileURLToPath } from 'node:url';
 const src = fileURLToPath(new URL('./src', import.meta.url));
 
 export default createVitestConfig({
-  resolve: { alias: { '@': src } },
+  resolve: {
+    alias: { '@': src },
+    // O pnpm instala uma variante de peer do `next` para o admin e outra para o
+    // @hed-hog/next-app-provider. Sem o dedupe, o `vi.mock('next/navigation')`
+    // dos testes só alcança a cópia do admin, e o AppProvider chama o
+    // `useRouter` real ("invariant expected app router to be mounted").
+    dedupe: ['next'],
+  },
   test: {
     coverage: {
       // Pisos logo abaixo do baseline medido (o denominador inclui TODO o src,

@@ -265,10 +265,15 @@ describe('McpFloatingChat', () => {
     vi.unstubAllGlobals();
   });
 
+  // O AppProvider real injeta o <style> do @bprogress/next no container; o que
+  // importa é que o widget não renderizou nenhum elemento.
+  const renderedElements = (container: HTMLElement) =>
+    Array.from(container.children).filter((el) => el.tagName !== 'STYLE');
+
   it('não renderiza nada quando a página atual já é a página de chat', async () => {
     mockPathname = '/core/mcp_chat';
     const { container } = await renderWidget();
-    await waitFor(() => expect(container).toBeEmptyDOMElement());
+    await waitFor(() => expect(renderedElements(container)).toHaveLength(0));
   });
 
   it('não renderiza nada quando o mcp está desabilitado via settings', async () => {
@@ -284,7 +289,7 @@ describe('McpFloatingChat', () => {
       JSON.stringify(JSON.stringify({ 'mcp-enabled': false })),
     );
     const { container } = render(<McpFloatingChat />, { wrapper });
-    await waitFor(() => expect(container).toBeEmptyDOMElement());
+    await waitFor(() => expect(renderedElements(container)).toHaveLength(0));
   });
 
   it('abre o painel flutuante ao disparar o evento global e mostra o estado vazio', async () => {
