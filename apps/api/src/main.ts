@@ -7,6 +7,7 @@ import * as express from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { helmetOptions } from './security/helmet-options';
+import { CORS_ALLOWED_HEADERS } from './cors/cors-headers';
 import {
   getCorsDomains,
   getCorsOrigins,
@@ -89,13 +90,12 @@ async function bootstrap() {
       return callback(new Error('Not allowed by CORS'));
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'Accept-Language',
-      'X-Requested-With',
-      'X-Browser-ID',
-    ],
+    // A lista mora em `cors/cors-headers.ts` para ter teste próprio: cabeçalho
+    // que falta ali barra a requisição inteira, não só o cabeçalho. Este main.ts
+    // não é sincronizado do hub (bootstrap.sync.json), então uma lista escrita à
+    // mão aqui ficava para trás quando o next-app-provider passava a mandar
+    // cabeçalho novo (X-App-Platform) e o login quebrava no primeiro deploy.
+    allowedHeaders: CORS_ALLOWED_HEADERS,
     credentials: true,
     optionsSuccessStatus: 204,
   });

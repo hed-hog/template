@@ -1,4 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { CORS_ALLOWED_HEADERS } from './cors-headers';
 
 /**
@@ -48,5 +50,18 @@ describe('cors-headers', () => {
       expect(header).toBe(header.trim());
       expect(header).not.toBe('');
     }
+  });
+
+  // O main.ts NÃO é sincronizado do hub para o template (bootstrap.sync.json o
+  // exclui por causa da observabilidade), mas este spec é. Uma lista escrita à
+  // mão no main.ts do template envelheceu sem ninguém notar: o
+  // next-app-provider passou a mandar X-App-Platform, o preflight reprovou e o
+  // login de toda instância nova falhava no primeiro deploy com "Não foi
+  // possível conectar ao servidor". Este teste falha no repositório cujo
+  // main.ts não usa esta lista.
+  it('é a lista que o main.ts entrega ao enableCors', () => {
+    const main = readFileSync(join(__dirname, '..', 'main.ts'), 'utf8');
+    expect(main).toMatch(/import\s*\{[^}]*\bCORS_ALLOWED_HEADERS\b[^}]*\}\s*from\s*'\.\/cors\/cors-headers'/);
+    expect(main).toMatch(/allowedHeaders:\s*CORS_ALLOWED_HEADERS\b/);
   });
 });
